@@ -1,11 +1,17 @@
 import { Globe } from 'lucide-react';
 import ContenedoresDestinoAnimation from './ContenedoresDestinoAnimation';
+import { useSEO } from '@/hooks';
 
 // ============================================
 // DestinosPage — Destinos Internacionales & Contenedores
 // ============================================
 
 export default function DestinosPage() {
+  useSEO({
+    title: 'Destinos y Rutas de Exportación',
+    description: 'Explora nuestros contenedores activos y destinos de exportación de café verde de especialidad hacia México, Chile, Brasil, Canadá y más.',
+  });
+
   return (
     <div className="bg-surface-50 text-surface-900">
       {/* Hero de Destinos: Título y subetiqueta a la izquierda, descripción al lado derecho */}

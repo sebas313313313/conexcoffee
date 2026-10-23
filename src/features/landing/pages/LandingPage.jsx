@@ -17,6 +17,7 @@ import {
   ChevronLeft,
 } from 'lucide-react';
 import { Button } from '@/components/ui';
+import { useSEO } from '@/hooks';
 import HeroLiquidGlassBanner from '../components/HeroLiquidGlassBanner';
 
 
@@ -96,6 +97,11 @@ const ALIADOS = [
 ];
 
 export default function LandingPage() {
+  useSEO({
+    title: 'Plataforma de Café Especial y Trazabilidad en Colombia',
+    description: 'Conectamos caficultores de café especial con compradores internacionales garantizando calidad SCA, trazabilidad y logística transparente.',
+  });
+
   const [activeFinca, setActiveFinca] = useState(FINCAS_MAPA[0]);
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isPaused, setIsPaused] = useState(false);

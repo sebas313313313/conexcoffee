@@ -11,9 +11,9 @@ import useAuthStore from '@/store/useAuthStore';
 // ============================================
 
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL,
+  baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001/api',
   withCredentials: true,
-  timeout: 15000,
+  timeout: 30000,
   headers: {
     'Content-Type': 'application/json',
     // Header adicional para ayudar al backend a identificar requests del frontend
@@ -30,6 +30,11 @@ const api = axios.create({
 // ============================================
 api.interceptors.request.use(
   (config) => {
+    // Si existe un token JWT en memoria volátil (Zustand), se añade a la cabecera
+    const token = useAuthStore.getState().token;
+    if (token && !config.headers.Authorization) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
     return config;
   },
   (error) => {

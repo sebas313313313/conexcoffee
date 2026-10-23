@@ -22,49 +22,107 @@ const DEMO_USERS = {
 
 /**
  * Iniciar sesión con email y contraseña.
- * Incluye fallback de demostración con credenciales de prueba
- * si el backend aún no está levantado en local.
+ * Conecta con el endpoint /api/usuarios-sistema/login del backend ConexCoffee.
+ * Incluye fallback a /auth/login y a credenciales demo si el backend no está disponible.
  */
 export async function login(credentials) {
-  const { email, password } = credentials;
+  const email = credentials.email || credentials.correo_electronico || '';
+  const password = credentials.password || credentials.contrasena || '';
 
-  // Verificación directa de cuentas demo para pruebas locales
+  // Verificación directa de cuentas demo para pruebas locales sin backend
   if (DEMO_USERS[email] && password === '12345678') {
     return {
       user: DEMO_USERS[email],
+      token: `demo-token-${Date.now()}`,
       message: 'Sesión demo iniciada exitosamente',
     };
   }
 
-  const { data } = await api.post('/auth/login', credentials);
-  return data;
+  const payload = {
+    correo_electronico: email,
+    contrasena: password,
+    email,
+    password,
+  };
+
+  try {
+    // Intentar endpoint oficial del backend ConexCoffee
+    const response = await api.post('/usuarios-sistema/login', payload);
+    const result = response.data;
+
+    // Normalizar formato estándar REST CC-XXXX: { status: 'success', data: { token, usuario } }
+    if (result && result.data && result.data.usuario) {
+      return {
+        user: result.data.usuario,
+        token: result.data.token || null,
+        message: 'Sesión iniciada correctamente',
+      };
+    }
+
+    if (result && result.usuario) {
+      return {
+        user: result.usuario,
+        token: result.token || null,
+        message: 'Sesión iniciada correctamente',
+      };
+    }
+
+    return result;
+  } catch (error) {
+    // Si la ruta específica da 404, probar endpoint alternativo /auth/login
+    if (error.response?.status === 404) {
+      const altResponse = await api.post('/auth/login', payload);
+      return altResponse.data;
+    }
+
+    // Si es error de conexión de red y coincide con demo user, permitir acceso demo
+    const isNetworkError =
+      !error.response || error.code === 'ERR_NETWORK' || error.code === 'ERR_CONNECTION_REFUSED';
+    if (isNetworkError && DEMO_USERS[email]) {
+      return {
+        user: DEMO_USERS[email],
+        token: `demo-token-${Date.now()}`,
+        message: 'Sesión demo iniciada (modo sin conexión)',
+      };
+    }
+
+    throw error;
+  }
 }
 
 /**
- * Registrar un nuevo usuario (comprador).
+ * Registrar un nuevo usuario en el sistema.
  *
- * MODO DEMO: Si el backend no está disponible (ERR_CONNECTION_REFUSED),
- * simula un registro exitoso para poder probar el flujo en frontend.
- *
- * Para conectar con el backend real: no se necesita cambiar nada aquí.
- * Cuando la API responda correctamente, el bloque try devolverá la respuesta real.
- *
- * @param {object} userData - Datos del comprador a registrar
- * @returns {{ user: object, message: string }}
+ * @param {object} userData - Datos del usuario a registrar
  */
 export async function register(userData) {
+  const email = userData.email || userData.correo_electronico;
+  const password = userData.password || userData.contrasena;
+
+  const payload = {
+    correo_electronico: email,
+    contrasena: password,
+    rol_principal: (userData.role || userData.rol_principal || 'COMPRADOR').toUpperCase(),
+    nombres: userData.nombres,
+    apellidos: userData.apellidos,
+    telefono: userData.telefono,
+    ...userData,
+  };
+
   try {
-    const { data } = await api.post('/auth/register', userData);
+    const { data } = await api.post('/usuarios-sistema', payload);
     return data;
   } catch (error) {
-    // Si el backend no está levantado (error de red / conexión rechazada),
-    // devolver respuesta simulada para pruebas de frontend.
+    if (error.response?.status === 404) {
+      const { data } = await api.post('/auth/register', userData);
+      return data;
+    }
+
     const isNetworkError =
       !error.response || error.code === 'ERR_NETWORK' || error.code === 'ERR_CONNECTION_REFUSED';
 
     if (isNetworkError) {
-      // Simular latencia real de servidor
-      await new Promise((r) => setTimeout(r, 800));
+      await new Promise((r) => setTimeout(r, 600));
       return {
         message: 'Usuario registrado correctamente (modo demo)',
         user: {
@@ -72,32 +130,50 @@ export async function register(userData) {
           nombres: userData.nombres,
           apellidos: userData.apellidos,
           email: userData.email,
-          role: 'comprador',
+          role: userData.role || 'comprador',
         },
       };
     }
 
-    // Si el backend sí responde pero con error (ej: email duplicado, validación),
-    // propagar el error para que el formulario lo muestre.
     throw error;
   }
 }
 
 /**
  * Cerrar sesión.
- * El backend debe invalidar la cookie HttpOnly.
+ * Invalida sesión en el backend si está disponible.
  */
 export async function logout() {
-  const { data } = await api.post('/auth/logout');
-  return data;
+  try {
+    const { data } = await api.post('/usuarios-sistema/logout');
+    return data;
+  } catch {
+    try {
+      const { data } = await api.post('/auth/logout');
+      return data;
+    } catch {
+      return { success: true };
+    }
+  }
 }
 
 /**
- * Obtener el usuario autenticado actual.
- * Se llama al cargar la app para verificar si la sesión es válida.
- * El backend lee la cookie HttpOnly y devuelve los datos del usuario.
+ * Obtener el perfil del usuario autenticado actual.
+ * Conecta con /api/usuarios-sistema/perfil o /auth/me.
  */
 export async function getMe() {
-  const { data } = await api.get('/auth/me');
-  return data;
+  try {
+    const response = await api.get('/usuarios-sistema/perfil');
+    const result = response.data;
+    if (result && result.data) {
+      return { user: result.data };
+    }
+    return result;
+  } catch (error) {
+    if (error.response?.status === 404) {
+      const { data } = await api.get('/auth/me');
+      return data;
+    }
+    throw error;
+  }
 }

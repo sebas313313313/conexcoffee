@@ -9,3 +9,6 @@ export { default as LaboratorioAnalisisSensorialPage } from './pages/Laboratorio
 export { default as LaboratorioResultadosPage       } from './pages/LaboratorioResultadosPage';
 export { default as LaboratorioHojasCatacionPage    } from './pages/LaboratorioHojasCatacionPage';
 export { default as LaboratorioMuestrasPage         } from './pages/LaboratorioMuestrasPage';
+
+export { default as LaboratorioContext, LaboratorioProvider, useLaboratorio } from './context/LaboratorioContext';
+export * from './api/laboratorioApi';

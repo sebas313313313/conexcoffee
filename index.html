@@ -1,18 +1,121 @@
 <!doctype html>
 <html lang="es">
   <head>
+    <!-- Configuración Básica y Codificación -->
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/x-icon" href="/images/favicon_conex.ico" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="ConexCoffee — Plataforma de comercio de café. Conectamos productores, empresas, brokers y compradores." />
-    <meta name="theme-color" content="#c06a22" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
 
-    <!-- Google Font: Inter -->
+    <!-- Título Primario SEO -->
+    <title>ConexCoffee | Plataforma de Café Especial y Trazabilidad en Colombia</title>
+
+    <!-- Meta Etiquetas Principales -->
+    <meta
+      name="description"
+      content="Plataforma B2B para la compra, exportación y trazabilidad de café verde de especialidad en Colombia. Conectamos caficultores, brokers y compradores con calidad SCA garantizada."
+    />
+    <meta
+      name="keywords"
+      content="café especial colombia, café verde especialidad, café de origen, trazabilidad de café, microlotes café, catación SCA, exportación café colombia, caficultores colombianos, broker café, comprar café colombiano"
+    />
+    <meta name="author" content="ConexCoffee" />
+    <meta name="publisher" content="ConexCoffee" />
+    <meta name="application-name" content="ConexCoffee" />
+
+    <!-- Directivas de Rastreo e Indexación -->
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+    <meta name="googlebot" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+    <meta name="bingbot" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+
+    <!-- URL Canónica -->
+    <link rel="canonical" href="https://conexcoffee.com/" />
+
+    <!-- Geolocalización (Colombia) -->
+    <meta name="geo.region" content="CO" />
+    <meta name="geo.placename" content="Colombia" />
+
+    <!-- Open Graph / Redes Sociales (Facebook, WhatsApp, LinkedIn) -->
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="es_CO" />
+    <meta property="og:site_name" content="ConexCoffee" />
+    <meta property="og:url" content="https://conexcoffee.com/" />
+    <meta property="og:title" content="ConexCoffee | Plataforma de Café Especial y Trazabilidad en Colombia" />
+    <meta
+      property="og:description"
+      content="Conectamos pequeños caficultores de cafés de especialidad con compradores internacionales, garantizando trazabilidad, calidad SCA, precios justos y logística transparente."
+    />
+    <meta property="og:image" content="https://conexcoffee.com/images/pagina-web/portada-conexcoffee.png" />
+    <meta property="og:image:secure_url" content="https://conexcoffee.com/images/pagina-web/portada-conexcoffee.png" />
+    <meta property="og:image:type" content="image/png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="ConexCoffee — Plataforma de café de especialidad colombiano" />
+
+    <!-- Twitter Cards -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:url" content="https://conexcoffee.com/" />
+    <meta name="twitter:title" content="ConexCoffee | Café Especial y Trazabilidad en Colombia" />
+    <meta
+      name="twitter:description"
+      content="Conectamos productores de café especial con compradores internacionales con calidad SCA y trazabilidad garantizada."
+    />
+    <meta name="twitter:image" content="https://conexcoffee.com/images/pagina-web/portada-conexcoffee.png" />
+    <meta name="twitter:image:alt" content="ConexCoffee — Café de Especialidad" />
+
+    <!-- Favicon e Iconos Móviles / PWA -->
+    <link rel="icon" type="image/x-icon" href="/images/favicon_conex.ico" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/images/logo-sm_conex.png" />
+    <meta name="theme-color" content="#c06a22" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="ConexCoffee" />
+
+    <!-- Rendimiento Web: Preconexión a Tipografías Google -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
 
-    <title>ConexCoffee — Plataforma de Café</title>
+    <!-- Datos Estructurados JSON-LD (Schema.org) para Google Rich Results -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@graph": [
+          {
+            "@type": "Organization",
+            "@id": "https://conexcoffee.com/#organization",
+            "name": "ConexCoffee",
+            "url": "https://conexcoffee.com",
+            "logo": {
+              "@type": "ImageObject",
+              "@id": "https://conexcoffee.com/#logo",
+              "url": "https://conexcoffee.com/images/logo-dark_conex.png",
+              "caption": "ConexCoffee Logo"
+            },
+            "description": "Plataforma B2B para la trazabilidad, certificación SCA y comercialización de café especial colombiano.",
+            "email": "soporte@conexcoffee.com",
+            "address": {
+              "@type": "PostalAddress",
+              "addressCountry": "CO"
+            }
+          },
+          {
+            "@type": "WebSite",
+            "@id": "https://conexcoffee.com/#website",
+            "url": "https://conexcoffee.com",
+            "name": "ConexCoffee",
+            "description": "Plataforma de comercio y trazabilidad de café verde de especialidad en Colombia.",
+            "publisher": {
+              "@id": "https://conexcoffee.com/#organization"
+            },
+            "inLanguage": "es"
+          }
+        ]
+      }
+    </script>
   </head>
   <body>
     <div id="root"></div>

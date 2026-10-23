@@ -7,6 +7,8 @@ import {
   Search,
 } from 'lucide-react';
 import { Card, Input } from '@/components/ui';
+import { useSEO } from '@/hooks';
+
 
 // ============================================
 // BlogPage — Artículos & Actualidad Cafetera
@@ -61,6 +63,11 @@ const POSTS = [
 ];
 
 export default function BlogPage() {
+  useSEO({
+    title: 'Blog Cafetero | Mercado, Procesos y Calidad SCA',
+    description: 'Artículos, análisis del mercado internacional del café, tendencias de precios, notas sensoriales y novedades de la industria cafetera.',
+  });
+
   const [searchTerm, setSearchTerm] = useState('');
 
   const filteredPosts = POSTS.filter(

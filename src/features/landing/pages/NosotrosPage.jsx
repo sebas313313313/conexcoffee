@@ -13,12 +13,18 @@ import {
   HeartHandshake,
 } from 'lucide-react';
 import { Button } from '@/components/ui';
+import { useSEO } from '@/hooks';
 
 // ============================================
 // NosotrosPage — Acerca de ConexCoffee & Agenda Cafetera
 // ============================================
 
 export default function NosotrosPage() {
+  useSEO({
+    title: 'Sobre Nosotros | Misión y Trazabilidad del Café',
+    description: 'Conoce la historia, propósito y equipo de ConexCoffee. Conectamos el origen del café colombiano con los mercados más exigentes del mundo.',
+  });
+
   return (
     <div className="bg-surface-50 text-surface-900 min-h-screen">
       {/* 1. HERO SECTION CON VIDEO INSTITUCIONAL */}

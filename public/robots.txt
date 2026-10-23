@@ -1,0 +1,28 @@
+# Robots.txt for ConexCoffee
+User-agent: *
+Allow: /
+Allow: /destinos
+Allow: /nosotros
+Allow: /blog
+Allow: /contact
+Allow: /terms
+Allow: /privacy
+Allow: /legal
+
+# Prevenir indexación de rutas privadas de la aplicación y autenticación
+Disallow: /login
+Disallow: /register
+Disallow: /superadmin/
+Disallow: /empresa/
+Disallow: /broker/
+Disallow: /caficultor/
+Disallow: /laboratorio/
+Disallow: /tecnico/
+Disallow: /catador/
+Disallow: /comprador/
+Disallow: /profile/
+Disallow: /settings/
+Disallow: /api/
+
+# Mapa del sitio oficial
+Sitemap: https://conexcoffee.com/sitemap.xml

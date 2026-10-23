@@ -16,6 +16,7 @@ import {
   Sparkles,
 } from 'lucide-react';
 import { Button, Card, Input } from '@/components/ui';
+import { useSEO } from '@/hooks';
 import { sanitizeHTML } from '@/lib/sanitize';
 import EmpresasRegionalesModal from '../components/EmpresasRegionalesModal';
 
@@ -73,6 +74,11 @@ const PAISES_OPCIONES = [
 ];
 
 export default function ContactPage() {
+  useSEO({
+    title: 'Contacto y PQRS | Atención al Cliente',
+    description: 'Comunícate con el equipo de ConexCoffee. Atención a caficultores, empresas compradoras, brokers y laboratorios de café.',
+  });
+
   const [openFaq, setOpenFaq] = useState(1); // Primer FAQ abierto por defecto
   const [isEmpresasModalOpen, setIsEmpresasModalOpen] = useState(false);
   const [fileName, setFileName] = useState('');

@@ -12,10 +12,32 @@ import { create } from 'zustand';
 // Solo se almacena la información del usuario que devuelve el backend.
 // ============================================
 
+const ROLE_MAP = {
+  ADMINISTRADOR: 'superadmin',
+  EMPRESA_EXPORTADORA: 'empresa',
+  EMPRESA: 'empresa',
+  BROKER: 'broker',
+  PRODUCTOR: 'caficultor',
+  CAFICULTOR: 'caficultor',
+  COMPRADOR: 'comprador',
+  LABORATORIO: 'laboratorio',
+  ASISTENTE_TECNICO: 'tecnico',
+  TECNICO: 'tecnico',
+  CATADOR: 'catador',
+  SUPERADMIN: 'superadmin',
+};
+
+export const normalizeRole = (role) => {
+  if (!role) return null;
+  const upper = String(role).toUpperCase().trim();
+  return ROLE_MAP[upper] || String(role).toLowerCase().trim();
+};
+
 const useAuthStore = create((set) => ({
-  // Estado
+  // Estado en memoria volátil de ejecución
   user: null,
   role: null,
+  token: null,
   isAuthenticated: false,
   isLoading: true, // true hasta que se verifique la sesión inicial
 
@@ -24,19 +46,25 @@ const useAuthStore = create((set) => ({
   // ============================================
 
   /**
-   * Establece el usuario autenticado en el store.
-   * Llamado después de login exitoso o getMe().
+   * Establece el usuario autenticado y token opcional en el store.
    *
    * @param {object} userData - Datos del usuario desde el backend
-   * @param {string} userData.role - Rol del usuario (superadmin, empresa, etc.)
+   * @param {string} [token] - Token JWT en memoria volátil
    */
-  setUser: (userData) =>
-    set({
+  setUser: (userData, token = null) =>
+    set((state) => ({
       user: userData,
-      role: userData?.role || null,
+      role: normalizeRole(userData?.rol_principal || userData?.role),
+      token: token !== null ? token : state.token,
       isAuthenticated: true,
       isLoading: false,
-    }),
+    })),
+
+  /**
+   * Actualiza el token en memoria volátil
+   */
+  setToken: (token) =>
+    set({ token }),
 
   /**
    * Limpia completamente el estado de autenticación.
@@ -46,13 +74,13 @@ const useAuthStore = create((set) => ({
     set({
       user: null,
       role: null,
+      token: null,
       isAuthenticated: false,
       isLoading: false,
     }),
 
   /**
    * Establece el estado de carga.
-   * Útil mientras se verifica la sesión al cargar la app.
    */
   setLoading: (loading) =>
     set({ isLoading: loading }),

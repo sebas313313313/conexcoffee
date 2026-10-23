@@ -8,3 +8,8 @@ export { default as EmpresaPreOfertasPage } from './pages/EmpresaPreOfertasPage'
 export { default as EmpresaOfertasPage } from './pages/EmpresaOfertasPage';
 export { default as EmpresaOfertasLibresPage } from './pages/EmpresaOfertasLibresPage';
 export { default as EmpresaTecnicosPage } from './pages/EmpresaTecnicosPage';
+
+export { default as ComercialContext, ComercialProvider, useComercial } from './context/ComercialContext';
+export { default as TrazabilidadLogisticaContext, TrazabilidadLogisticaProvider, useLogistica } from './context/TrazabilidadLogisticaContext';
+export * from './api/comercialApi';
+export * from './api/logisticaApi';

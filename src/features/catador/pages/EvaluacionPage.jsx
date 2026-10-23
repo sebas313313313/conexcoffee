@@ -10,20 +10,31 @@ import {
   UserPlus,
   Award,
   Sliders,
+  Download,
+  RefreshCw,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { EVALUACIONES_PENDIENTES } from '../data/evaluacionData';
 import { EvaluacionModal } from '../components';
+import { useCva } from '../context/CvaContext';
 
 export default function EvaluacionPage() {
-  const [evaluaciones, setEvaluaciones] = useState(EVALUACIONES_PENDIENTES);
+  const {
+    sesiones: evaluaciones,
+    setSesiones: setEvaluaciones,
+    seleccionarSesion,
+    sesionActiva,
+    enviarEvaluacion,
+    cargarSesiones,
+    exportarJson,
+    isLoading,
+  } = useCva();
+
   const [searchTerm, setSearchTerm] = useState('');
-  const [evaluacionActiva, setEvaluacionActiva] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   // Al hacer clic en "Unirse"
   const handleUnirse = (item) => {
-    // Si aún no está unido, lo unimos
+    // Si aún no está unido, lo marcamos
     if (!item.unido) {
       setEvaluaciones((prev) =>
         prev.map((ev) =>
@@ -31,16 +42,15 @@ export default function EvaluacionPage() {
             ? {
                 ...ev,
                 unido: true,
-                cantidadParticipantes: ev.cantidadParticipantes + 1,
+                cantidadParticipantes: (ev.cantidadParticipantes || 0) + 1,
               }
             : ev
         )
       );
-      toast.success(`Te has unido a "${item.nombre}". Se abrirá la hoja de evaluación.`);
+      toast.success(`Te has unido a "${item.nombre}". Se abrirá la hoja de evaluación CVA.`);
     }
 
-    // Despliega el modal de evaluación
-    setEvaluacionActiva(item);
+    seleccionarSesion(item);
     setIsModalOpen(true);
   };
 
@@ -53,7 +63,7 @@ export default function EvaluacionPage() {
           ? {
               ...item,
               unido: false,
-              cantidadParticipantes: Math.max(0, item.cantidadParticipantes - 1),
+              cantidadParticipantes: Math.max(0, (item.cantidadParticipantes || 1) - 1),
             }
           : item
       )
@@ -62,44 +72,42 @@ export default function EvaluacionPage() {
   };
 
   // Al finalizar y enviar la evaluación desde el modal
-  const handleFinalizarEvaluacion = (resultado) => {
-    setEvaluaciones((prev) =>
-      prev.map((item) =>
-        item.id === resultado.evaluacionId
-          ? {
-              ...item,
-              estado: 'Completada',
-              puntuacionTotal: resultado.puntuacionTotal,
-              categoria: resultado.categoria,
-              unido: true,
-            }
-          : item
-      )
-    );
-
-    setIsModalOpen(false);
-    setEvaluacionActiva(null);
-    toast.success(
-      `¡Evaluación enviada con éxito! Puntuación SCA registrada: ${resultado.puntuacionTotal} pts (${resultado.categoria})`
-    );
+  const handleFinalizarEvaluacion = async (resultado) => {
+    try {
+      await enviarEvaluacion(resultado);
+      setIsModalOpen(false);
+    } catch {
+      // El error ya lo maneja el context y muestra un toast
+    }
   };
 
   const listaFiltrada = evaluaciones.filter((ev) => {
     const term = searchTerm.toLowerCase();
-    return (
-      ev.nombre.toLowerCase().includes(term) ||
-      ev.objetivo.toLowerCase().includes(term)
-    );
+    const nombre = ev.nombre || '';
+    const objetivo = ev.objetivo || '';
+    return nombre.toLowerCase().includes(term) || objetivo.toLowerCase().includes(term);
   });
 
   return (
     <div className="space-y-6">
       {/* Encabezado */}
-      <div>
-        <h1 className="text-2xl font-bold text-surface-900">Evaluaciones Pendientes</h1>
-        <p className="text-surface-500 mt-1">
-          Sesiones y mesas de catación pendientes disponibles para unirse y calificar muestras bajo protocolo SCA
-        </p>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-surface-900">Evaluaciones Pendientes CVA</h1>
+          <p className="text-surface-500 mt-1">
+            Sesiones y mesas de catación conectadas al backend ConexCoffee bajo protocolo SCA / CVA
+          </p>
+        </div>
+        <Button
+          type="button"
+          variant="outline"
+          onClick={cargarSesiones}
+          disabled={isLoading}
+          className="flex items-center gap-2 self-start sm:self-auto text-xs"
+        >
+          <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? 'animate-spin' : ''}`} />
+          Sincronizar Backend
+        </Button>
       </div>
 
       {/* Buscador rápido */}
@@ -144,7 +152,7 @@ export default function EvaluacionPage() {
                     {item.estado === 'Completada' ? (
                       <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200 flex items-center gap-1">
                         <CheckCircle2 className="w-3 h-3 text-emerald-600" />
-                        Completada ({item.puntuacionTotal} pts)
+                        Completada ({item.puntuacionTotal || 85} pts)
                       </span>
                     ) : (
                       <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-amber-50 text-amber-800 border border-amber-200 flex items-center gap-1">
@@ -172,9 +180,8 @@ export default function EvaluacionPage() {
                     {item.objetivo}
                   </div>
 
-                  {/* Datos complementarios: Fecha de creación, Cantidad de Muestras, Cantidad de Participantes */}
+                  {/* Datos complementarios */}
                   <div className="flex flex-wrap items-center gap-4 pt-2 text-xs text-surface-600">
-                    {/* Fecha de creación */}
                     <div className="flex items-center gap-1.5 bg-surface-50 px-2.5 py-1 rounded-md border border-surface-200">
                       <Calendar className="w-3.5 h-3.5 text-primary-600" />
                       <span>
@@ -182,7 +189,6 @@ export default function EvaluacionPage() {
                       </span>
                     </div>
 
-                    {/* Cantidad de muestras */}
                     <div className="flex items-center gap-1.5 bg-surface-50 px-2.5 py-1 rounded-md border border-surface-200">
                       <Coffee className="w-3.5 h-3.5 text-primary-600" />
                       <span>
@@ -190,7 +196,6 @@ export default function EvaluacionPage() {
                       </span>
                     </div>
 
-                    {/* Cantidad de participantes */}
                     <div className="flex items-center gap-1.5 bg-surface-50 px-2.5 py-1 rounded-md border border-surface-200">
                       <Users className="w-3.5 h-3.5 text-primary-600" />
                       <span>
@@ -201,21 +206,33 @@ export default function EvaluacionPage() {
                   </div>
                 </div>
 
-                {/* Botón de Unirse / Abrir Evaluación */}
+                {/* Acciones */}
                 <div className="shrink-0 flex items-center gap-2 lg:self-center">
                   {item.estado === 'Completada' ? (
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={() => {
-                        setEvaluacionActiva(item);
-                        setIsModalOpen(true);
-                      }}
-                      className="flex items-center gap-2 text-xs font-semibold"
-                    >
-                      <Award className="w-4 h-4 text-emerald-600" />
-                      Ver Hoja Enviada
-                    </Button>
+                    <div className="flex items-center gap-2">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => {
+                          seleccionarSesion(item);
+                          setIsModalOpen(true);
+                        }}
+                        className="flex items-center gap-2 text-xs font-semibold"
+                      >
+                        <Award className="w-4 h-4 text-emerald-600" />
+                        Ver Hoja CVA
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => exportarJson(item.id)}
+                        className="flex items-center gap-1.5 text-xs text-surface-700 hover:text-primary-600"
+                        title="Exportar JSON CVA compilado desde PostgreSQL"
+                      >
+                        <Download className="w-3.5 h-3.5" />
+                        Exportar JSON
+                      </Button>
+                    </div>
                   ) : item.unido ? (
                     <div className="flex items-center gap-2">
                       <Button
@@ -258,9 +275,8 @@ export default function EvaluacionPage() {
         isOpen={isModalOpen}
         onClose={() => {
           setIsModalOpen(false);
-          setEvaluacionActiva(null);
         }}
-        evaluacion={evaluacionActiva}
+        evaluacion={sesionActiva}
         onFinalizar={handleFinalizarEvaluacion}
       />
     </div>

@@ -17,3 +17,5 @@ export { default as TecnicosPage }            from './pages/TecnicosPage';
 export { default as UsuariosPage }            from './pages/UsuariosPage';
 export { default as ConfiguracionPage }       from './pages/ConfiguracionPage';
 
+export { default as SeguridadAdminContext, SeguridadAdminProvider, useSeguridadAdmin } from './context/SeguridadAdminContext';
+export * from './api/seguridadAdminApi';
