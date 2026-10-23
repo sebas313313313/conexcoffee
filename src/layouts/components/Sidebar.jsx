@@ -95,6 +95,7 @@ const NAV_BY_ROLE = {
     { label: 'Catadores',          path: '/laboratorio/catadores',          icon: Award },
     { label: 'Análisis Físico',    path: '/laboratorio/analisis-fisico',    icon: FlaskConical },
     { label: 'Análisis Sensorial', path: '/laboratorio/analisis-sensorial', icon: Coffee },
+    { label: 'Muestras',           path: '/laboratorio/muestras',           icon: Archive },
     { label: 'Resultados',         path: '/laboratorio/resultados',         icon: ClipboardCheck },
     { label: 'Página Web',         path: '/',                               icon: Globe },
   ],

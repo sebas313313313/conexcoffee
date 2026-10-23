@@ -1,0 +1,19 @@
+name: Keep-Alive Robot Vercel & Backend
+
+on:
+  schedule:
+    # Ejecuta cada 14 minutos para evitar el sleep por inactividad
+    - cron: '*/14 * * * *'
+  workflow_dispatch: # Permite ejecución manual
+
+jobs:
+  ping-services:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Frontend / Vercel
+        run: |
+          curl -I -sS https://conexcoffee.vercel.app || echo "Ping frontend enviado"
+
+      - name: Ping Backend API
+        run: |
+          curl -I -sS "${{ secrets.BACKEND_URL || 'https://conexcoffee.onrender.com/api/health' }}" || echo "Ping backend enviado"

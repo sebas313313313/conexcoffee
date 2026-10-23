@@ -1,36 +1,23 @@
 import { useEffect } from 'react';
 import { Toaster } from 'react-hot-toast';
-import { AuthProvider, useAuth } from '@/features/auth';
-import { CvaProvider } from '@/features/catador';
-import { CaficulturaProvider } from '@/features/caficultor';
-import { InspeccionesProvider } from '@/features/tecnico';
-import { LaboratorioProvider } from '@/features/laboratorio';
-import { ComercialProvider, TrazabilidadLogisticaProvider } from '@/features/empresa';
-import { SeguridadAdminProvider } from '@/features/superadmin';
+import { useAuth } from '@/features/auth';
 
 // ============================================
 // AppProviders — Wrapper Central de Todos los Providers
 // ============================================
-// Conecta el 100% de los endpoints del backend ConexCoffee:
-// - AuthProvider: /api/usuarios-sistema/login, /perfil
-// - CvaProvider: /api/sesiones-catacion, /api/hojas-catacion-cva, /api/evaluaciones-sensoriales-cva
-// - CaficulturaProvider: /api/fincas, /api/lotes-cultivo, /api/caficultores, /api/variedades-cafe
-// - InspeccionesProvider: /api/inspecciones-finca
-// - LaboratorioProvider: /api/evaluaciones-fisicas, /api/catadores
-// - ComercialProvider: /api/preofertas, /api/pedidos-internacionales
-// - TrazabilidadLogisticaProvider: /api/sacos-cafe, /api/inventario-precintos-qr, /api/trazabilidad-escaneos, /api/contenedores-virtuales
-// - SeguridadAdminProvider: /api/alertas-seguridad, /api/catalogo-errores, /api/usuarios-sistema
+// Centraliza la inicialización de la app:
+// - Verifica la sesión del usuario al cargar (via getMe)
+// - Monta el sistema de toasts (react-hot-toast)
+// - Aquí se añaden futuros providers (ThemeProvider, etc.)
 // ============================================
 
 function AuthSessionInitializer({ children }) {
   const { checkSession } = useAuth();
 
+  // Verificar sesión al montar la app
   useEffect(() => {
     checkSession();
-  }, [checkSession]);
-
-  return children;
-}
+  }, []);
 
 export default function AppProviders({ children }) {
   return (
