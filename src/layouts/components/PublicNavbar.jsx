@@ -27,9 +27,10 @@ export default function PublicNavbar({ onOpenAddProduct }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const location = useLocation();
-  const { isAuthenticated, role } = useAuthStore();
+  const { isAuthenticated, role, isLoading } = useAuthStore();
   const mobileToggleRef = useRef(null);
   const mobileMenuRef = useRef(null);
+  const hasValidSession = Boolean(!isLoading && isAuthenticated && role);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -117,7 +118,7 @@ export default function PublicNavbar({ onOpenAddProduct }) {
             <button
               onClick={onOpenAddProduct}
               type="button"
-              className="inline-flex items-center gap-2 px-3.5 py-2 text-sm font-semibold text-white bg-white/10 hover:bg-white/20 border border-white/25 rounded-xl transition-all shadow-xs cursor-pointer focus:outline-none focus:ring-2 focus:ring-brand-orange"
+              className="inline-flex items-center gap-2 px-3.5 py-2 text-sm font-semibold text-white bg-white/10 hover:bg-white/20 border border-white/25 rounded-xl transition-all shadow-xs cursor-pointer"
               title="Publicar un nuevo lote de café"
             >
               <PlusCircle className="h-4 w-4 text-brand-orange" />
@@ -125,7 +126,7 @@ export default function PublicNavbar({ onOpenAddProduct }) {
             </button>
 
             {/* Botón: Iniciar Sesión / Mi Panel */}
-            {isAuthenticated ? (
+            {hasValidSession ? (
               <Link to={`/${role}/dashboard`}>
                 <Button variant="primary" size="sm" className="gap-2">
                   <LayoutDashboard className="h-4 w-4" />
@@ -195,7 +196,7 @@ export default function PublicNavbar({ onOpenAddProduct }) {
                 <span>Agregar Producto</span>
               </button>
 
-              {isAuthenticated ? (
+              {hasValidSession ? (
                 <Link
                   to={`/${role}/dashboard`}
                   onClick={() => setMobileMenuOpen(false)}
