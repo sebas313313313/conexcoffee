@@ -4,7 +4,7 @@ import App from './app/App';
 import './styles/index.css';
 
 // ============================================
-// Punto de entrada — ConexCoffee Frontend
+// Punto de entrada — ConexCoffee Frontendd
 // ============================================
 
 createRoot(document.getElementById('root')).render(
