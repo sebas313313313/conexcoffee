@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import {
   Award,
@@ -13,12 +14,111 @@ import {
   HeartHandshake,
 } from 'lucide-react';
 import { Button } from '@/components/ui';
+import { animate, stagger } from 'animejs';
 
 // ============================================
 // NosotrosPage — Acerca de ConexCoffee & Agenda Cafetera
 // ============================================
 
 export default function NosotrosPage() {
+  const heroRef = useRef(null);
+  const historiaRef = useRef(null);
+  const promesaRef = useRef(null);
+  const misionRef = useRef(null);
+
+  useEffect(() => {
+    // 1. Hero text and seals animation
+    if (heroRef.current) {
+      const items = heroRef.current.querySelectorAll('.hero-anim');
+      animate(items, {
+        opacity: [0, 1],
+        translateY: [24, 0],
+        duration: 750,
+        delay: stagger(90),
+        ease: 'outExpo',
+      });
+    }
+
+    // 2. Observer for scroll sections
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (!entry.isIntersecting) return;
+
+          if (entry.target === historiaRef.current) {
+            const blocks = historiaRef.current.querySelectorAll('.historia-block');
+            animate(blocks, {
+              opacity: [0, 1],
+              translateX: [25, 0],
+              duration: 650,
+              delay: stagger(120),
+              ease: 'outCubic',
+            });
+            const img = historiaRef.current.querySelector('.historia-img');
+            if (img) {
+              animate(img, {
+                opacity: [0, 1],
+                scale: [0.93, 1],
+                duration: 800,
+                ease: 'outExpo',
+              });
+            }
+          }
+
+          if (entry.target === promesaRef.current) {
+            const quote = promesaRef.current.querySelector('.promesa-quote');
+            if (quote) {
+              animate(quote, {
+                opacity: [0, 1],
+                translateY: [20, 0],
+                duration: 700,
+                ease: 'outExpo',
+              });
+            }
+            const pillars = promesaRef.current.querySelectorAll('.promesa-pillar');
+            animate(pillars, {
+              opacity: [0, 1],
+              translateY: [20, 0],
+              duration: 600,
+              delay: stagger(100, { start: 150 }),
+              ease: 'outExpo',
+            });
+            const shipImg = promesaRef.current.querySelector('.promesa-img');
+            if (shipImg) {
+              animate(shipImg, {
+                opacity: [0, 1],
+                scale: [0.93, 1],
+                duration: 800,
+                delay: 200,
+                ease: 'outExpo',
+              });
+            }
+          }
+
+          if (entry.target === misionRef.current) {
+            const mvCards = misionRef.current.querySelectorAll('.mv-card');
+            animate(mvCards, {
+              opacity: [0, 1],
+              translateY: [24, 0],
+              duration: 700,
+              delay: stagger(140),
+              ease: 'outExpo',
+            });
+          }
+
+          observer.unobserve(entry.target);
+        });
+      },
+      { threshold: 0.15 }
+    );
+
+    if (historiaRef.current) observer.observe(historiaRef.current);
+    if (promesaRef.current) observer.observe(promesaRef.current);
+    if (misionRef.current) observer.observe(misionRef.current);
+
+    return () => observer.disconnect();
+  }, []);
+
   return (
     <div className="bg-surface-50 text-surface-900 min-h-screen">
       {/* 1. HERO SECTION CON VIDEO INSTITUCIONAL */}
@@ -36,25 +136,25 @@ export default function NosotrosPage() {
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-center">
             {/* Columna Texto Hero */}
-            <div className="lg:col-span-6 text-left space-y-6">
-              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-brand-terracota/30 border border-brand-orange/50 text-brand-orange text-xs font-bold uppercase tracking-wider">
+            <div ref={heroRef} className="lg:col-span-6 text-left space-y-6">
+              <div className="hero-anim inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-brand-terracota/30 border border-brand-orange/50 text-brand-orange text-xs font-bold uppercase tracking-wider">
                 <Sparkles className="h-3.5 w-3.5" />
                 <span>Sobre ConexCoffee & Agenda Cafetera</span>
               </div>
 
-              <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-white tracking-tight uppercase leading-tight">
+              <h1 className="hero-anim text-3xl sm:text-4xl lg:text-5xl font-extrabold text-white tracking-tight uppercase leading-tight">
                 ¿Quiénes <br className="hidden sm:inline" />
                 <span className="text-brand-orange">Somos?</span>
               </h1>
 
-              <p className="text-surface-200 text-base sm:text-lg leading-relaxed max-w-xl">
+              <p className="hero-anim text-surface-200 text-base sm:text-lg leading-relaxed max-w-xl">
                 Somos el puente tecnológico y logístico que conecta a los pequeños caficultores de cafés
                 de especialidad en Colombia con tostadores y compradores de todo el mundo, garantizando
                 rigor de laboratorio, transparencia, precio justo y entregas directas en contenedores.
               </p>
 
               {/* Sellos de confianza en el Hero */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
+              <div className="hero-anim grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
                 <div className="flex items-center gap-2.5 p-3 rounded-xl bg-stone-900/80 border border-stone-800">
                   <CheckCircle2 className="h-4 w-4 text-brand-orange shrink-0" />
                   <span className="text-xs font-semibold text-white">100% Origen Colombiano</span>
@@ -96,10 +196,10 @@ export default function NosotrosPage() {
       </section>
 
       {/* 2. SECCIÓN: NUESTRA HISTORIA (DISTRIBUCIÓN MEJORADA) */}
-      <section className="py-20 lg:py-24 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+      <section ref={historiaRef} className="py-20 lg:py-24 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-center">
           {/* Imagen ilustrativa con marcos y detalles */}
-          <div className="lg:col-span-5 order-2 lg:order-1">
+          <div className="lg:col-span-5 order-2 lg:order-1 historia-img">
             <div className="relative">
               <div className="relative rounded-xl overflow-hidden border-2 border-surface-200 shadow-xl bg-stone-900">
                 <img
@@ -136,7 +236,7 @@ export default function NosotrosPage() {
 
             {/* Párrafos estructurados con micro-bloques */}
             <div className="space-y-4 pt-2">
-              <div className="p-4 rounded-xl bg-white border border-surface-200 shadow-xs">
+              <div className="historia-block p-4 rounded-xl bg-white border border-surface-200 shadow-xs">
                 <h3 className="text-sm font-bold text-surface-900 mb-1.5 flex items-center gap-2">
                   <FlaskConical className="h-4 w-4 text-brand-terracota" />
                   <span>Laboratorio y Análisis de Calidad</span>
@@ -149,7 +249,7 @@ export default function NosotrosPage() {
                 </p>
               </div>
 
-              <div className="p-4 rounded-xl bg-white border border-surface-200 shadow-xs">
+              <div className="historia-block p-4 rounded-xl bg-white border border-surface-200 shadow-xs">
                 <h3 className="text-sm font-bold text-surface-900 mb-1.5 flex items-center gap-2">
                   <Globe2 className="h-4 w-4 text-brand-terracota" />
                   <span>Comercialización Internacional en Contenedores</span>
@@ -162,7 +262,7 @@ export default function NosotrosPage() {
                 </p>
               </div>
 
-              <div className="p-4 rounded-xl bg-white border border-surface-200 shadow-xs">
+              <div className="historia-block p-4 rounded-xl bg-white border border-surface-200 shadow-xs">
                 <h3 className="text-sm font-bold text-surface-900 mb-1.5 flex items-center gap-2">
                   <TrendingUp className="h-4 w-4 text-brand-terracota" />
                   <span>Empoderamiento y Valor Real para el Caficultor</span>
@@ -180,7 +280,7 @@ export default function NosotrosPage() {
       </section>
 
       {/* 3. SECCIÓN: PROMESA DE VALOR (DISTRIBUCIÓN MEJORADA CON IMAGEN 2) */}
-      <section className="py-20 bg-stone-900 text-white relative">
+      <section ref={promesaRef} className="py-20 bg-stone-900 text-white relative">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-center">
             {/* Contenido de la Promesa */}
@@ -196,7 +296,7 @@ export default function NosotrosPage() {
               </div>
 
               {/* Frase textual oficial destacada en bloque */}
-              <div className="p-6 rounded-xl bg-black/60 border-l-4 border-brand-orange border-r border-t border-b border-stone-800">
+              <div className="promesa-quote p-6 rounded-xl bg-black/60 border-l-4 border-brand-orange border-r border-t border-b border-stone-800">
                 <p className="text-base sm:text-lg text-surface-100 font-medium leading-relaxed italic">
                   &ldquo;Facilitamos la conexión entre pequeños caficultores de cafés de especialidad en Colombia
                   y compradores internacionales, asegurando una experiencia basada en calidad, transparencia,
@@ -206,7 +306,7 @@ export default function NosotrosPage() {
 
               {/* 4 Pilares de la Promesa de Valor */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
-                <div className="p-4 rounded-xl bg-stone-800/80 border border-stone-700">
+                <div className="promesa-pillar p-4 rounded-xl bg-stone-800/80 border border-stone-700">
                   <div className="flex items-center gap-3 mb-2">
                     <div className="p-2 rounded-lg bg-brand-terracota/30 text-brand-orange">
                       <Award className="h-5 w-5" />
@@ -218,7 +318,7 @@ export default function NosotrosPage() {
                   </p>
                 </div>
 
-                <div className="p-4 rounded-xl bg-stone-800/80 border border-stone-700">
+                <div className="promesa-pillar p-4 rounded-xl bg-stone-800/80 border border-stone-700">
                   <div className="flex items-center gap-3 mb-2">
                     <div className="p-2 rounded-lg bg-brand-terracota/30 text-brand-orange">
                       <ShieldCheck className="h-5 w-5" />
@@ -230,7 +330,7 @@ export default function NosotrosPage() {
                   </p>
                 </div>
 
-                <div className="p-4 rounded-xl bg-stone-800/80 border border-stone-700">
+                <div className="promesa-pillar p-4 rounded-xl bg-stone-800/80 border border-stone-700">
                   <div className="flex items-center gap-3 mb-2">
                     <div className="p-2 rounded-lg bg-brand-terracota/30 text-brand-orange">
                       <Scale className="h-5 w-5" />
@@ -242,7 +342,7 @@ export default function NosotrosPage() {
                   </p>
                 </div>
 
-                <div className="p-4 rounded-xl bg-stone-800/80 border border-stone-700">
+                <div className="promesa-pillar p-4 rounded-xl bg-stone-800/80 border border-stone-700">
                   <div className="flex items-center gap-3 mb-2">
                     <div className="p-2 rounded-lg bg-brand-terracota/30 text-brand-orange">
                       <Ship className="h-5 w-5" />
@@ -257,7 +357,7 @@ export default function NosotrosPage() {
             </div>
 
             {/* Imagen 2 de la Promesa (Buque portacontenedores) */}
-            <div className="lg:col-span-5">
+            <div className="lg:col-span-5 promesa-img">
               <div className="relative">
                 <div className="relative rounded-xl overflow-hidden border-2 border-stone-700 shadow-2xl bg-black">
                   <img
@@ -284,7 +384,7 @@ export default function NosotrosPage() {
       </section>
 
       {/* 4. MISIÓN Y VISIÓN */}
-      <section className="py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+      <section ref={misionRef} className="py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
         <div className="text-center max-w-2xl mx-auto mb-12">
           <span className="text-brand-terracota font-bold text-xs uppercase tracking-widest block mb-2">
             Nuestros Fundamentos
@@ -298,7 +398,7 @@ export default function NosotrosPage() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          <div className="bg-white p-8 rounded-xl border border-surface-200 shadow-xs flex flex-col justify-between">
+          <div className="mv-card bg-white p-8 rounded-xl border border-surface-200 shadow-xs flex flex-col justify-between">
             <div>
               <div className="w-12 h-12 rounded-xl bg-primary-100 text-brand-terracota flex items-center justify-center mb-6">
                 <TrendingUp className="h-6 w-6" />
@@ -315,7 +415,7 @@ export default function NosotrosPage() {
             </div>
           </div>
 
-          <div className="bg-white p-8 rounded-xl border border-surface-200 shadow-xs flex flex-col justify-between">
+          <div className="mv-card bg-white p-8 rounded-xl border border-surface-200 shadow-xs flex flex-col justify-between">
             <div>
               <div className="w-12 h-12 rounded-xl bg-stone-100 text-stone-900 flex items-center justify-center mb-6">
                 <Globe2 className="h-6 w-6" />

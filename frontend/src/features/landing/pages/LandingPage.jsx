@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import {
   Coffee,
@@ -8,8 +8,6 @@ import {
   TrendingUp,
   ArrowRight,
   Calendar,
-  Award,
-  CheckCircle2,
   Smile,
   Tag,
   Briefcase,
@@ -18,8 +16,8 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui';
 import HeroLiquidGlassBanner from '../components/HeroLiquidGlassBanner';
-
-
+import SeccionNosotros from '../components/SeccionNosotros';
+import { animate, stagger } from 'animejs';
 
 // ============================================
 // Diapositivas Oficiales del Hero Carousel
@@ -75,8 +73,6 @@ const HERO_SLIDES = [
   },
 ];
 
-
-
 const FINCAS_MAPA = [
   { id: 1, nombre: 'Finca La Esperanza', region: 'Huila', x: '46%', y: '68%', altitud: '1,820 msnm', variedad: 'Geisha' },
   { id: 2, nombre: 'Hacienda El Paraíso', region: 'Nariño', x: '35%', y: '82%', altitud: '2,050 msnm', variedad: 'Bourbon Rosado' },
@@ -100,6 +96,19 @@ export default function LandingPage() {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
 
+  // Referencias para efectos con anime.js
+  const metricsRef = useRef(null);
+  const modeloRef = useRef(null);
+  const fincasRef = useRef(null);
+  const fincaDetailRef = useRef(null);
+  const equipoRef = useRef(null);
+  const aliadosRef = useRef(null);
+
+  const numClientesRef = useRef(null);
+  const numOfertasRef = useRef(null);
+  const numCaficultoresRef = useRef(null);
+  const numEmpleadosRef = useRef(null);
+
   // Cambio automático de diapositiva cada 6 segundos
   useEffect(() => {
     if (isPaused) return;
@@ -108,6 +117,300 @@ export default function LandingPage() {
     }, 6000);
     return () => clearInterval(interval);
   }, [isPaused]);
+
+  // ====================================================
+  // Efectos Anime.js: 4. Cinta de Métricas con Conteo
+  // ====================================================
+  useEffect(() => {
+    const el = metricsRef.current;
+    if (!el) return;
+
+    let hasAnimated = false;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting && !hasAnimated) {
+          hasAnimated = true;
+
+          animate(el.querySelectorAll('.anime-metric-item'), {
+            opacity: [0, 1],
+            translateY: [30, 0],
+            delay: stagger(120),
+            duration: 750,
+            ease: 'outExpo',
+          });
+
+          animate(el.querySelectorAll('.anime-metric-icon'), {
+            scale: [0.5, 1],
+            rotate: [-15, 0],
+            delay: stagger(120, { start: 100 }),
+            duration: 650,
+            ease: 'outBack',
+          });
+
+          // Conteo numérico dinámico
+          const c1 = { val: 0 };
+          animate(c1, {
+            val: 2850,
+            duration: 1600,
+            ease: 'outExpo',
+            onUpdate: () => {
+              if (numClientesRef.current) {
+                numClientesRef.current.textContent = `+${Math.round(c1.val).toLocaleString()}`;
+              }
+            },
+          });
+
+          const c2 = { val: 0 };
+          animate(c2, {
+            val: 420,
+            duration: 1400,
+            ease: 'outExpo',
+            onUpdate: () => {
+              if (numOfertasRef.current) {
+                numOfertasRef.current.textContent = `+${Math.round(c2.val).toLocaleString()}`;
+              }
+            },
+          });
+
+          const c3 = { val: 0 };
+          animate(c3, {
+            val: 1450,
+            duration: 1500,
+            ease: 'outExpo',
+            onUpdate: () => {
+              if (numCaficultoresRef.current) {
+                numCaficultoresRef.current.textContent = `+${Math.round(c3.val).toLocaleString()}`;
+              }
+            },
+          });
+
+          const c4 = { val: 0 };
+          animate(c4, {
+            val: 95,
+            duration: 1200,
+            ease: 'outExpo',
+            onUpdate: () => {
+              if (numEmpleadosRef.current) {
+                numEmpleadosRef.current.textContent = `+${Math.round(c4.val).toLocaleString()}`;
+              }
+            },
+          });
+        }
+      },
+      { threshold: 0.15 }
+    );
+
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
+  // ====================================================
+  // Efectos Anime.js: 5. Modelo de Negocio (3 Tarjetas)
+  // ====================================================
+  useEffect(() => {
+    const el = modeloRef.current;
+    if (!el) return;
+
+    let hasAnimated = false;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting && !hasAnimated) {
+          hasAnimated = true;
+
+          animate(el.querySelectorAll('.anime-modelo-header'), {
+            opacity: [0, 1],
+            translateY: [25, 0],
+            duration: 700,
+            ease: 'outExpo',
+          });
+
+          animate(el.querySelectorAll('.anime-modelo-card'), {
+            opacity: [0, 1],
+            translateY: [40, 0],
+            delay: stagger(150),
+            duration: 800,
+            ease: 'outExpo',
+          });
+
+          animate(el.querySelectorAll('.anime-modelo-icon'), {
+            scale: [0.6, 1],
+            rotate: [-12, 0],
+            delay: stagger(150, { start: 100 }),
+            duration: 650,
+            ease: 'outBack',
+          });
+        }
+      },
+      { threshold: 0.12 }
+    );
+
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
+  // ====================================================
+  // Efectos Anime.js: 6. Nuestras Fincas
+  // ====================================================
+  useEffect(() => {
+    const el = fincasRef.current;
+    if (!el) return;
+
+    let hasAnimated = false;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting && !hasAnimated) {
+          hasAnimated = true;
+
+          animate(el.querySelectorAll('.anime-fincas-header'), {
+            opacity: [0, 1],
+            translateY: [25, 0],
+            duration: 700,
+            ease: 'outExpo',
+          });
+
+          animate(el.querySelectorAll('.anime-map-container'), {
+            opacity: [0, 1],
+            translateX: [-30, 0],
+            duration: 800,
+            ease: 'outExpo',
+          });
+
+          animate(el.querySelectorAll('.anime-finca-detail'), {
+            opacity: [0, 1],
+            translateX: [30, 0],
+            duration: 800,
+            ease: 'outExpo',
+          });
+
+          animate(el.querySelectorAll('.anime-map-pin'), {
+            scale: [0, 1],
+            delay: stagger(80, { start: 200 }),
+            duration: 600,
+            ease: 'outBack',
+          });
+        }
+      },
+      { threshold: 0.12 }
+    );
+
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
+  // Transición suave al cambiar la finca activa
+  useEffect(() => {
+    if (fincaDetailRef.current) {
+      animate(fincaDetailRef.current, {
+        opacity: [0.4, 1],
+        translateY: [8, 0],
+        duration: 320,
+        ease: 'outQuad',
+      });
+    }
+  }, [activeFinca]);
+
+  // ====================================================
+  // Efectos Anime.js: 7. Talento Humano Cafetero
+  // ====================================================
+  useEffect(() => {
+    const el = equipoRef.current;
+    if (!el) return;
+
+    let hasAnimated = false;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting && !hasAnimated) {
+          hasAnimated = true;
+
+          animate(el.querySelectorAll('.anime-equipo-text'), {
+            opacity: [0, 1],
+            translateX: [-30, 0],
+            duration: 800,
+            ease: 'outExpo',
+          });
+
+          animate(el.querySelectorAll('.anime-equipo-stat'), {
+            opacity: [0, 1],
+            scale: [0.9, 1],
+            delay: stagger(140, { start: 200 }),
+            duration: 650,
+            ease: 'outBack',
+          });
+
+          animate(el.querySelectorAll('.anime-equipo-card'), {
+            opacity: [0, 1],
+            scale: [0.93, 1],
+            translateY: [30, 0],
+            duration: 850,
+            ease: 'outExpo',
+          });
+
+          animate(el.querySelectorAll('.anime-equipo-icon'), {
+            scale: [0.6, 1],
+            rotate: [-15, 0],
+            duration: 650,
+            delay: 250,
+            ease: 'outBack',
+          });
+        }
+      },
+      { threshold: 0.12 }
+    );
+
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
+  // ====================================================
+  // Efectos Anime.js: 8. Aliados Estratégicos
+  // ====================================================
+  useEffect(() => {
+    const el = aliadosRef.current;
+    if (!el) return;
+
+    let hasAnimated = false;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting && !hasAnimated) {
+          hasAnimated = true;
+
+          animate(el.querySelectorAll('.anime-aliados-header'), {
+            opacity: [0, 1],
+            translateY: [20, 0],
+            duration: 650,
+            ease: 'outExpo',
+          });
+
+          animate(el.querySelectorAll('.anime-aliados-track'), {
+            opacity: [0, 1],
+            duration: 800,
+            ease: 'outQuad',
+          });
+        }
+      },
+      { threshold: 0.15 }
+    );
+
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
+  const handleModeloHover = (cardEl, isHover) => {
+    if (!cardEl) return;
+    animate(cardEl, {
+      translateY: isHover ? -6 : 0,
+      duration: 250,
+      ease: 'outQuad',
+    });
+    const arrow = cardEl.querySelector('.anime-arrow-icon');
+    if (arrow) {
+      animate(arrow, {
+        translateX: isHover ? 4 : 0,
+        duration: 200,
+        ease: 'outQuad',
+      });
+    }
+  };
 
   const prevSlide = () => {
     setCurrentSlide((prev) => (prev - 1 + HERO_SLIDES.length) % HERO_SLIDES.length);
@@ -144,7 +447,7 @@ export default function LandingPage() {
               className="w-full h-full object-cover object-center select-none"
               loading={idx === 0 ? 'eager' : 'lazy'}
             />
-            {/* Capa de oscurecimiento con gradiente: lectura nítida a la izquierda y visibilidad del saco a la derecha */}
+            {/* Capa de oscurecimiento con gradiente */}
             <div className="absolute inset-0 bg-gradient-to-r from-black/90 via-black/75 to-black/35 sm:to-black/30" />
             <div className="absolute inset-0 bg-black/25" />
           </div>
@@ -159,53 +462,75 @@ export default function LandingPage() {
               <span className="text-brand-orange block sm:inline">{current.titleHighlight}</span>
             </h1>
 
-            <p className="text-xs sm:text-sm lg:text-base text-surface-200/90 mb-5 leading-relaxed font-normal max-w-2xl text-left">
+            <p className="text-sm sm:text-base text-surface-200 mb-6 sm:mb-8 leading-relaxed max-w-2xl text-left font-normal">
               {current.description}
             </p>
 
-            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-start items-stretch sm:items-center">
-              <Link to={current.primaryBtn.to}>
-                <Button size="md" variant="primary" className="group w-full sm:w-auto shadow-xl">
-                  <span>{current.primaryBtn.text}</span>
-                  <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4 justify-start">
+              <Link to={current.primaryBtn.to} className="w-full sm:w-auto">
+                <Button
+                  variant="primary"
+                  size="lg"
+                  className="w-full sm:w-auto px-6 py-3.5 bg-brand-orange hover:bg-brand-terracota text-white font-bold tracking-wide shadow-lg hover:shadow-xl transition-all uppercase text-xs sm:text-sm"
+                >
+                  {current.primaryBtn.text}
                 </Button>
               </Link>
-              <Link to={current.secondaryBtn.to}>
-                <button
-                  type="button"
-                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm uppercase tracking-wider bg-white/10 hover:bg-white/20 text-white border border-white/25 backdrop-blur-xs transition-all shadow-md cursor-pointer"
-                >
-                  <MapPin className="h-4 w-4 text-brand-orange" />
-                  <span>{current.secondaryBtn.text}</span>
-                </button>
-              </Link>
+
+              {current.secondaryBtn && (
+                <Link to={current.secondaryBtn.to} className="w-full sm:w-auto">
+                  <Button
+                    variant="outline"
+                    size="lg"
+                    className="w-full sm:w-auto px-6 py-3.5 border-white/60 text-white hover:bg-white hover:text-surface-900 font-bold tracking-wide backdrop-blur-xs transition-all uppercase text-xs sm:text-sm"
+                  >
+                    {current.secondaryBtn.text}
+                  </Button>
+                </Link>
+              )}
             </div>
           </div>
-
         </div>
 
-        {/* Flecha Anterior (Izquierda) */}
-        <button
-          type="button"
-          onClick={prevSlide}
-          aria-label="Diapositiva anterior"
-          className="absolute left-3 sm:left-6 top-[42%] -translate-y-1/2 z-30 w-11 h-11 sm:w-13 sm:h-13 rounded-full bg-black/40 hover:bg-brand-orange text-white border border-white/20 flex items-center justify-center backdrop-blur-md transition-all duration-200 cursor-pointer shadow-xl hover:scale-110"
-        >
-          <ChevronLeft className="h-6 w-6" />
-        </button>
+        {/* Flechas de Navegación del Carrusel */}
+        <div className="absolute inset-y-0 left-2 sm:left-4 z-20 flex items-center">
+          <button
+            onClick={prevSlide}
+            aria-label="Diapositiva anterior"
+            className="w-9 h-9 sm:w-11 sm:h-11 rounded-full bg-black/40 hover:bg-brand-orange/80 text-white border border-white/20 flex items-center justify-center backdrop-blur-xs transition-all cursor-pointer group shadow-lg"
+          >
+            <ChevronLeft className="h-5 w-5 group-hover:scale-110 transition-transform" />
+          </button>
+        </div>
+        <div className="absolute inset-y-0 right-2 sm:right-4 z-20 flex items-center">
+          <button
+            onClick={nextSlide}
+            aria-label="Siguiente diapositiva"
+            className="w-9 h-9 sm:w-11 sm:h-11 rounded-full bg-black/40 hover:bg-brand-orange/80 text-white border border-white/20 flex items-center justify-center backdrop-blur-xs transition-all cursor-pointer group shadow-lg"
+          >
+            <ChevronRight className="h-5 w-5 group-hover:scale-110 transition-transform" />
+          </button>
+        </div>
 
-        {/* Flecha Siguiente (Derecha) */}
-        <button
-          type="button"
-          onClick={nextSlide}
-          aria-label="Diapositiva siguiente"
-          className="absolute right-3 sm:right-6 top-[42%] -translate-y-1/2 z-30 w-11 h-11 sm:w-13 sm:h-13 rounded-full bg-black/40 hover:bg-brand-orange text-white border border-white/20 flex items-center justify-center backdrop-blur-md transition-all duration-200 cursor-pointer shadow-xl hover:scale-110"
-        >
-          <ChevronRight className="h-6 w-6" />
-        </button>
+        {/* Indicadores de Paginación */}
+        <div className="absolute bottom-6 left-0 right-0 z-20 flex justify-center gap-2">
+          {HERO_SLIDES.map((slide, idx) => (
+            <button
+              key={slide.id}
+              onClick={() => setCurrentSlide(idx)}
+              aria-label={`Ir a la diapositiva ${idx + 1}`}
+              className={`h-2 sm:h-2.5 rounded-full transition-all duration-300 cursor-pointer ${idx === currentSlide
+                ? 'w-7 sm:w-8 bg-brand-orange'
+                : 'w-2 sm:w-2.5 bg-white/40 hover:bg-white/70'
+                }`}
+            />
+          ))}
+        </div>
 
-        {/* ── Cinta Liquid Glass (componente) ── */}
+        {/* Banner de Cristal Líquido Integrado en la Base del Hero */}
         <HeroLiquidGlassBanner
+          onPause={() => setIsPaused(true)}
+          onResume={() => setIsPaused(false)}
           currentSlide={currentSlide}
         />
       </section>
@@ -238,134 +563,51 @@ export default function LandingPage() {
       </section>
 
       {/* ============================================
-          3. Sección: ¿Por qué elegirnos? (Texto + Imagen de café)
+          3. Sección Nosotros: ¿Por qué elegirnos? (Animada con Anime.js)
           ============================================ */}
-      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-surface-50">
-        <div className="max-w-7xl mx-auto">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-            {/* Texto descriptivo */}
-            <div>
-              <div className="inline-flex items-center gap-2 text-primary-700 font-bold text-xs uppercase tracking-wider mb-3">
-                <Award className="h-4 w-4" />
-                <span>Ventaja ConexCoffee</span>
-              </div>
-              <h2 className="text-3xl sm:text-4xl font-extrabold text-surface-900 tracking-tight mb-6">
-                ¿Por qué elegirnos?
-              </h2>
-              <p className="text-surface-600 text-base sm:text-lg leading-relaxed mb-6">
-                En ConexCoffee eliminamos la intermediación especulativa que afecta a los caficultores
-                y encarece los costos de los compradores. Facilitamos un canal transparente donde
-                cada grano cuenta con origen certificado, análisis físico y sensorial verificado, y
-                liquidaciones directas y seguras.
-              </p>
-
-              <div className="space-y-4 mb-8">
-                <div className="flex items-start gap-3">
-                  <div className="w-6 h-6 rounded-full bg-primary-100 text-primary-700 flex items-center justify-center shrink-0 mt-0.5">
-                    <CheckCircle2 className="h-4 w-4" />
-                  </div>
-                  <div>
-                    <h3 className="text-sm font-bold text-surface-900">Precios Justos y Transparentes</h3>
-                    <p className="text-xs text-surface-500">El caficultor recibe el valor real de su dedicación y calidad.</p>
-                  </div>
-                </div>
-
-                <div className="flex items-start gap-3">
-                  <div className="w-6 h-6 rounded-full bg-primary-100 text-primary-700 flex items-center justify-center shrink-0 mt-0.5">
-                    <CheckCircle2 className="h-4 w-4" />
-                  </div>
-                  <div>
-                    <h3 className="text-sm font-bold text-surface-900">Trazabilidad Total de Cosecha</h3>
-                    <p className="text-xs text-surface-500">Datos verificables desde la finca hasta la entrega final.</p>
-                  </div>
-                </div>
-
-                <div className="flex items-start gap-3">
-                  <div className="w-6 h-6 rounded-full bg-primary-100 text-primary-700 flex items-center justify-center shrink-0 mt-0.5">
-                    <CheckCircle2 className="h-4 w-4" />
-                  </div>
-                  <div>
-                    <h3 className="text-sm font-bold text-surface-900">Contratos Seguros y Custodia de Fondos</h3>
-                    <p className="text-xs text-surface-500">Operaciones comerciales blindadas de inicio a fin.</p>
-                  </div>
-                </div>
-              </div>
-
-              <Link to="/nosotros">
-                <Button variant="primary" size="md">
-                  Conoce Más Sobre Nosotros
-                </Button>
-              </Link>
-            </div>
-
-            {/* Imagen de Café */}
-            <div className="relative">
-              <div className="relative mx-auto rounded-xl overflow-hidden shadow-2xl border-4 border-white bg-black p-8 sm:p-12 text-white min-h-[380px] flex flex-col justify-end">
-                <div className="absolute top-6 right-6 w-20 h-20 bg-brand-orange/20 rounded-full blur-2xl pointer-events-none" />
-                <div className="absolute -bottom-10 -left-10 w-40 h-40 bg-brand-terracota/20 rounded-full blur-3xl pointer-events-none" />
-
-                <div className="relative z-10">
-                  <div className="w-14 h-14 rounded-xl bg-brand-terracota text-white flex items-center justify-center mb-6 shadow-lg">
-                    <Coffee className="h-8 w-8" />
-                  </div>
-                  <span className="text-xs font-bold uppercase tracking-widest text-primary-300">
-                    Café de Origen Colombiano
-                  </span>
-                  <h3 className="text-2xl font-bold text-white mt-1 mb-2">
-                    Grano Seleccionado a Mano
-                  </h3>
-                  <p className="text-xs sm:text-sm text-surface-300 leading-relaxed max-w-md">
-                    Cosechas recolectadas en su punto óptimo de maduración, secadas al sol en camas
-                    africanas y evaluadas bajo los rigurosos estándares de la SCA.
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
+      <SeccionNosotros />
 
       {/* ============================================
           4. Cinta de Métricas: Clientes Satisfechos, Ofertas, Caficultores, Empleados
           ============================================ */}
-      <section className="py-12 bg-black text-white border-y border-brand-terracota shadow-inner">
+      <section ref={metricsRef} className="py-12 bg-black text-white border-y border-brand-terracota shadow-inner select-none">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center divide-y md:divide-y-0 md:divide-x divide-surface-800">
-            <div className="pt-4 md:pt-0 px-4">
-              <div className="w-10 h-10 rounded-xl bg-surface-900 border border-surface-800 flex items-center justify-center mx-auto mb-3 text-brand-orange">
+            <div className="anime-metric-item opacity-0 pt-4 md:pt-0 px-4 will-change-transform">
+              <div className="anime-metric-icon w-10 h-10 rounded-xl bg-surface-900 border border-surface-800 flex items-center justify-center mx-auto mb-3 text-brand-orange will-change-transform">
                 <Smile className="h-5 w-5" />
               </div>
-              <p className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">+2,850</p>
+              <p ref={numClientesRef} className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">+2,850</p>
               <p className="text-xs sm:text-sm font-medium text-surface-400 mt-1 uppercase tracking-wider">
                 Clientes Satisfechos
               </p>
             </div>
 
-            <div className="pt-4 md:pt-0 px-4">
-              <div className="w-10 h-10 rounded-xl bg-surface-900 border border-surface-800 flex items-center justify-center mx-auto mb-3 text-brand-orange">
+            <div className="anime-metric-item opacity-0 pt-4 md:pt-0 px-4 will-change-transform">
+              <div className="anime-metric-icon w-10 h-10 rounded-xl bg-surface-900 border border-surface-800 flex items-center justify-center mx-auto mb-3 text-brand-orange will-change-transform">
                 <Tag className="h-5 w-5" />
               </div>
-              <p className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">+420</p>
+              <p ref={numOfertasRef} className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">+420</p>
               <p className="text-xs sm:text-sm font-medium text-surface-400 mt-1 uppercase tracking-wider">
                 Ofertas de Lotes Activas
               </p>
             </div>
 
-            <div className="pt-4 md:pt-0 px-4">
-              <div className="w-10 h-10 rounded-xl bg-surface-900 border border-surface-800 flex items-center justify-center mx-auto mb-3 text-brand-orange">
+            <div className="anime-metric-item opacity-0 pt-4 md:pt-0 px-4 will-change-transform">
+              <div className="anime-metric-icon w-10 h-10 rounded-xl bg-surface-900 border border-surface-800 flex items-center justify-center mx-auto mb-3 text-brand-orange will-change-transform">
                 <Coffee className="h-5 w-5" />
               </div>
-              <p className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">+1,450</p>
+              <p ref={numCaficultoresRef} className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">+1,450</p>
               <p className="text-xs sm:text-sm font-medium text-surface-400 mt-1 uppercase tracking-wider">
                 Caficultores Vinculados
               </p>
             </div>
 
-            <div className="pt-4 md:pt-0 px-4">
-              <div className="w-10 h-10 rounded-xl bg-surface-900 border border-surface-800 flex items-center justify-center mx-auto mb-3 text-brand-orange">
+            <div className="anime-metric-item opacity-0 pt-4 md:pt-0 px-4 will-change-transform">
+              <div className="anime-metric-icon w-10 h-10 rounded-xl bg-surface-900 border border-surface-800 flex items-center justify-center mx-auto mb-3 text-brand-orange will-change-transform">
                 <Briefcase className="h-5 w-5" />
               </div>
-              <p className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">+95</p>
+              <p ref={numEmpleadosRef} className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">+95</p>
               <p className="text-xs sm:text-sm font-medium text-surface-400 mt-1 uppercase tracking-wider">
                 Empleados y Especialistas
               </p>
@@ -377,9 +619,9 @@ export default function LandingPage() {
       {/* ============================================
           5. Sección: Modelo de Negocio (3 tarjetas)
           ============================================ */}
-      <section className="py-24 px-4 sm:px-6 lg:px-8 bg-white">
+      <section ref={modeloRef} className="py-24 px-4 sm:px-6 lg:px-8 bg-white">
         <div className="max-w-7xl mx-auto">
-          <div className="text-center max-w-3xl mx-auto mb-16">
+          <div className="anime-modelo-header opacity-0 text-center max-w-3xl mx-auto mb-16 will-change-transform">
             <div className="inline-flex items-center gap-2 text-primary-700 font-bold text-xs uppercase tracking-wider mb-2">
               <TrendingUp className="h-4 w-4" />
               <span>Flujo de Valor Integral</span>
@@ -394,10 +636,14 @@ export default function LandingPage() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="bg-surface-50 border border-surface-200 rounded-xl overflow-hidden hover:border-brand-orange hover:shadow-lg transition-all duration-300 flex flex-col justify-between">
+            <div
+              onMouseEnter={(e) => handleModeloHover(e.currentTarget, true)}
+              onMouseLeave={(e) => handleModeloHover(e.currentTarget, false)}
+              className="anime-modelo-card opacity-0 bg-surface-50 border border-surface-200 rounded-xl overflow-hidden hover:border-brand-orange hover:shadow-lg transition-colors flex flex-col justify-between will-change-transform"
+            >
               <div>
                 <div className="h-48 bg-brand-terracota flex flex-col items-center justify-center p-6 text-white text-center relative">
-                  <div className="w-14 h-14 rounded-xl bg-white/10 backdrop-blur-xs flex items-center justify-center mb-3">
+                  <div className="anime-modelo-icon w-14 h-14 rounded-xl bg-white/10 backdrop-blur-xs flex items-center justify-center mb-3 will-change-transform">
                     <Mountain className="h-7 w-7 text-white" />
                   </div>
                   <span className="text-xs font-semibold uppercase tracking-wider text-white/90">
@@ -421,18 +667,24 @@ export default function LandingPage() {
                   className="text-xs font-bold text-brand-terracota hover:text-primary-800 inline-flex items-center gap-1"
                 >
                   <span>Registrar como Productor</span>
-                  <ArrowRight className="h-3.5 w-3.5" />
+                  <span className="anime-arrow-icon inline-block will-change-transform">
+                    <ArrowRight className="h-3.5 w-3.5" />
+                  </span>
                 </Link>
               </div>
             </div>
 
-            <div className="bg-surface-50 border-2 border-brand-orange rounded-xl overflow-hidden hover:shadow-xl transition-all duration-300 flex flex-col justify-between relative shadow-md">
+            <div
+              onMouseEnter={(e) => handleModeloHover(e.currentTarget, true)}
+              onMouseLeave={(e) => handleModeloHover(e.currentTarget, false)}
+              className="anime-modelo-card opacity-0 bg-surface-50 border-2 border-brand-orange rounded-xl overflow-hidden hover:shadow-xl transition-shadow flex flex-col justify-between relative shadow-md will-change-transform"
+            >
               <div className="absolute top-3 right-3 bg-brand-orange text-white text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider">
                 Núcleo Digital
               </div>
               <div>
                 <div className="h-48 bg-black flex flex-col items-center justify-center p-6 text-white text-center relative border-b border-brand-orange">
-                  <div className="w-14 h-14 rounded-xl bg-brand-orange/20 backdrop-blur-xs flex items-center justify-center mb-3">
+                  <div className="anime-modelo-icon w-14 h-14 rounded-xl bg-brand-orange/20 backdrop-blur-xs flex items-center justify-center mb-3 will-change-transform">
                     <Calendar className="h-7 w-7 text-brand-orange" />
                   </div>
                   <span className="text-xs font-semibold uppercase tracking-wider text-brand-orange">
@@ -456,15 +708,21 @@ export default function LandingPage() {
                   className="text-xs font-bold text-brand-terracota hover:text-primary-800 inline-flex items-center gap-1"
                 >
                   <span>Explorar el Ecosistema</span>
-                  <ArrowRight className="h-3.5 w-3.5" />
+                  <span className="anime-arrow-icon inline-block will-change-transform">
+                    <ArrowRight className="h-3.5 w-3.5" />
+                  </span>
                 </Link>
               </div>
             </div>
 
-            <div className="bg-surface-50 border border-surface-200 rounded-xl overflow-hidden hover:border-brand-orange hover:shadow-lg transition-all duration-300 flex flex-col justify-between">
+            <div
+              onMouseEnter={(e) => handleModeloHover(e.currentTarget, true)}
+              onMouseLeave={(e) => handleModeloHover(e.currentTarget, false)}
+              className="anime-modelo-card opacity-0 bg-surface-50 border border-surface-200 rounded-xl overflow-hidden hover:border-brand-orange hover:shadow-lg transition-colors flex flex-col justify-between will-change-transform"
+            >
               <div>
                 <div className="h-48 bg-surface-900 flex flex-col items-center justify-center p-6 text-white text-center relative border-b border-surface-700">
-                  <div className="w-14 h-14 rounded-xl bg-white/10 backdrop-blur-xs flex items-center justify-center mb-3">
+                  <div className="anime-modelo-icon w-14 h-14 rounded-xl bg-white/10 backdrop-blur-xs flex items-center justify-center mb-3 will-change-transform">
                     <Coffee className="h-7 w-7 text-brand-orange" />
                   </div>
                   <span className="text-xs font-semibold uppercase tracking-wider text-surface-300">
@@ -488,7 +746,9 @@ export default function LandingPage() {
                   className="text-xs font-bold text-primary-700 hover:text-primary-800 inline-flex items-center gap-1"
                 >
                   <span>Comprar Café de Especialidad</span>
-                  <ArrowRight className="h-3.5 w-3.5" />
+                  <span className="anime-arrow-icon inline-block will-change-transform">
+                    <ArrowRight className="h-3.5 w-3.5" />
+                  </span>
                 </Link>
               </div>
             </div>
@@ -499,9 +759,9 @@ export default function LandingPage() {
       {/* ============================================
           6. Sección: Nuestras Fincas (Mapa con puntos)
           ============================================ */}
-      <section className="py-24 px-4 sm:px-6 lg:px-8 bg-surface-100/70 border-y border-surface-200">
+      <section ref={fincasRef} className="py-24 px-4 sm:px-6 lg:px-8 bg-surface-100/70 border-y border-surface-200">
         <div className="max-w-7xl mx-auto">
-          <div className="text-center max-w-3xl mx-auto mb-16">
+          <div className="anime-fincas-header opacity-0 text-center max-w-3xl mx-auto mb-16 will-change-transform">
             <div className="inline-flex items-center gap-2 text-primary-700 font-bold text-xs uppercase tracking-wider mb-2">
               <MapPin className="h-4 w-4" />
               <span>Geolocalización Productiva</span>
@@ -516,7 +776,7 @@ export default function LandingPage() {
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-center">
-            <div className="lg:col-span-2 bg-black rounded-xl p-6 sm:p-10 text-white relative overflow-hidden shadow-xl min-h-[440px] flex items-center justify-center border border-surface-800">
+            <div className="anime-map-container opacity-0 lg:col-span-2 bg-black rounded-xl p-6 sm:p-10 text-white relative overflow-hidden shadow-xl min-h-[440px] flex items-center justify-center border border-surface-800 will-change-transform">
 
               <div className="relative w-full max-w-md h-80 border-2 border-brand-terracota rounded-xl bg-surface-900 p-4">
                 <div className="text-[11px] font-mono text-primary-400 uppercase tracking-wider mb-2 flex justify-between">
@@ -531,7 +791,7 @@ export default function LandingPage() {
                       key={finca.id}
                       onClick={() => setActiveFinca(finca)}
                       style={{ left: finca.x, top: finca.y }}
-                      className="absolute -translate-x-1/2 -translate-y-1/2 cursor-pointer transition-all duration-300"
+                      className="anime-map-pin opacity-0 absolute -translate-x-1/2 -translate-y-1/2 cursor-pointer transition-transform duration-300 will-change-transform"
                       title={`${finca.nombre} (${finca.region})`}
                     >
                       <span
@@ -552,7 +812,10 @@ export default function LandingPage() {
               </div>
             </div>
 
-            <div className="bg-white p-8 rounded-xl border border-surface-200 shadow-md">
+            <div
+              ref={fincaDetailRef}
+              className="anime-finca-detail opacity-0 bg-white p-8 rounded-xl border border-surface-200 shadow-md will-change-transform"
+            >
               <div className="inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full bg-primary-100 text-primary-800 mb-4">
                 <MapPin className="h-3.5 w-3.5" />
                 <span>{activeFinca.region}</span>
@@ -591,10 +854,10 @@ export default function LandingPage() {
       {/* ============================================
           7. Sección: "Contamos con un equipo dedicado y trabajador" + Imagen
           ============================================ */}
-      <section className="py-24 px-4 sm:px-6 lg:px-8 bg-white">
+      <section ref={equipoRef} className="py-24 px-4 sm:px-6 lg:px-8 bg-white">
         <div className="max-w-7xl mx-auto">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-            <div>
+            <div className="anime-equipo-text opacity-0 will-change-transform">
               <div className="inline-flex items-center gap-2 text-primary-700 font-bold text-xs uppercase tracking-wider mb-3">
                 <Users className="h-4 w-4" />
                 <span>Talento Humano Cafetero</span>
@@ -615,11 +878,11 @@ export default function LandingPage() {
               </p>
 
               <div className="flex flex-wrap gap-4">
-                <div className="p-4 bg-surface-50 rounded-xl border border-surface-200">
+                <div className="anime-equipo-stat opacity-0 p-4 bg-surface-50 rounded-xl border border-surface-200 will-change-transform">
                   <p className="text-xl font-bold text-brand-terracota">100%</p>
                   <p className="text-xs text-surface-500 font-medium">Asistencia Personalizada</p>
                 </div>
-                <div className="p-4 bg-surface-50 rounded-xl border border-surface-200">
+                <div className="anime-equipo-stat opacity-0 p-4 bg-surface-50 rounded-xl border border-surface-200 will-change-transform">
                   <p className="text-xl font-bold text-brand-terracota">Q-Graders</p>
                   <p className="text-xs text-surface-500 font-medium">Catación Certificada</p>
                 </div>
@@ -627,9 +890,9 @@ export default function LandingPage() {
             </div>
 
             <div className="relative">
-              <div className="rounded-xl overflow-hidden shadow-2xl border-4 border-white bg-black p-8 sm:p-12 text-white min-h-[380px] flex flex-col justify-end relative">
+              <div className="anime-equipo-card opacity-0 rounded-xl overflow-hidden shadow-2xl border-4 border-white bg-black p-8 sm:p-12 text-white min-h-[380px] flex flex-col justify-end relative will-change-transform">
                 <div className="relative z-10">
-                  <div className="w-12 h-12 rounded-xl bg-brand-terracota flex items-center justify-center mb-4 text-white">
+                  <div className="anime-equipo-icon w-12 h-12 rounded-xl bg-brand-terracota flex items-center justify-center mb-4 text-white will-change-transform">
                     <Users className="h-6 w-6" />
                   </div>
                   <span className="text-xs font-bold uppercase tracking-wider text-primary-300">
@@ -652,15 +915,15 @@ export default function LandingPage() {
       {/* ============================================
           8. Sección: Nuestros Aliados (Cinta / Carrusel de logos)
           ============================================ */}
-      <section className="py-16 bg-surface-50 border-y border-surface-200 overflow-hidden">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-8 text-center">
+      <section ref={aliadosRef} className="py-16 bg-surface-50 border-y border-surface-200 overflow-hidden">
+        <div className="anime-aliados-header opacity-0 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-8 text-center will-change-transform">
           <h3 className="text-xs font-bold text-surface-500 uppercase tracking-widest">
             Nuestros Aliados Estratégicos
           </h3>
         </div>
 
         {/* Carrusel Continuo Infinito (Marquee) */}
-        <div className="relative w-full overflow-hidden">
+        <div className="anime-aliados-track opacity-0 relative w-full overflow-hidden will-change-transform">
           <div className="animate-marquee flex items-center gap-6 sm:gap-8 py-2">
             {[...ALIADOS, ...ALIADOS].map((aliado, idx) => (
               <div
