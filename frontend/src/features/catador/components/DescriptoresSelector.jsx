@@ -19,10 +19,11 @@ const CATEGORIAS_DESCRIPTORES = [
   { categoria: 'Dulce',             opciones: ['Vainilla', 'Azúcar morena', 'Miel / Caramelo'] },
 ];
 
+const DEFAULT_SELECTED = [];
 export { CATEGORIAS_DESCRIPTORES };
 
 export default function DescriptoresSelector({
-  selected = [],
+  selected = DEFAULT_SELECTED,
   onChange,
   titulo = 'Selecciona al menos una opción:',
 }) {

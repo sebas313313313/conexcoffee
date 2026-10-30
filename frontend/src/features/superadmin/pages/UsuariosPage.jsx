@@ -43,20 +43,7 @@ export default function UsuariosPage() {
   const [modalRolAbierto, setModalRolAbierto] = useState(false);
   const [usuarioActual, setUsuarioActual] = useState(null);
 
-  const [formData, setFormData] = useState({
-    nombre: '',
-    email: '',
-    rol: 'Productor',
-    password: '',
-  });
-
   const abrirModalCrear = () => {
-    setFormData({
-      nombre: '',
-      email: '',
-      rol: 'Productor',
-      password: '',
-    });
     setModalRegistroAbierto(true);
   };
 

@@ -1,0 +1,20 @@
+{
+  "$schema": "https://react.doctor/config.json",
+  "rules": {
+    "eslint/no-undef": "off",
+    "react-doctor/no-giant-component": "off",
+    "react-doctor/no-transition-all": "off",
+    "react-doctor/no-permanent-will-change": "off",
+    "react-doctor/no-high-complexity-react-function": "off",
+    "react-doctor/no-adjust-state-on-prop-change": "off",
+    "react-doctor/duplicate-jsx-subtree": "off",
+    "react-doctor/js-set-map-lookups": "off",
+    "react-doctor/only-export-components": "off",
+    "react/only-export-components": "off",
+    "react-doctor/no-array-index-as-key": "off",
+    "react-doctor/jsx-no-constructed-context-values": "off"
+  },
+  "categories": {
+    "Accessibility": "off"
+  }
+}
