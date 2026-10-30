@@ -1,5 +1,7 @@
-import { createResourceHooks } from '@/hooks/createResourceHooks';
-import { negociacionesApi } from '../api/brokerApi';
+import { useBroker } from '@/hooks/useBroker';
+import { toQueryResult } from '@/hooks/contextAdapter';
 
-const negociaciones = createResourceHooks('broker-negociaciones', negociacionesApi);
-export const useNegociaciones = negociaciones.useList;
+export const useNegociaciones = () => {
+  const { negociaciones, loading, error, refetch } = useBroker();
+  return toQueryResult(negociaciones, loading, error, refetch);
+};

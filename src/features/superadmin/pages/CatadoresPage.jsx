@@ -13,7 +13,6 @@ import {
   FileCheck,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
-
 import { QueryState } from '@/components/feedback';
 import ActionButton from '../components/ActionButton';
 import { useTableEntranceAnimation } from '../hooks/useSuperadminAnimations';
@@ -22,12 +21,14 @@ import {
   useCrearSuperadminCatador,
   useActualizarSuperadminCatador,
 } from '../hooks/useSuperadminData';
+import { CrearCatadorModal } from '@/components/usuarios';
 
 export default function CatadoresPage() {
   const query = useSuperadminCatadores();
   const catadores = query.data ?? [];
   const crearCatador = useCrearSuperadminCatador();
   const actualizarCatador = useActualizarSuperadminCatador();
+
   const [searchTerm, setSearchTerm] = useState('');
   const [filtroLaboratorio, setFiltroLaboratorio] = useState('todos');
 
@@ -73,25 +74,14 @@ export default function CatadoresPage() {
   });
 
   // Guardar nuevo catador
-  const handleGuardarNuevo = (e) => {
-    e.preventDefault();
-    if (
-      !nuevoCatador.numero_identificacion ||
-      !nuevoCatador.primer_nombre ||
-      !nuevoCatador.primer_apellido ||
-      !nuevoCatador.telefono
-    ) {
-      toast.error('Por favor complete los campos obligatorios (*)');
-      return;
-    }
-
+  const handleGuardarNuevo = (data) => {
     const nuevo = {
       id: Date.now(),
-      ...nuevoCatador,
-      primer_nombre: nuevoCatador.primer_nombre.toUpperCase(),
-      segundo_nombre: nuevoCatador.segundo_nombre.toUpperCase(),
-      primer_apellido: nuevoCatador.primer_apellido.toUpperCase(),
-      segundo_apellido: nuevoCatador.segundo_apellido.toUpperCase(),
+      ...data,
+      primer_nombre: (data.primer_nombre || '').toUpperCase(),
+      segundo_nombre: (data.segundo_nombre || '').toUpperCase(),
+      primer_apellido: (data.primer_apellido || '').toUpperCase(),
+      segundo_apellido: (data.segundo_apellido || '').toUpperCase(),
       muestras_evaluadas: 0,
       estado: 'Activo',
     };
@@ -99,19 +89,6 @@ export default function CatadoresPage() {
     crearCatador.mutate(nuevo);
     toast.success('Catador registrado correctamente');
     setModalRegistrarAbierto(false);
-    setNuevoCatador({
-      tipo_documento: 'CC',
-      numero_identificacion: '',
-      primer_nombre: '',
-      segundo_nombre: '',
-      primer_apellido: '',
-      segundo_apellido: '',
-      telefono: '',
-      correo: '',
-      certificacion: 'Q-Grader Arábica (CQI)',
-      laboratorio: 'Laboratorio Central TecniCafé',
-      experiencia: '',
-    });
   };
 
   // Guardar edición
@@ -123,6 +100,7 @@ export default function CatadoresPage() {
     toast.success('Catador actualizado correctamente');
     setModalEditarAbierto(false);
   };
+
 
   const laboratoriosUnicos = Array.from(new Set(catadores.map((c) => c.laboratorio)));
 
@@ -261,214 +239,13 @@ export default function CatadoresPage() {
       {/* ========================================================================= */}
       {/* MODAL: REGISTRAR CATADOR                                                  */}
       {/* ========================================================================= */}
-      {modalRegistrarAbierto && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-xs">
-          <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl border border-stone-200">
-            <div className="p-6 border-b border-stone-200 flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-amber-100 text-amber-800 flex items-center justify-center">
-                  <Award className="w-5 h-5" />
-                </div>
-                <div>
-                  <h3 className="text-lg font-bold text-stone-900">Registrar Nuevo Catador</h3>
-                  <p className="text-xs text-stone-500">
-                    Ingrese los datos de acreditación y contacto del catador Q-Grader
-                  </p>
-                </div>
-              </div>
-              <button
-                onClick={() => setModalRegistrarAbierto(false)}
-                className="text-stone-400 hover:text-stone-600 p-1"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            <form onSubmit={handleGuardarNuevo} className="p-6 space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-semibold text-stone-700 mb-1">
-                    Tipo de Documento *
-                  </label>
-                  <select
-                    value={nuevoCatador.tipo_documento}
-                    onChange={(e) =>
-                      setNuevoCatador({ ...nuevoCatador, tipo_documento: e.target.value })
-                    }
-                    className="w-full border border-stone-300 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-amber-700/20"
-                  >
-                    <option value="CC">Cédula de Ciudadanía (CC)</option>
-                    <option value="CE">Cédula de Extranjería (CE)</option>
-                    <option value="PAS">Pasaporte</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-xs font-semibold text-stone-700 mb-1">
-                    Número de Identificación *
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={nuevoCatador.numero_identificacion}
-                    onChange={(e) =>
-                      setNuevoCatador({
-                        ...nuevoCatador,
-                        numero_identificacion: e.target.value,
-                      })
-                    }
-                    placeholder="Ej. 1088324567"
-                    className="w-full border border-stone-300 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-amber-700/20"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-semibold text-stone-700 mb-1">
-                    Primer Nombre *
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={nuevoCatador.primer_nombre}
-                    onChange={(e) =>
-                      setNuevoCatador({ ...nuevoCatador, primer_nombre: e.target.value })
-                    }
-                    placeholder="Ej. Andrés"
-                    className="w-full border border-stone-300 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-amber-700/20"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-semibold text-stone-700 mb-1">
-                    Segundo Nombre
-                  </label>
-                  <input
-                    type="text"
-                    value={nuevoCatador.segundo_nombre}
-                    onChange={(e) =>
-                      setNuevoCatador({ ...nuevoCatador, segundo_nombre: e.target.value })
-                    }
-                    placeholder="Ej. Felipe"
-                    className="w-full border border-stone-300 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-amber-700/20"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-semibold text-stone-700 mb-1">
-                    Primer Apellido *
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={nuevoCatador.primer_apellido}
-                    onChange={(e) =>
-                      setNuevoCatador({ ...nuevoCatador, primer_apellido: e.target.value })
-                    }
-                    placeholder="Ej. Martínez"
-                    className="w-full border border-stone-300 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-amber-700/20"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-semibold text-stone-700 mb-1">
-                    Segundo Apellido
-                  </label>
-                  <input
-                    type="text"
-                    value={nuevoCatador.segundo_apellido}
-                    onChange={(e) =>
-                      setNuevoCatador({ ...nuevoCatador, segundo_apellido: e.target.value })
-                    }
-                    placeholder="Ej. Zapata"
-                    className="w-full border border-stone-300 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-amber-700/20"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-semibold text-stone-700 mb-1">
-                    Teléfono *
-                  </label>
-                  <input
-                    type="tel"
-                    required
-                    value={nuevoCatador.telefono}
-                    onChange={(e) =>
-                      setNuevoCatador({ ...nuevoCatador, telefono: e.target.value })
-                    }
-                    placeholder="Ej. 3128904561"
-                    className="w-full border border-stone-300 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-amber-700/20"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-semibold text-stone-700 mb-1">
-                    Correo Electrónico
-                  </label>
-                  <input
-                    type="email"
-                    value={nuevoCatador.correo}
-                    onChange={(e) =>
-                      setNuevoCatador({ ...nuevoCatador, correo: e.target.value })
-                    }
-                    placeholder="Ej. catador@tecnicafe.co"
-                    className="w-full border border-stone-300 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-amber-700/20"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-semibold text-stone-700 mb-1">
-                    Certificación CQI / Q-Grader *
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={nuevoCatador.certificacion}
-                    onChange={(e) =>
-                      setNuevoCatador({ ...nuevoCatador, certificacion: e.target.value })
-                    }
-                    placeholder="Ej. Q-Grader Arábica (CQI #4892)"
-                    className="w-full border border-stone-300 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-amber-700/20"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-semibold text-stone-700 mb-1">
-                    Laboratorio Vinculado
-                  </label>
-                  <input
-                    type="text"
-                    value={nuevoCatador.laboratorio}
-                    onChange={(e) =>
-                      setNuevoCatador({ ...nuevoCatador, laboratorio: e.target.value })
-                    }
-                    placeholder="Ej. Laboratorio Central TecniCafé"
-                    className="w-full border border-stone-300 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-amber-700/20"
-                  />
-                </div>
-              </div>
-
-              <div className="flex items-center justify-end gap-3 pt-4 border-t border-stone-100">
-                <button
-                  type="button"
-                  onClick={() => setModalRegistrarAbierto(false)}
-                  className="px-4 py-2 text-sm text-stone-600 hover:bg-stone-100 rounded-xl transition-colors"
-                >
-                  Cancelar
-                </button>
-                <button
-                  type="submit"
-                  className="px-5 py-2 text-sm bg-amber-800 text-white font-semibold rounded-xl hover:bg-amber-900 transition-colors shadow-sm"
-                >
-                  Guardar Catador
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+      <CrearCatadorModal
+        isOpen={modalRegistrarAbierto}
+        onClose={() => setModalRegistrarAbierto(false)}
+        onSubmit={handleGuardarNuevo}
+        loading={crearCatador.isPending}
+        laboratoriosDisponibles={laboratoriosUnicos.filter(Boolean)}
+      />
 
       {/* ========================================================================= */}
       {/* MODAL: EDITAR CATADOR                                                     */}

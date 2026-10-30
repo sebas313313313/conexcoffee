@@ -16,12 +16,14 @@ import {
   useCrearSuperadminEmpresa,
   useActualizarSuperadminEmpresa,
 } from '../hooks/useSuperadminData';
+import { CrearEmpresaModal } from '@/components/usuarios';
 
 export default function EmpresasPage() {
   const query = useSuperadminEmpresas();
   const empresas = query.data ?? [];
   const crearEmpresa = useCrearSuperadminEmpresa();
   const actualizarEmpresa = useActualizarSuperadminEmpresa();
+
   const [searchTerm, setSearchTerm] = useState('');
   const [filtroDepartamento, setFiltroDepartamento] = useState('todos');
   const tableRef = useRef(null);
@@ -76,10 +78,9 @@ export default function EmpresasPage() {
     setModalDetalleAbierto(true);
   };
 
-  const guardarCreacion = (e) => {
-    e.preventDefault();
+  const guardarCreacion = (data) => {
     const nueva = {
-      ...formData,
+      ...data,
       caficultoresCount: 0,
       ofertasActivas: 0,
     };
@@ -92,6 +93,7 @@ export default function EmpresasPage() {
     actualizarEmpresa.mutate({ ...empresaActual, ...formData });
     setModalEditarAbierto(false);
   };
+
 
   const departamentosUnicos = Array.from(
     new Set(empresas.map((e) => e.departamento).filter(Boolean))
@@ -229,131 +231,12 @@ export default function EmpresasPage() {
       </div>
 
       {/* MODAL REGISTRAR EMPRESA */}
-      {modalRegistroAbierto && (
-        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
-          <div className="bg-white rounded-2xl max-w-xl w-full p-6 shadow-2xl border border-surface-200 my-8">
-            <div className="flex items-center justify-between pb-4 border-b border-surface-200">
-              <div className="flex items-center gap-2.5">
-                <div className="h-9 w-9 rounded-xl bg-brand-tint text-brand-terracota flex items-center justify-center">
-                  <Building2 className="h-5 w-5" />
-                </div>
-                <div>
-                  <h3 className="text-lg font-bold text-surface-900">Registrar Empresa</h3>
-                  <p className="text-xs text-surface-500">Información corporativa y fiscal</p>
-                </div>
-              </div>
-              <button
-                onClick={() => setModalRegistroAbierto(false)}
-                className="p-1.5 rounded-lg text-surface-400 hover:bg-surface-100 cursor-pointer"
-              >
-                <X className="h-5 w-5" />
-              </button>
-            </div>
-
-            <form onSubmit={guardarCreacion} className="mt-4 space-y-4">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-bold text-surface-700 mb-1">NIT *</label>
-                  <input
-                    required
-                    type="text"
-                    value={formData.nit}
-                    onChange={(e) => setFormData({ ...formData, nit: e.target.value })}
-                    className="w-full px-3 py-2 text-sm rounded-xl border border-surface-200"
-                    placeholder="900123456-1"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-bold text-surface-700 mb-1">Razón Social *</label>
-                  <input
-                    required
-                    type="text"
-                    value={formData.nombre}
-                    onChange={(e) => setFormData({ ...formData, nombre: e.target.value })}
-                    className="w-full px-3 py-2 text-sm rounded-xl border border-surface-200"
-                    placeholder="Nombre legal de la empresa"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-bold text-surface-700 mb-1">Teléfono *</label>
-                  <input
-                    required
-                    type="text"
-                    value={formData.telefono}
-                    onChange={(e) => setFormData({ ...formData, telefono: e.target.value })}
-                    className="w-full px-3 py-2 text-sm rounded-xl border border-surface-200"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-bold text-surface-700 mb-1">Correo Electrónico *</label>
-                  <input
-                    required
-                    type="email"
-                    value={formData.correo}
-                    onChange={(e) => setFormData({ ...formData, correo: e.target.value })}
-                    className="w-full px-3 py-2 text-sm rounded-xl border border-surface-200"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-bold text-surface-700 mb-1">Municipio / Ciudad</label>
-                  <input
-                    type="text"
-                    value={formData.municipio}
-                    onChange={(e) => setFormData({ ...formData, municipio: e.target.value })}
-                    className="w-full px-3 py-2 text-sm rounded-xl border border-surface-200"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-bold text-surface-700 mb-1">Departamento</label>
-                  <input
-                    type="text"
-                    value={formData.departamento}
-                    onChange={(e) => setFormData({ ...formData, departamento: e.target.value })}
-                    className="w-full px-3 py-2 text-sm rounded-xl border border-surface-200"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold text-surface-700 mb-1">Dirección Principal</label>
-                <input
-                  type="text"
-                  value={formData.direccion}
-                  onChange={(e) => setFormData({ ...formData, direccion: e.target.value })}
-                  className="w-full px-3 py-2 text-sm rounded-xl border border-surface-200"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold text-surface-700 mb-1">Descripción de la Empresa</label>
-                <textarea
-                  rows={2}
-                  value={formData.descripcion}
-                  onChange={(e) => setFormData({ ...formData, descripcion: e.target.value })}
-                  className="w-full px-3 py-2 text-sm rounded-xl border border-surface-200"
-                  placeholder="Enfoque de exportación, certificaciones o perfil comercial..."
-                />
-              </div>
-
-              <div className="flex justify-end gap-3 pt-3 border-t border-surface-200">
-                <button
-                  type="button"
-                  onClick={() => setModalRegistroAbierto(false)}
-                  className="px-4 py-2 rounded-xl border border-surface-200 text-sm font-semibold text-surface-600 hover:bg-surface-50 cursor-pointer"
-                >
-                  Cancelar
-                </button>
-                <button
-                  type="submit"
-                  className="px-5 py-2 rounded-xl bg-brand-terracota hover:bg-brand-terracota-dark text-white text-sm font-semibold shadow-md cursor-pointer"
-                >
-                  Guardar Empresa
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+      <CrearEmpresaModal
+        isOpen={modalRegistroAbierto}
+        onClose={() => setModalRegistroAbierto(false)}
+        onSubmit={guardarCreacion}
+        loading={crearEmpresa.isPending}
+      />
 
       {/* MODAL EDITAR EMPRESA */}
       {modalEditarAbierto && (

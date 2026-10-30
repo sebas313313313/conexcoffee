@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { X, Upload } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { PROCESOS_COSECHA } from '../data/caficultorData';
+import { PROCESOS_COSECHA } from '../../../lib/constants';
 
 export default function EditarPreOfertaModal({ isOpen, onClose, preoferta, onGuardar }) {
   const [preofertaEdicion, setPreofertaEdicion] = useState(preoferta);

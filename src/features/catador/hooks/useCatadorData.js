@@ -1,14 +1,17 @@
-import { createResourceHooks } from '@/hooks/createResourceHooks';
-import { catacionesApi, evaluacionesApi } from '../api/catadorApi';
+import { useCatador } from '@/hooks/useCatador';
+import { toQueryResult, toUpdateMutation } from '@/hooks/contextAdapter';
 
-const cataciones = createResourceHooks('catador-cataciones', catacionesApi);
-export const useCataciones = cataciones.useList;
+export const useCataciones = () => {
+  const { cataciones, loading, error, refetch } = useCatador();
+  return toQueryResult(cataciones, loading, error, refetch);
+};
 
-const evaluaciones = createResourceHooks('catador-evaluaciones', evaluacionesApi, {
-  labels: {
-    created: 'Evaluación registrada',
-    updated: 'Evaluación actualizada',
-  },
-});
-export const useEvaluaciones = evaluaciones.useList;
-export const useActualizarEvaluacion = evaluaciones.useUpdate;
+export const useEvaluaciones = () => {
+  const { evaluaciones, loading, error, refetch } = useCatador();
+  return toQueryResult(evaluaciones, loading, error, refetch);
+};
+
+export const useActualizarEvaluacion = () => {
+  const { updateEvaluacion } = useCatador();
+  return toUpdateMutation(updateEvaluacion);
+};

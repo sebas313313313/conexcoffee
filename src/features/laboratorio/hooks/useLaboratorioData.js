@@ -1,61 +1,86 @@
-import { createResourceHooks } from '@/hooks/createResourceHooks';
+import { useLaboratorio } from '@/hooks/useLaboratorio';
 import {
-  muestrasResumenApi,
-  catadoresApi,
-  analisisFisicosApi,
-  analisisSensorialesApi,
-  hojasCatacionApi,
-  muestrasApi,
-  resultadosApi,
-} from '../api/laboratorioApi';
+  toQueryResult,
+  toCreateMutation,
+  toUpdateMutation,
+  toRemoveMutation,
+} from '@/hooks/contextAdapter';
 
-const muestrasResumen = createResourceHooks('laboratorio-muestras-resumen', muestrasResumenApi);
-export const useMuestrasResumen = muestrasResumen.useList;
+export const useMuestrasResumen = () => {
+  const { muestrasResumen, loading, error, refetch } = useLaboratorio();
+  return toQueryResult(muestrasResumen, loading, error, refetch);
+};
 
-const catadores = createResourceHooks('laboratorio-catadores', catadoresApi, {
-  labels: {
-    created: 'Catador registrado exitosamente',
-    updated: 'Catador actualizado exitosamente',
-    removed: 'Catador eliminado exitosamente',
-  },
-});
-export const useCatadores = catadores.useList;
-export const useCrearCatador = catadores.useCreate;
-export const useActualizarCatador = catadores.useUpdate;
-export const useEliminarCatador = catadores.useRemove;
+export const useCatadores = () => {
+  const { catadores, loading, error, refetch } = useLaboratorio();
+  return toQueryResult(catadores, loading, error, refetch);
+};
+export const useCrearCatador = () => {
+  const { createCatador } = useLaboratorio();
+  return toCreateMutation(createCatador);
+};
+export const useActualizarCatador = () => {
+  const { updateCatador } = useLaboratorio();
+  return toUpdateMutation(updateCatador);
+};
+export const useEliminarCatador = () => {
+  const { removeCatador } = useLaboratorio();
+  return toRemoveMutation(removeCatador);
+};
 
-const analisisFisicos = createResourceHooks('laboratorio-analisis-fisicos', analisisFisicosApi, {
-  labels: {
-    created: 'Análisis físico registrado',
-    updated: 'Análisis físico actualizado',
-  },
-});
-export const useAnalisisFisicos = analisisFisicos.useList;
-export const useCrearAnalisisFisico = analisisFisicos.useCreate;
-export const useActualizarAnalisisFisico = analisisFisicos.useUpdate;
+export const useAnalisisFisicos = () => {
+  const { analisisFisicos, loading, error, refetch } = useLaboratorio();
+  return toQueryResult(analisisFisicos, loading, error, refetch);
+};
+export const useCrearAnalisisFisico = () => {
+  const { createAnalisisFisico } = useLaboratorio();
+  return toCreateMutation(createAnalisisFisico);
+};
+export const useActualizarAnalisisFisico = () => {
+  const { updateAnalisisFisico } = useLaboratorio();
+  return toUpdateMutation(updateAnalisisFisico);
+};
 
-const analisisSensoriales = createResourceHooks('laboratorio-analisis-sensoriales', analisisSensorialesApi, {
-  labels: {
-    created: 'Análisis sensorial registrado',
-    updated: 'Análisis sensorial actualizado',
-  },
-});
-export const useAnalisisSensoriales = analisisSensoriales.useList;
-export const useCrearAnalisisSensorial = analisisSensoriales.useCreate;
-export const useActualizarAnalisisSensorial = analisisSensoriales.useUpdate;
+export const useAnalisisSensoriales = () => {
+  const { analisisSensoriales, loading, error, refetch } = useLaboratorio();
+  return toQueryResult(analisisSensoriales, loading, error, refetch);
+};
+export const useCrearAnalisisSensorial = () => {
+  const { createAnalisisSensorial } = useLaboratorio();
+  return toCreateMutation(createAnalisisSensorial);
+};
+export const useActualizarAnalisisSensorial = () => {
+  const { updateAnalisisSensorial } = useLaboratorio();
+  return toUpdateMutation(updateAnalisisSensorial);
+};
 
-const hojasCatacion = createResourceHooks('laboratorio-hojas-catacion', hojasCatacionApi);
-export const useHojasCatacion = hojasCatacion.useList;
+export const useHojasCatacion = () => {
+  const { hojasCatacion, loading, error, refetch } = useLaboratorio();
+  return toQueryResult(hojasCatacion, loading, error, refetch);
+};
+export const useActualizarHojaCatacion = () => {
+  const { updateHojaCatacion } = useLaboratorio();
+  return toUpdateMutation(updateHojaCatacion);
+};
 
-const muestras = createResourceHooks('laboratorio-muestras', muestrasApi, {
-  labels: {
-    created: 'Muestra registrada exitosamente',
-    updated: 'Muestra actualizada exitosamente',
-  },
-});
-export const useMuestras = muestras.useList;
-export const useCrearMuestra = muestras.useCreate;
-export const useActualizarMuestra = muestras.useUpdate;
+export const useMuestras = () => {
+  const { muestras, loading, error, refetch } = useLaboratorio();
+  return toQueryResult(muestras, loading, error, refetch);
+};
+export const useCrearMuestra = () => {
+  const { createMuestra } = useLaboratorio();
+  return toCreateMutation(createMuestra);
+};
+export const useActualizarMuestra = () => {
+  const { updateMuestra } = useLaboratorio();
+  return toUpdateMutation(updateMuestra);
+};
 
-const resultados = createResourceHooks('laboratorio-resultados', resultadosApi);
-export const useResultados = resultados.useList;
+export const useResultados = () => {
+  const { resultados, loading, error, refetch } = useLaboratorio();
+  return toQueryResult(resultados, loading, error, refetch);
+};
+export const useActualizarResultado = () => {
+  const { updateResultado } = useLaboratorio();
+  return toUpdateMutation(updateResultado);
+};

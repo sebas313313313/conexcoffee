@@ -7,6 +7,7 @@ import {
   X,
   FlaskConical,
   Check,
+  Droplets,
 } from 'lucide-react';
 import { ModuloCabecera } from '@/components/data-display';
 import { QueryState } from '@/components/feedback';
@@ -17,18 +18,23 @@ import {
   useCrearSuperadminMuestra,
   useActualizarSuperadminMuestra,
 } from '../hooks/useSuperadminData';
-
-const LABORATORIOS_DISPONIBLES = [
-  'Laboratorio Central TecniCafé',
-  'Laboratorio de Calidad Sur Huila',
-  'Centro Sensorial Café Nariño',
-];
+import { useSuperAdmin } from '@/hooks/useSuperAdmin';
 
 export default function MuestrasPage() {
   const query = useSuperadminMuestras();
   const muestras = query.data ?? [];
   const crearMuestra = useCrearSuperadminMuestra();
   const actualizarMuestra = useActualizarSuperadminMuestra();
+  const { laboratorios = [] } = useSuperAdmin();
+  const LABORATORIOS_DISPONIBLES =
+    laboratorios.length > 0
+      ? laboratorios.map((l) => l.nombre)
+      : [
+          'Laboratorio Central TecniCafé',
+          'Laboratorio de Calidad Sur Huila',
+          'Centro Sensorial Café Nariño',
+        ];
+
   const [searchTerm, setSearchTerm] = useState('');
   const [filtroLaboratorio, setFiltroLaboratorio] = useState('todos');
   const tableRef = useRef(null);
@@ -78,6 +84,7 @@ export default function MuestrasPage() {
 
   const guardarCreacion = (e) => {
     e.preventDefault();
+
     const nueva = {
       ...formData,
       peso: Number(formData.peso),
@@ -97,6 +104,7 @@ export default function MuestrasPage() {
     });
     setModalAsignarAbierto(false);
   };
+
 
   const filtradas = muestras.filter((m) => {
     const term = searchTerm.toLowerCase();
@@ -194,10 +202,14 @@ export default function MuestrasPage() {
                       {m.fecha}
                     </td>
                     <td className="px-5 py-3.5 font-semibold text-surface-800">
-                      {m.peso.toLocaleString('es-CO', { minimumFractionDigits: 1 })} g
+                      {Number(m.pesoNum ?? parseFloat(m.peso) ?? 350).toLocaleString('es-CO', { minimumFractionDigits: 1 })} g
                     </td>
                     <td className="px-5 py-3.5 font-medium text-surface-700">
-                      {m.humedad.toFixed(1)}%
+                      <span className="inline-flex items-center gap-1">
+                        <Droplets className="h-3.5 w-3.5 text-blue-500" />
+                        {Number(m.humedadNum ?? parseFloat(m.humedad) ?? 11.2).toFixed(1)}%
+                      </span>
+
                     </td>
                     <td className="px-5 py-3.5 text-center">
                       {m.laboratorio ? (

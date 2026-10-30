@@ -2,21 +2,23 @@ import { useState } from 'react';
 import { Card } from '@/components/ui';
 import { FileText, Check } from 'lucide-react';
 import { QueryState } from '@/components/feedback';
-import { useHojasCatacion } from '../hooks/useLaboratorioData';
+import { useHojasCatacion, useActualizarHojaCatacion } from '../hooks/useLaboratorioData';
 import { GenerarReporteModal } from '../components';
-import toast from 'react-hot-toast';
 
 export default function LaboratorioHojasCatacionPage() {
   const query = useHojasCatacion();
-  const [hojasLocal, setHojasLocal] = useState(null);
-  const hojas = hojasLocal ?? query.data ?? [];
+  const actualizarHoja = useActualizarHojaCatacion();
+  const hojas = query.data ?? [];
   const [hojaReporte, setHojaReporte] = useState(null);
 
-  const handleTerminarHoja = (id, codigoLote) => {
-    setHojasLocal((prev) =>
-      (prev ?? query.data ?? []).map((h) => (h.id === id ? { ...h, estado: 'Completada' } : h))
-    );
-    toast.success(`Hoja de catación para ${codigoLote} terminada y archivada`);
+  const handleTerminarHoja = (id) => {
+    const item = hojas.find((h) => h.id === id);
+    if (item) {
+      actualizarHoja.mutate({
+        ...item,
+        estado: 'Completada',
+      });
+    }
   };
 
   if (query.isLoading || query.isError) {

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Leaf, X } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { VARIEDADES_POR_ESPECIE } from '../data/caficultorData';
+import { VARIEDADES_POR_ESPECIE } from '../../../lib/constants';
 
 export default function RegistrarLoteModal({ isOpen, onClose, fincas, onGuardar }) {
   const [formData, setFormData] = useState({

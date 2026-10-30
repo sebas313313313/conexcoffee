@@ -16,6 +16,7 @@ import {
   useCrearSuperadminUsuario,
   useActualizarSuperadminUsuario,
 } from '../hooks/useSuperadminData';
+import { CrearUsuarioModal } from '@/components/usuarios';
 
 const ROLES_DISPONIBLES = [
   'SuperAdmin',
@@ -33,6 +34,7 @@ export default function UsuariosPage() {
   const usuarios = query.data ?? [];
   const crearUsuario = useCrearSuperadminUsuario();
   const actualizarUsuario = useActualizarSuperadminUsuario();
+
   const [searchTerm, setSearchTerm] = useState('');
   const [filtroRol, setFiltroRol] = useState('todos');
   const tableRef = useRef(null);
@@ -63,12 +65,12 @@ export default function UsuariosPage() {
     setModalRolAbierto(true);
   };
 
-  const guardarCreacion = (e) => {
-    e.preventDefault();
+  const guardarCreacion = (data) => {
     const nuevo = {
-      nombre: formData.nombre,
-      email: formData.email,
-      rol: formData.rol,
+      nombre: data.nombre,
+      email: data.email,
+      rol: data.rol,
+      password: data.password,
       estado: 'Activo',
       ultimoAcceso: 'Recién registrado',
       avatar: '/images/users/user-dummy-img.jpg',
@@ -90,6 +92,7 @@ export default function UsuariosPage() {
       estado: target.estado === 'Activo' ? 'Inactivo' : 'Activo',
     });
   };
+
 
   const filtrados = usuarios.filter((u) => {
     const term = searchTerm.toLowerCase();
@@ -233,88 +236,12 @@ export default function UsuariosPage() {
       </div>
 
       {/* MODAL CREAR USUARIO */}
-      {modalRegistroAbierto && (
-        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
-          <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-surface-200 my-8">
-            <div className="flex items-center justify-between pb-3 border-b border-surface-200">
-              <div className="flex items-center gap-2">
-                <Users className="h-5 w-5 text-brand-terracota" />
-                <h3 className="text-base font-bold text-surface-900">Crear Nuevo Usuario</h3>
-              </div>
-              <button
-                onClick={() => setModalRegistroAbierto(false)}
-                className="p-1 rounded-lg text-surface-400 hover:bg-surface-100 cursor-pointer"
-              >
-                <X className="h-5 w-5" />
-              </button>
-            </div>
-
-            <form onSubmit={guardarCreacion} className="mt-4 space-y-3">
-              <div>
-                <label className="block text-xs font-bold text-surface-700 mb-1">Nombre Completo *</label>
-                <input
-                  required
-                  type="text"
-                  value={formData.nombre}
-                  onChange={(e) => setFormData({ ...formData, nombre: e.target.value })}
-                  className="w-full px-3 py-2 text-sm rounded-xl border border-surface-200"
-                  placeholder="Ej. Juan Carlos Pérez"
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-bold text-surface-700 mb-1">Correo Electrónico *</label>
-                <input
-                  required
-                  type="email"
-                  value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  className="w-full px-3 py-2 text-sm rounded-xl border border-surface-200"
-                  placeholder="usuario@conexcoffee.com"
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-bold text-surface-700 mb-1">Rol Inicial *</label>
-                <select
-                  value={formData.rol}
-                  onChange={(e) => setFormData({ ...formData, rol: e.target.value })}
-                  className="w-full px-3 py-2 text-sm rounded-xl border border-surface-200"
-                >
-                  {ROLES_DISPONIBLES.map((r) => (
-                    <option key={r} value={r}>{r}</option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className="block text-xs font-bold text-surface-700 mb-1">Contraseña Temporal *</label>
-                <input
-                  required
-                  type="password"
-                  value={formData.password}
-                  onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                  className="w-full px-3 py-2 text-sm rounded-xl border border-surface-200"
-                  placeholder="Mínimo 8 caracteres"
-                />
-              </div>
-
-              <div className="flex justify-end gap-3 pt-3 border-t border-surface-200">
-                <button
-                  type="button"
-                  onClick={() => setModalRegistroAbierto(false)}
-                  className="px-4 py-2 rounded-xl border border-surface-200 text-sm font-semibold text-surface-600 hover:bg-surface-50 cursor-pointer"
-                >
-                  Cancelar
-                </button>
-                <button
-                  type="submit"
-                  className="px-5 py-2 rounded-xl bg-brand-terracota hover:bg-brand-terracota-dark text-white text-sm font-semibold shadow-md cursor-pointer"
-                >
-                  Guardar Usuario
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+      <CrearUsuarioModal
+        isOpen={modalRegistroAbierto}
+        onClose={() => setModalRegistroAbierto(false)}
+        onSubmit={guardarCreacion}
+        loading={crearUsuario.isPending}
+      />
 
       {/* MODAL ASIGNAR ROL */}
       {modalRolAbierto && usuarioActual && (

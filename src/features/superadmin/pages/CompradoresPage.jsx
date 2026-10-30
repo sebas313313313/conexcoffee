@@ -22,6 +22,7 @@ export default function CompradoresPage() {
   const compradores = query.data ?? [];
   const crearComprador = useCrearSuperadminComprador();
   const actualizarComprador = useActualizarSuperadminComprador();
+
   const [searchTerm, setSearchTerm] = useState('');
   const [filtroPais, setFiltroPais] = useState('todos');
   const tableRef = useRef(null);
@@ -101,6 +102,7 @@ export default function CompradoresPage() {
     actualizarComprador.mutate({ ...compradorActual, ...formData });
     setModalEditarAbierto(false);
   };
+
 
   const paisesUnicos = Array.from(
     new Set(compradores.map((c) => c.pais).filter(Boolean))

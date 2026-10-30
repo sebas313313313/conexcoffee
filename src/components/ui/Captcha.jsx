@@ -16,12 +16,14 @@ export default function Captcha({ onVerify, onExpire, onError, className = '' })
   const siteKey = TURNSTILE_SITE_KEY;
   const [devChecked, setDevChecked] = useState(false);
 
+  const isDev = import.meta.env.DEV || IS_DEMO_MODE;
+
   useEffect(() => {
     // Si no hay llave real y estamos en dev, avisar que está en modo mock
-    if (!siteKey && IS_DEMO_MODE) {
+    if (!siteKey && isDev) {
       console.info('[Captcha] Modo desarrollo activo (sin VITE_TURNSTILE_SITE_KEY).');
     }
-  }, [siteKey]);
+  }, [siteKey, isDev]);
 
   // Modo Cloudflare Turnstile real cuando hay SITE KEY configurada
   if (siteKey) {
@@ -41,8 +43,8 @@ export default function Captcha({ onVerify, onExpire, onError, className = '' })
     );
   }
 
-  // Fuera del modo demo, prohibir bypass silencioso en producción
-  if (!IS_DEMO_MODE) {
+  // Fuera del modo desarrollo o demo, prohibir bypass silencioso en producción
+  if (!isDev) {
     return (
       <div className={`p-3 rounded-xl border border-danger-200 bg-danger-50 text-danger-700 text-xs flex items-center gap-2 ${className}`}>
         <AlertTriangle className="h-4 w-4 shrink-0 text-danger-500" />
@@ -50,6 +52,7 @@ export default function Captcha({ onVerify, onExpire, onError, className = '' })
       </div>
     );
   }
+
 
   // Fallback solo permitido en desarrollo / testing local (IS_DEMO_MODE = true)
   const handleDevCheck = (e) => {

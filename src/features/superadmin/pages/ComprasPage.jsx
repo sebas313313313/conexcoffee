@@ -17,7 +17,6 @@ import {
   X,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
-
 import { QueryState } from '@/components/feedback';
 import ActionButton from '../components/ActionButton';
 import { useTableEntranceAnimation } from '../hooks/useSuperadminAnimations';
@@ -38,6 +37,7 @@ export default function ComprasPage() {
   const compradores = compradoresQuery.data ?? [];
   const crearCompradorMutation = useCrearSuperadminComprador();
   const actualizarCompradorMutation = useActualizarSuperadminComprador();
+
 
   // Filtros
   const [searchTerm, setSearchTerm] = useState('');
@@ -110,7 +110,7 @@ export default function ComprasPage() {
   useTableEntranceAnimation(tableCompradoresRef, [compradoresFiltrados.length, pestanaActiva]);
 
   // Guardar nuevo comprador
-  const handleGuardarComprador = (e) => {
+  const handleGuardarComprador = async (e) => {
     e.preventDefault();
     if (!nuevoComprador.numero_identificacion || !nuevoComprador.primer_nombre || !nuevoComprador.primer_apellido) {
       toast.error('Complete los campos obligatorios (*)');
@@ -165,6 +165,7 @@ export default function ComprasPage() {
     toast.success('Comprador actualizado correctamente');
     setModalEditarComprador(false);
   };
+
 
   // Badge de estado de compra
   const renderBadgeEstado = (estado) => {

@@ -23,6 +23,7 @@ export default function LaboratoriosPage() {
   const laboratorios = query.data ?? [];
   const crearLaboratorio = useCrearSuperadminLaboratorio();
   const actualizarLaboratorio = useActualizarSuperadminLaboratorio();
+
   const [searchTerm, setSearchTerm] = useState('');
   const [filtroDepartamento, setFiltroDepartamento] = useState('todos');
   const tableRef = useRef(null);
@@ -94,6 +95,7 @@ export default function LaboratoriosPage() {
     actualizarLaboratorio.mutate({ ...laboratorioActual, ...formData });
     setModalEditarAbierto(false);
   };
+
 
   const departamentosUnicos = Array.from(
     new Set(laboratorios.map((l) => l.departamento).filter(Boolean))

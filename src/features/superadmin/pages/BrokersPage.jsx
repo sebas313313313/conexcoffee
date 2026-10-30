@@ -17,12 +17,14 @@ import {
   useCrearSuperadminBroker,
   useActualizarSuperadminBroker,
 } from '../hooks/useSuperadminData';
+import { CrearBrokerModal } from '@/components/usuarios';
 
 export default function BrokersPage() {
   const query = useSuperadminBrokers();
   const brokers = query.data ?? [];
   const crearBroker = useCrearSuperadminBroker();
   const actualizarBroker = useActualizarSuperadminBroker();
+
   const [searchTerm, setSearchTerm] = useState('');
   const [filtroDepartamento, setFiltroDepartamento] = useState('todos');
   const tableRef = useRef(null);
@@ -91,10 +93,9 @@ export default function BrokersPage() {
     setModalDetalleAbierto(true);
   };
 
-  const guardarCreacion = (e) => {
-    e.preventDefault();
+  const guardarCreacion = (data) => {
     const nuevo = {
-      ...formData,
+      ...data,
       empresasVinculadas: [],
       totalNegociaciones: 0,
       activo: true,
@@ -109,6 +110,7 @@ export default function BrokersPage() {
     actualizarBroker.mutate({ ...brokerActual, ...formData });
     setModalEditarAbierto(false);
   };
+
 
   const departamentosUnicos = Array.from(
     new Set(brokers.map((b) => b.departamento).filter(Boolean))
@@ -258,141 +260,12 @@ export default function BrokersPage() {
       </div>
 
       {/* MODAL REGISTRAR BROKER */}
-      {modalRegistroAbierto && (
-        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
-          <div className="bg-white rounded-2xl max-w-2xl w-full p-6 shadow-2xl border border-surface-200 my-8">
-            <div className="flex items-center justify-between pb-4 border-b border-surface-200">
-              <div className="flex items-center gap-2.5">
-                <div className="h-9 w-9 rounded-xl bg-brand-tint text-brand-terracota flex items-center justify-center">
-                  <Handshake className="h-5 w-5" />
-                </div>
-                <div>
-                  <h3 className="text-lg font-bold text-surface-900">Registrar Broker</h3>
-                  <p className="text-xs text-surface-500">Datos personales del intermediario comercial</p>
-                </div>
-              </div>
-              <button
-                onClick={() => setModalRegistroAbierto(false)}
-                className="p-1.5 rounded-lg text-surface-400 hover:bg-surface-100 cursor-pointer"
-              >
-                <X className="h-5 w-5" />
-              </button>
-            </div>
-
-            <form onSubmit={guardarCreacion} className="mt-4 space-y-4">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-bold text-surface-700 mb-1">
-                    Número de Identificación *
-                  </label>
-                  <input
-                    required
-                    type="text"
-                    value={formData.numeroIdentificacion}
-                    onChange={(e) => setFormData({ ...formData, numeroIdentificacion: e.target.value })}
-                    className="w-full px-3 py-2 text-sm rounded-xl border border-surface-200"
-                    placeholder="Ej. 12053621"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-bold text-surface-700 mb-1">Teléfono *</label>
-                  <input
-                    required
-                    type="text"
-                    value={formData.telefono}
-                    onChange={(e) => setFormData({ ...formData, telefono: e.target.value })}
-                    className="w-full px-3 py-2 text-sm rounded-xl border border-surface-200"
-                    placeholder="Ej. 3104256987"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-bold text-surface-700 mb-1">Primer Nombre *</label>
-                  <input
-                    required
-                    type="text"
-                    value={formData.primerNombre}
-                    onChange={(e) => setFormData({ ...formData, primerNombre: e.target.value.toUpperCase() })}
-                    className="w-full px-3 py-2 text-sm rounded-xl border border-surface-200"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-bold text-surface-700 mb-1">Segundo Nombre</label>
-                  <input
-                    type="text"
-                    value={formData.segundoNombre}
-                    onChange={(e) => setFormData({ ...formData, segundoNombre: e.target.value.toUpperCase() })}
-                    className="w-full px-3 py-2 text-sm rounded-xl border border-surface-200"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-bold text-surface-700 mb-1">Primer Apellido *</label>
-                  <input
-                    required
-                    type="text"
-                    value={formData.primerApellido}
-                    onChange={(e) => setFormData({ ...formData, primerApellido: e.target.value.toUpperCase() })}
-                    className="w-full px-3 py-2 text-sm rounded-xl border border-surface-200"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-bold text-surface-700 mb-1">Segundo Apellido</label>
-                  <input
-                    type="text"
-                    value={formData.segundoApellido}
-                    onChange={(e) => setFormData({ ...formData, segundoApellido: e.target.value.toUpperCase() })}
-                    className="w-full px-3 py-2 text-sm rounded-xl border border-surface-200"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-bold text-surface-700 mb-1">Correo Electrónico</label>
-                  <input
-                    type="email"
-                    value={formData.correo}
-                    onChange={(e) => setFormData({ ...formData, correo: e.target.value })}
-                    className="w-full px-3 py-2 text-sm rounded-xl border border-surface-200"
-                    placeholder="broker@conexcoffee.com"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-bold text-surface-700 mb-1">Ciudad / Municipio</label>
-                  <input
-                    type="text"
-                    value={formData.municipio}
-                    onChange={(e) => setFormData({ ...formData, municipio: e.target.value })}
-                    className="w-full px-3 py-2 text-sm rounded-xl border border-surface-200"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold text-surface-700 mb-1">Dirección de Oficina</label>
-                <input
-                  type="text"
-                  value={formData.direccion}
-                  onChange={(e) => setFormData({ ...formData, direccion: e.target.value })}
-                  className="w-full px-3 py-2 text-sm rounded-xl border border-surface-200"
-                />
-              </div>
-
-              <div className="flex justify-end gap-3 pt-3 border-t border-surface-200">
-                <button
-                  type="button"
-                  onClick={() => setModalRegistroAbierto(false)}
-                  className="px-4 py-2 rounded-xl border border-surface-200 text-sm font-semibold text-surface-600 hover:bg-surface-50 cursor-pointer"
-                >
-                  Cancelar
-                </button>
-                <button
-                  type="submit"
-                  className="px-5 py-2 rounded-xl bg-brand-terracota hover:bg-brand-terracota-dark text-white text-sm font-semibold shadow-md cursor-pointer"
-                >
-                  Guardar Broker
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+      <CrearBrokerModal
+        isOpen={modalRegistroAbierto}
+        onClose={() => setModalRegistroAbierto(false)}
+        onSubmit={guardarCreacion}
+        loading={crearBroker.isPending}
+      />
 
       {/* MODAL DETALLES */}
       {modalDetalleAbierto && brokerActual && (

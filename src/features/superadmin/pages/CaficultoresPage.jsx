@@ -21,20 +21,26 @@ import {
   useCrearSuperadminCaficultor,
   useActualizarSuperadminCaficultor,
 } from '../hooks/useSuperadminData';
-
-const EMPRESAS_DISPONIBLES = [
-  'Café Especial Huila SAS',
-  'Exportadora Andina de Café',
-  'Origen Café Colombia',
-  'Alianza Cafetera del Sur',
-  'BioCafé Santander',
-];
+import { useSuperAdmin } from '@/hooks/useSuperAdmin';
+import { CrearCaficultorModal } from '@/components/usuarios';
 
 export default function CaficultoresPage() {
   const query = useSuperadminCaficultores();
   const caficultores = query.data ?? [];
   const crearCaficultor = useCrearSuperadminCaficultor();
   const actualizarCaficultor = useActualizarSuperadminCaficultor();
+  const { empresas = [] } = useSuperAdmin();
+  const EMPRESAS_DISPONIBLES =
+    empresas.length > 0
+      ? empresas.map((e) => e.nombre)
+      : [
+          'Café Especial Huila SAS',
+          'Exportadora Andina de Café',
+          'Origen Café Colombia',
+          'Alianza Cafetera del Sur',
+          'BioCafé Santander',
+        ];
+
   const [searchTerm, setSearchTerm] = useState('');
   const [filtroEmpresa, setFiltroEmpresa] = useState('todos');
 
@@ -118,10 +124,9 @@ export default function CaficultoresPage() {
     setModalAsignarAbierto(true);
   };
 
-  const guardarCreacion = (e) => {
-    e.preventDefault();
+  const guardarCreacion = (data) => {
     const nuevo = {
-      ...formData,
+      ...data,
       fincasCount: 0,
       lotesCount: 0,
       avatar: '/images/users/user-dummy-img.jpg',
@@ -140,6 +145,7 @@ export default function CaficultoresPage() {
     actualizarCaficultor.mutate({ ...caficultorActual, empresa: nombreEmpresa });
     setModalAsignarAbierto(false);
   };
+
 
   // Filtrado
   const filtrados = caficultores.filter((c) => {
@@ -298,187 +304,13 @@ export default function CaficultoresPage() {
       </div>
 
       {/* MODAL REGISTRAR CAFICULTOR */}
-      {modalRegistroAbierto && (
-        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
-          <div className="bg-white rounded-2xl max-w-2xl w-full p-6 shadow-2xl border border-surface-200 animate-in fade-in duration-200 my-8">
-            <div className="flex items-center justify-between pb-4 border-b border-surface-200">
-              <div className="flex items-center gap-2.5">
-                <div className="h-9 w-9 rounded-xl bg-brand-tint text-brand-terracota flex items-center justify-center">
-                  <Leaf className="h-5 w-5" />
-                </div>
-                <div>
-                  <h3 className="text-lg font-bold text-surface-900">Registrar Nuevo Caficultor</h3>
-                  <p className="text-xs text-surface-500">Ingrese los datos personales y de contacto</p>
-                </div>
-              </div>
-              <button
-                onClick={() => setModalRegistroAbierto(false)}
-                className="p-1.5 rounded-lg text-surface-400 hover:bg-surface-100 cursor-pointer"
-              >
-                <X className="h-5 w-5" />
-              </button>
-            </div>
-
-            <form onSubmit={guardarCreacion} className="mt-4 space-y-4">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-bold text-surface-700 mb-1">
-                    Número de Identificación *
-                  </label>
-                  <input
-                    required
-                    type="text"
-                    value={formData.numeroIdentificacion}
-                    onChange={(e) => setFormData({ ...formData, numeroIdentificacion: e.target.value })}
-                    className="w-full px-3 py-2 text-sm rounded-xl border border-surface-200 focus:ring-2 focus:ring-brand-terracota/20 focus:border-brand-terracota"
-                    placeholder="Ej. 12345678"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold text-surface-700 mb-1">Teléfono *</label>
-                  <input
-                    required
-                    type="text"
-                    value={formData.telefono}
-                    onChange={(e) => setFormData({ ...formData, telefono: e.target.value })}
-                    className="w-full px-3 py-2 text-sm rounded-xl border border-surface-200 focus:ring-2 focus:ring-brand-terracota/20 focus:border-brand-terracota"
-                    placeholder="Ej. 3112344546"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold text-surface-700 mb-1">Primer Nombre *</label>
-                  <input
-                    required
-                    type="text"
-                    value={formData.primerNombre}
-                    onChange={(e) => setFormData({ ...formData, primerNombre: e.target.value.toUpperCase() })}
-                    className="w-full px-3 py-2 text-sm rounded-xl border border-surface-200 focus:ring-2 focus:ring-brand-terracota/20 focus:border-brand-terracota"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold text-surface-700 mb-1">Segundo Nombre</label>
-                  <input
-                    type="text"
-                    value={formData.segundoNombre}
-                    onChange={(e) => setFormData({ ...formData, segundoNombre: e.target.value.toUpperCase() })}
-                    className="w-full px-3 py-2 text-sm rounded-xl border border-surface-200 focus:ring-2 focus:ring-brand-terracota/20 focus:border-brand-terracota"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold text-surface-700 mb-1">Primer Apellido *</label>
-                  <input
-                    required
-                    type="text"
-                    value={formData.primerApellido}
-                    onChange={(e) => setFormData({ ...formData, primerApellido: e.target.value.toUpperCase() })}
-                    className="w-full px-3 py-2 text-sm rounded-xl border border-surface-200 focus:ring-2 focus:ring-brand-terracota/20 focus:border-brand-terracota"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold text-surface-700 mb-1">Segundo Apellido</label>
-                  <input
-                    type="text"
-                    value={formData.segundoApellido}
-                    onChange={(e) => setFormData({ ...formData, segundoApellido: e.target.value.toUpperCase() })}
-                    className="w-full px-3 py-2 text-sm rounded-xl border border-surface-200 focus:ring-2 focus:ring-brand-terracota/20 focus:border-brand-terracota"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold text-surface-700 mb-1">Fecha de Nacimiento</label>
-                  <input
-                    type="date"
-                    value={formData.fechaNacimiento}
-                    onChange={(e) => setFormData({ ...formData, fechaNacimiento: e.target.value })}
-                    className="w-full px-3 py-2 text-sm rounded-xl border border-surface-200 focus:ring-2 focus:ring-brand-terracota/20 focus:border-brand-terracota"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold text-surface-700 mb-1">Género</label>
-                  <select
-                    value={formData.genero}
-                    onChange={(e) => setFormData({ ...formData, genero: e.target.value })}
-                    className="w-full px-3 py-2 text-sm rounded-xl border border-surface-200 focus:ring-2 focus:ring-brand-terracota/20"
-                  >
-                    <option value="M">Masculino</option>
-                    <option value="F">Femenino</option>
-                    <option value="O">Otro</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold text-surface-700 mb-1">Municipio / Depto</label>
-                  <input
-                    type="text"
-                    value={formData.municipio}
-                    onChange={(e) => setFormData({ ...formData, municipio: e.target.value })}
-                    className="w-full px-3 py-2 text-sm rounded-xl border border-surface-200 focus:ring-2 focus:ring-brand-terracota/20"
-                    placeholder="Ej. Pitalito, Huila"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold text-surface-700 mb-1">Empresa Vinculada</label>
-                  <select
-                    value={formData.empresa}
-                    onChange={(e) => setFormData({ ...formData, empresa: e.target.value })}
-                    className="w-full px-3 py-2 text-sm rounded-xl border border-surface-200 focus:ring-2 focus:ring-brand-terracota/20"
-                  >
-                    <option value="">Sin Asignar</option>
-                    {EMPRESAS_DISPONIBLES.map((emp) => (
-                      <option key={emp} value={emp}>{emp}</option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold text-surface-700 mb-1">Dirección / Vereda</label>
-                <input
-                  type="text"
-                  value={formData.direccion}
-                  onChange={(e) => setFormData({ ...formData, direccion: e.target.value })}
-                  className="w-full px-3 py-2 text-sm rounded-xl border border-surface-200 focus:ring-2 focus:ring-brand-terracota/20"
-                  placeholder="Vereda, Finca o dirección de residencia"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold text-surface-700 mb-1">Historia del Caficultor</label>
-                <textarea
-                  rows={2}
-                  value={formData.historia}
-                  onChange={(e) => setFormData({ ...formData, historia: e.target.value })}
-                  className="w-full px-3 py-2 text-sm rounded-xl border border-surface-200 focus:ring-2 focus:ring-brand-terracota/20"
-                  placeholder="Historia que conectará con los compradores en la tienda..."
-                />
-              </div>
-
-              <div className="flex justify-end gap-3 pt-3 border-t border-surface-200">
-                <button
-                  type="button"
-                  onClick={() => setModalRegistroAbierto(false)}
-                  className="px-4 py-2 rounded-xl border border-surface-200 text-sm font-semibold text-surface-600 hover:bg-surface-50 cursor-pointer"
-                >
-                  Cancelar
-                </button>
-                <button
-                  type="submit"
-                  className="px-5 py-2 rounded-xl bg-brand-terracota hover:bg-brand-terracota-dark text-white text-sm font-semibold shadow-md cursor-pointer"
-                >
-                  Guardar Caficultor
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+      <CrearCaficultorModal
+        isOpen={modalRegistroAbierto}
+        onClose={() => setModalRegistroAbierto(false)}
+        onSubmit={guardarCreacion}
+        loading={crearCaficultor.isPending}
+        empresasDisponibles={EMPRESAS_DISPONIBLES}
+      />
 
       {/* MODAL EDITAR CAFICULTOR */}
       {modalEditarAbierto && (

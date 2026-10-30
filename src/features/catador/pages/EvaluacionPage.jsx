@@ -67,16 +67,15 @@ export default function EvaluacionPage() {
         ...item,
         estado: 'Completada',
         puntuacionTotal: resultado.puntuacionTotal,
+        puntuacion_sca_global: resultado.puntuacionTotal,
         categoria: resultado.categoria,
         unido: true,
+
       });
     }
 
     setIsModalOpen(false);
     setEvaluacionActiva(null);
-    toast.success(
-      `¡Evaluación enviada con éxito! Puntuación SCA registrada: ${resultado.puntuacionTotal} pts (${resultado.categoria})`
-    );
   };
 
   const listaFiltrada = evaluaciones.filter((ev) => {

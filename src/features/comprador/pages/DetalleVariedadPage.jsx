@@ -8,6 +8,7 @@ import {
 import toast from 'react-hot-toast';
 import RadarChart from '../components/RadarChart';
 import { useContenedoresComprador } from '../hooks/useCompradorData';
+import { useComprador } from '@/hooks/useComprador';
 
 // ============================================
 // DetalleVariedadPage — Vista completa de una variedad de café
@@ -20,6 +21,7 @@ export default function DetalleVariedadPage() {
 
   const contenedoresQuery = useContenedoresComprador();
   const contenedores = contenedoresQuery.data ?? [];
+  const { createPedido } = useComprador();
 
   // Recuperar datos desde state de navegación o buscar en query
   const { variedad: variedadState, contenedor: contenedorState } = location.state || {};
@@ -51,11 +53,26 @@ export default function DetalleVariedadPage() {
   const prevSlide = () => setSlideIdx((i) => (i - 1 + totalSlides) % totalSlides);
   const nextSlide = () => setSlideIdx((i) => (i + 1) % totalSlides);
 
-  const addToCart = (tipo, cantidad) => {
-    const desc = tipo === 'caja'
-      ? `${cantidad} caja(s) × 24 Kg de ${variedad.nombre}`
-      : `${cantidad} muestra(s) × 120 g de ${variedad.nombre}`;
-    toast.success(`Añadido al carrito: ${desc}`);
+  const addToCart = async (tipo, cantidad) => {
+    const totalEstimado =
+      tipo === 'caja'
+        ? cantidad * Number(variedad.precioCaja || 240)
+        : cantidad * Number(variedad.precioMuestra || 35);
+    try {
+      await createPedido({
+        contenedorId: contenedor?.id,
+        contenedor: contenedor?.codigo,
+        variedad: variedad.nombre,
+        cantidad: tipo === 'caja' ? `${cantidad * 24} Kg` : `${cantidad * 120} g`,
+        totalEstimado,
+      });
+    } catch {
+      const desc =
+        tipo === 'caja'
+          ? `${cantidad} caja(s) × 24 Kg de ${variedad.nombre}`
+          : `${cantidad} muestra(s) × 120 g de ${variedad.nombre}`;
+      toast.success(`Añadido al carrito: ${desc}`);
+    }
   };
 
   return (

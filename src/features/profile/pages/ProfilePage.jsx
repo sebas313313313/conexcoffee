@@ -1,4 +1,4 @@
-import useAuthStore from '@/store/useAuthStore';
+import useAuth from '@/hooks/useAuth';
 import { Card, Button } from '@/components/ui';
 import { Badge } from '@/components/ui';
 import { User, Mail, Shield } from 'lucide-react';
@@ -8,12 +8,11 @@ import { User, Mail, Shield } from 'lucide-react';
 // ============================================
 // Compartida por todos los roles.
 // ============================================
-
 export default function ProfilePage() {
-  const user = useAuthStore((s) => s.user);
-  const role = useAuthStore((s) => s.role);
+  const { user, role } = useAuth();
 
   return (
+
     <div className="max-w-2xl mx-auto space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-surface-900">Mi Perfil</h1>

@@ -39,22 +39,24 @@ export default function OfertasPage() {
     alert(`Generando y descargando Ficha Técnica PDF para la oferta ${o.codigo} (Certificado SCA)...`);
   };
 
+  const getStr = (val) => (typeof val === 'string' ? val : val?.nombre || '');
+
   const ofertasFiltradas = ofertas.filter((o) => {
     const term = searchTerm.toLowerCase();
     return (
-      o.codigo.toLowerCase().includes(term) ||
-      o.variedadCafe.toLowerCase().includes(term) ||
-      o.caficultor.toLowerCase().includes(term) ||
-      o.estado.toLowerCase().includes(term)
+      String(o.codigo || '').toLowerCase().includes(term) ||
+      String(o.variedadCafe || o.variedad || '').toLowerCase().includes(term) ||
+      getStr(o.caficultor).toLowerCase().includes(term) ||
+      String(o.estado || '').toLowerCase().includes(term)
     );
   });
 
   const preofertasFiltradas = preofertas.filter((p) => {
     const term = searchTerm.toLowerCase();
     return (
-      p.codigo.toLowerCase().includes(term) ||
-      p.caficultor.toLowerCase().includes(term) ||
-      p.variedad.toLowerCase().includes(term)
+      String(p.codigo || '').toLowerCase().includes(term) ||
+      getStr(p.caficultor).toLowerCase().includes(term) ||
+      String(p.variedad || '').toLowerCase().includes(term)
     );
   });
 
@@ -228,10 +230,10 @@ export default function OfertasPage() {
                       {p.codigo}
                     </td>
                     <td className="px-5 py-3.5 font-medium text-surface-800">
-                      {p.caficultor}
+                      {getStr(p.caficultor)}
                     </td>
                     <td className="px-5 py-3.5 text-surface-600 text-xs">
-                      {p.finca}
+                      {getStr(p.finca)}
                     </td>
                     <td className="px-5 py-3.5 text-surface-700">
                       {p.variedad}
@@ -298,7 +300,7 @@ export default function OfertasPage() {
                 </div>
                 <div>
                   <span className="text-surface-500 block">Productor</span>
-                  <span className="font-semibold text-surface-800">{ofertaActual.caficultor}</span>
+                  <span className="font-semibold text-surface-800">{getStr(ofertaActual.caficultor)}</span>
                 </div>
               </div>
 

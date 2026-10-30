@@ -9,6 +9,16 @@ import GuestRoute from '@/guards/GuestRoute';
 // Layouts
 import { AuthLayout, DashboardLayout, PublicLayout } from '@/layouts';
 
+// Context Providers por Rol
+import { SuperAdminProvider } from '@/context/SuperAdminContext';
+import { EmpresaProvider } from '@/context/EmpresaContext';
+import { BrokerProvider } from '@/context/BrokerContext';
+import { CaficultorProvider } from '@/context/CaficultorContext';
+import { CompradorProvider } from '@/context/CompradorContext';
+import { LaboratorioProvider } from '@/context/LaboratorioContext';
+import { TecnicoProvider } from '@/context/TecnicoContext';
+import { CatadorProvider } from '@/context/CatadorContext';
+
 // Feedback
 import { RouteError } from '@/components/feedback';
 import { Spinner } from '@/components/ui';
@@ -16,35 +26,9 @@ import { Spinner } from '@/components/ui';
 // Constantes
 import { ROLES } from '@/lib/constants';
 
-// ============================================
-// Router — Definición centralizada de TODAS las rutas
-// ============================================
-// Estructura:
-// 1. Rutas públicas (landing, legal)
-// 2. Rutas de invitado (login, register)
-// 3. Rutas protegidas por rol
-// 4. Rutas compartidas (perfil, pagos)
-// 5. Páginas de error (404, 403)
-//
-// Code splitting: cada feature se descarga bajo demanda (lazy) para que
-// un visitante de la landing no descargue los paneles de los 8 roles.
-//
-// Para agregar un nuevo módulo a un rol:
-// 1. Crear la carpeta en features/<rol>/<modulo>/
-// 2. Exportar la página en features/<rol>/index.js
-// 3. Declarar el lazy aquí y agregar la ruta dentro del RoleGuard del rol
-// 4. Agregar el link en NAV_BY_ROLE en Sidebar.jsx
-// ============================================
-
-/**
- * Crea un componente lazy a partir de un export con nombre de un barrel de feature.
- * @param {() => Promise<object>} loader - ej. () => import('@/features/empresa')
- * @param {string} name - nombre del export
- */
 const lazyPage = (loader, name) =>
   lazy(() => loader().then((module) => ({ default: module[name] })));
 
-/** Renderiza un componente lazy dentro de su Suspense. */
 const page = (Component) => (
   <Suspense
     fallback={
@@ -155,13 +139,17 @@ const PaymentContainer = lazyPage(payments, 'PaymentContainer');
 
 /**
  * Helper para declarar un bloque de rol:
- * RoleGuard → DashboardLayout → rutas del rol.
+ * RoleGuard → RoleProvider → DashboardLayout → rutas del rol.
  */
-const roleRoutes = (role, children) => ({
+const roleRoutes = (role, Provider, children) => ({
   element: <RoleGuard allowedRoles={[role]} />,
   children: [
     {
-      element: <DashboardLayout />,
+      element: (
+        <Provider>
+          <DashboardLayout />
+        </Provider>
+      ),
       children,
     },
   ],
@@ -212,7 +200,7 @@ const router = createBrowserRouter([
     element: <ProtectedRoute />,
     errorElement: <RouteError />,
     children: [
-      roleRoutes(ROLES.SUPERADMIN, [
+      roleRoutes(ROLES.SUPERADMIN, SuperAdminProvider, [
         { path: '/superadmin',              element: <Navigate to="/superadmin/dashboard" replace /> },
         { path: '/superadmin/dashboard',    element: page(SuperAdminDashboardPage) },
         { path: '/superadmin/caficultores', element: page(CaficultoresPage) },
@@ -233,7 +221,7 @@ const router = createBrowserRouter([
         { path: '/superadmin/configuracion', element: <Navigate to="/superadmin/settings" replace /> },
       ]),
 
-      roleRoutes(ROLES.EMPRESA, [
+      roleRoutes(ROLES.EMPRESA, EmpresaProvider, [
         { path: '/empresa',                element: <Navigate to="/empresa/dashboard" replace /> },
         { path: '/empresa/dashboard',      element: page(EmpresaDashboardPage) },
         { path: '/empresa/ofertas-libres', element: page(EmpresaOfertasLibresPage) },
@@ -247,13 +235,12 @@ const router = createBrowserRouter([
         { path: '/empresa/tecnicos',       element: page(EmpresaTecnicosPage) },
       ]),
 
-      roleRoutes(ROLES.BROKER, [
+      roleRoutes(ROLES.BROKER, BrokerProvider, [
         { path: '/broker',           element: <Navigate to="/broker/dashboard" replace /> },
         { path: '/broker/dashboard', element: page(BrokerDashboardPage) },
-        // { path: '/broker/negotiations', element: page(NegotiationsPage) },
       ]),
 
-      roleRoutes(ROLES.CAFICULTOR, [
+      roleRoutes(ROLES.CAFICULTOR, CaficultorProvider, [
         { path: '/caficultor',             element: <Navigate to="/caficultor/dashboard" replace /> },
         { path: '/caficultor/dashboard',   element: page(CaficultorDashboardPage) },
         { path: '/caficultor/fincas',      element: page(CaficultorFincasPage) },
@@ -263,14 +250,14 @@ const router = createBrowserRouter([
         { path: '/caficultor/ofertas',     element: page(CaficultorOfertasPage) },
       ]),
 
-      roleRoutes(ROLES.COMPRADOR, [
+      roleRoutes(ROLES.COMPRADOR, CompradorProvider, [
         { path: '/comprador',                      element: <Navigate to="/comprador/dashboard" replace /> },
         { path: '/comprador/dashboard',            element: page(CompradorDashboardPage) },
         { path: '/comprador/contenedores',         element: page(CompradorContenedoresPage) },
         { path: '/comprador/catalogo/:variedadId', element: page(DetalleVariedadPage) },
       ]),
 
-      roleRoutes(ROLES.LABORATORIO, [
+      roleRoutes(ROLES.LABORATORIO, LaboratorioProvider, [
         { path: '/laboratorio',                    element: <Navigate to="/laboratorio/dashboard" replace /> },
         { path: '/laboratorio/dashboard',          element: page(LaboratorioDashboardPage) },
         { path: '/laboratorio/catadores',          element: page(LaboratorioCatadoresPage) },
@@ -281,24 +268,23 @@ const router = createBrowserRouter([
         { path: '/laboratorio/muestras',           element: page(LaboratorioMuestrasPage) },
       ]),
 
-      roleRoutes(ROLES.TECNICO, [
+      roleRoutes(ROLES.TECNICO, TecnicoProvider, [
         { path: '/tecnico',           element: <Navigate to="/tecnico/dashboard" replace /> },
         { path: '/tecnico/dashboard', element: page(TecnicoDashboardPage) },
       ]),
 
-      roleRoutes(ROLES.CATADOR, [
+      roleRoutes(ROLES.CATADOR, CatadorProvider, [
         { path: '/catador',            element: <Navigate to="/catador/dashboard" replace /> },
         { path: '/catador/dashboard',  element: page(CatadorDashboardPage) },
         { path: '/catador/evaluacion', element: page(EvaluacionPage) },
       ]),
+
 
       // Rutas compartidas (cualquier rol autenticado)
       {
         element: <DashboardLayout />,
         children: [
           { path: '/profile', element: page(ProfilePage) },
-          // TODO(backend): pasar el monto real y enviar el token al backend.
-          // Mientras tanto no se registra ni se expone el token de pago.
           {
             path: '/payments',
             element: (

@@ -1,5 +1,12 @@
-import { createResourceHooks } from '@/hooks/createResourceHooks';
-import { visitasTecnicasApi } from '../api/tecnicoApi';
+import { useTecnico } from '@/hooks/useTecnico';
+import { toQueryResult, toCreateMutation } from '@/hooks/contextAdapter';
 
-const visitas = createResourceHooks('tecnico-visitas', visitasTecnicasApi);
-export const useVisitasTecnicas = visitas.useList;
+export const useVisitasTecnicas = () => {
+  const { visitas, loading, error, refetch } = useTecnico();
+  return toQueryResult(visitas, loading, error, refetch);
+};
+
+export const useCrearVisitaTecnica = () => {
+  const { createVisita } = useTecnico();
+  return toCreateMutation(createVisita);
+};

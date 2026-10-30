@@ -5,7 +5,7 @@ import {
   VARIEDADES_POR_ESPECIE,
   TIPOS_SECADO,
   PROCESOS_COSECHA,
-} from '../data/caficultorData';
+} from '../../../lib/constants';
 
 export default function RegistrarPreOfertaModal({ isOpen, onClose, lotes, onGuardar }) {
   const [formData, setFormData] = useState({

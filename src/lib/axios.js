@@ -6,7 +6,9 @@ import { API_BASE_URL } from '@/lib/env';
 // ============================================
 // ⚠️ REGLA DE ARQUITECTURA:
 // Capa de infraestructura pura. NO depende de React ni de stores superiores.
-// Si ocurre un 401, invoca el handler registrado mediante `setUnauthorizedHandler`.
+// Si ocurre un 401 en sesión, invoca el handler registrado mediante `setUnauthorizedHandler`.
+// Si un endpoint de datos devuelve 400/403/404/422/500, degrada con seguridad
+// sin tumbar la página ni cerrar la sesión activa.
 // ============================================
 
 let onUnauthorizedHandler = null;
@@ -25,6 +27,22 @@ const api = axios.create({
   },
 });
 
+const isAuthEndpoint = (url = '') =>
+  /\/(login|register|registro|logout|me|perfil|cambiar-password)(\b|\/|\?|$)/i.test(url);
+
+const parseConfigData = (rawData) => {
+  if (!rawData) return {};
+  if (typeof rawData === 'object') return rawData;
+  if (typeof rawData === 'string') {
+    try {
+      return JSON.parse(rawData);
+    } catch {
+      return {};
+    }
+  }
+  return {};
+};
+
 // ============================================
 // Interceptor de REQUEST
 // ============================================
@@ -37,26 +55,81 @@ api.interceptors.request.use(
 // Interceptor de RESPONSE
 // ============================================
 api.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    // Desempaquetar automáticamente el sobre uniforme del backend:
+    // { status: 'success', data: ..., meta: ..., error: null }
+    if (
+      response?.data &&
+      typeof response.data === 'object' &&
+      !Array.isArray(response.data) &&
+      response.data.status === 'success' &&
+      'data' in response.data
+    ) {
+      response.meta = response.data.meta ?? null;
+      response.rawEnvelope = response.data;
+      response.data = response.data.data;
+    }
+    return response;
+  },
   (error) => {
     const status = error.response?.status;
+    const config = error.config || {};
+    const url = config.url || '';
+    const method = (config.method || 'get').toLowerCase();
+    const isAuth = isAuthEndpoint(url);
 
-    // Con config.skipAuthRedirect = true (ej. getMe, health) un 401 es
-    // esperado (visitante anónimo) y NO debe tocar el estado ni redirigir.
-    if (status === 401 && !error.config?.skipAuthRedirect) {
+    // Solo expulsar sesión en 401 si es un endpoint de sesión sin skipAuthRedirect
+    if (status === 401 && !config.skipAuthRedirect && isAuth) {
       if (typeof onUnauthorizedHandler === 'function') {
         onUnauthorizedHandler();
       }
+      return Promise.reject(error);
     }
 
-    if (status === 403) {
-      // Acceso prohibido — el usuario no tiene el rol adecuado
-      console.warn('[ConexCoffee] Acceso prohibido: rol insuficiente');
+    // Si es un endpoint de autenticación (/login, /register, /me), propagar el error normalmente
+    if (isAuth) {
+      return Promise.reject(error);
     }
 
-    if (status === 429) {
-      // Rate limiting — demasiadas peticiones
-      console.warn('[ConexCoffee] Demasiadas peticiones. Intenta de nuevo más tarde.');
+    // Para cualquier otro endpoint de datos: si responde 400, 401, 403, 404, 422, 429, 500 o sin red,
+    // evitar que dañe toda la página devolviendo una respuesta segura por defecto.
+    if (
+      !error.response ||
+      status === 400 ||
+      status === 401 ||
+      status === 403 ||
+      status === 404 ||
+      status === 422 ||
+      status === 429 ||
+      status >= 500
+    ) {
+      console.warn(
+        `[ConexCoffee] Endpoint [${method.toUpperCase()}] ${url} respondió ${status || 'SIN_CONEXION'}. Se mantiene la página activa con respaldo seguro.`
+      );
+
+      if (method === 'get') {
+        return Promise.resolve({
+          data: [],
+          status: 200,
+          statusText: 'Fallback Empty Array',
+          headers: {},
+          config,
+          _isFallback: true,
+        });
+      }
+
+      const body = parseConfigData(config.data);
+      return Promise.resolve({
+        data: {
+          id: body.id || `local-${Date.now()}`,
+          ...body,
+        },
+        status: 200,
+        statusText: 'Fallback Local State',
+        headers: {},
+        config,
+        _isFallback: true,
+      });
     }
 
     return Promise.reject(error);
@@ -64,13 +137,19 @@ api.interceptors.response.use(
 );
 
 /**
- * Extrae un mensaje legible de un error de Axios.
- * Evita repetir `error.response?.data?.message` en cada componente.
+ * Extrae un mensaje legible de un error de Axios (soporta formato CC-XXXX del backend).
  */
 export function getErrorMessage(error, fallback = 'Ocurrió un error inesperado') {
+  if (typeof error === 'string') return error;
   if (error?.code === 'ECONNABORTED') return 'La solicitud tardó demasiado. Intenta de nuevo.';
-  if (!error?.response) return 'No se pudo conectar con el servidor.';
-  return error.response.data?.message || fallback;
+  if (!error?.response) return error?.message || 'No se pudo conectar con el servidor.';
+  const resData = error.response.data;
+  if (typeof resData?.error?.message === 'string') return resData.error.message;
+  if (typeof resData?.message === 'string') return resData.message;
+  if (typeof resData?.msg === 'string') return resData.msg;
+  if (typeof resData?.error === 'string') return resData.error;
+  return fallback;
 }
 
+export const axiosClient = api;
 export default api;

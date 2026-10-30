@@ -115,6 +115,7 @@ export default function FincasPage() {
     setModalRegistroLote(false);
   };
 
+
   const departamentosUnicos = Array.from(
     new Set(fincas.map((f) => f.departamento).filter(Boolean))
   );

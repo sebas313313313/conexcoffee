@@ -10,7 +10,6 @@ import {
   ShoppingBag,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
-
 import { QueryState } from '@/components/feedback';
 import ActionButton from '../components/ActionButton';
 import { useTableEntranceAnimation } from '../hooks/useSuperadminAnimations';
@@ -25,6 +24,7 @@ export default function ContenedoresPage() {
   const contenedores = query.data ?? [];
   const crearContenedor = useCrearSuperadminContenedor();
   const actualizarContenedor = useActualizarSuperadminContenedor();
+
   const [searchTerm, setSearchTerm] = useState('');
   const [filtroEstado, setFiltroEstado] = useState('todos');
   const tableRef = useRef(null);
@@ -138,6 +138,7 @@ export default function ContenedoresPage() {
     toast.success(`Oferta ${nuevaOfertaAsignar.codigo} asignada al contenedor`);
     setModalAsignarAbierto(false);
   };
+
 
   return (
     <div className="space-y-6">

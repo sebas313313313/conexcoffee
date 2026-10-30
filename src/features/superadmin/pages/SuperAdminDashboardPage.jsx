@@ -17,9 +17,11 @@ import {
   Users,
   Search,
 } from 'lucide-react';
-import { useAuthStore } from '@/store/useAuthStore';
+import useAuth from '@/hooks/useAuth';
+
 import { QueryState } from '@/components/feedback';
 import ModalBase from '@/components/modals/ModalBase';
+
 import StatKPI from '../components/StatKPI';
 import ActivityItem from '../components/ActivityItem';
 import ModuleCard from '../components/ModuleCard';
@@ -52,7 +54,7 @@ const TABS = [
 ];
 
 export default function SuperAdminDashboardPage() {
-  const user = useAuthStore((s) => s.user);
+  const { user } = useAuth();
   const statsQuery = useSuperadminStats();
   const stats = statsQuery.data || [];
   const metricsQuery = useSuperadminMetrics();
@@ -242,6 +244,7 @@ export default function SuperAdminDashboardPage() {
         <div ref={quickModulesRef} className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
           {modules.slice(0, 6).map((mod) => {
             const Icon = mod.icon || ICON_MAP[mod.iconName] || Globe;
+
             return (
               <Link key={mod.id} to={mod.path} className="flex flex-col items-center gap-2 p-4 rounded-xl border border-surface-200 hover:border-brand-terracota/40 hover:bg-brand-tint transition-colors duration-200 group text-center">
                 <div className="p-2.5 bg-surface-100 group-hover:bg-brand-terracota rounded-xl transition-colors duration-200">

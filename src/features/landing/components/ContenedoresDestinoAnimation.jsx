@@ -7,7 +7,7 @@ import {
   Compass,
   ArrowRight,
 } from 'lucide-react';
-import { CONTENEDORES_GLOBALES } from '../data/contenedoresData';
+import useLanding from '@/hooks/useLanding';
 import { CountryFlag } from '../components/Flags';
 import BarcoRealistaZoom from '../components/BarcoRealistaZoom';
 import ContenedorRealistaViewer from '../components/ContenedorRealistaViewer';
@@ -19,11 +19,14 @@ import ContenedorRealistaViewer from '../components/ContenedorRealistaViewer';
 // ==========================================================
 
 export default function ContenedoresDestinoAnimation() {
-  const [selectedPaisId, setSelectedPaisId] = useState(CONTENEDORES_GLOBALES[0]?.id || 'mexico');
+  const { contenedores: CONTENEDORES_GLOBALES } = useLanding();
+  const [selectedPaisId, setSelectedPaisId] = useState(null);
   const [scrollProgress, setScrollProgress] = useState(0);
 
   const scrollTrackRef = useRef(null);
   const terminalRef = useRef(null);
+
+  const activePaisId = selectedPaisId || CONTENEDORES_GLOBALES[0]?.id || '';
 
   // Monitorear el progreso de scroll normalizado (0.0 a 1.0)
   const handleScroll = useCallback(() => {
@@ -46,7 +49,7 @@ export default function ContenedoresDestinoAnimation() {
 
   // Contenedor seleccionado
   const selectedContenedor =
-    CONTENEDORES_GLOBALES.find((c) => c.id === selectedPaisId) || CONTENEDORES_GLOBALES[0];
+    CONTENEDORES_GLOBALES.find((c) => c.id === activePaisId) || CONTENEDORES_GLOBALES[0];
 
   // Desplazamiento directo a la terminal
   const scrollToTerminal = () => {
@@ -155,7 +158,7 @@ export default function ContenedoresDestinoAnimation() {
             ========================================================== */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-12">
           {CONTENEDORES_GLOBALES.map((pais) => {
-            const isSelected = pais.id === selectedPaisId;
+            const isSelected = pais.id === activePaisId;
 
             return (
               <button

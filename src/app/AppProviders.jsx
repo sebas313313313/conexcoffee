@@ -1,8 +1,6 @@
 import { useEffect } from 'react';
 import { Toaster } from 'react-hot-toast';
-import { QueryClientProvider } from '@tanstack/react-query';
-import queryClient from '@/lib/queryClient';
-import useAuth from '@/features/auth/hooks/useAuth';
+import { AuthProvider } from '@/context/AuthContext';
 import useAuthStore from '@/store/useAuthStore';
 import { setUnauthorizedHandler } from '@/lib/axios';
 import { startKeepAliveRobot } from '@/lib/keepAliveBot';
@@ -16,24 +14,19 @@ setUnauthorizedHandler(() => {
 // AppProviders — Wrapper de todos los providers globales
 // ============================================
 // Centraliza la inicialización de la app:
-// - Verifica la sesión del usuario al cargar (via getMe)
+// - Monta el AuthProvider (verifica sesión vía cookies HttpOnly)
 // - Monta el sistema de toasts (react-hot-toast)
-// - Activa el robot keep-alive para mantener despierto el backend/Vercel
+// - Activa el robot keep-alive opcional
 // ============================================
 
 export default function AppProviders({ children }) {
-  const { checkSession } = useAuth();
-
-  // Verificar sesión y activar robot de ping periódico
   useEffect(() => {
-    checkSession();
     const cleanupRobot = startKeepAliveRobot();
     return () => cleanupRobot?.();
-  }, [checkSession]);
+  }, []);
 
   return (
-    <QueryClientProvider client={queryClient}>
-      {/* Toast notifications */}
+    <AuthProvider>
       <Toaster
         position="top-right"
         toastOptions={{
@@ -59,6 +52,6 @@ export default function AppProviders({ children }) {
         }}
       />
       {children}
-    </QueryClientProvider>
+    </AuthProvider>
   );
 }

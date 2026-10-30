@@ -1,83 +1,129 @@
-import { createResourceHooks } from '@/hooks/createResourceHooks';
-import {
-  empresaKpisApi,
-  empresaActividadApi,
-  empresaBrokersApi,
-  empresaCaficultoresApi,
-  empresaContenedoresApi,
-  empresaLaboratoriosApi,
-  empresaMuestrasApi,
-  empresaPreofertasApi,
-  empresaOfertasApi,
-  empresaTecnicosApi,
-  empresaOfertasLibresApi,
-} from '../api/empresaApi';
+import { useEmpresa } from '@/hooks/useEmpresa';
+import { toQueryResult, toCreateMutation, toUpdateMutation } from '@/hooks/contextAdapter';
 
-const kpis = createResourceHooks('empresa-kpis', empresaKpisApi);
-export const useEmpresaKpis = kpis.useList;
+export const useEmpresaKpis = () => {
+  const { kpis, loading, error, refetch } = useEmpresa();
+  return toQueryResult(kpis, loading, error, refetch);
+};
 
-const actividad = createResourceHooks('empresa-actividad', empresaActividadApi);
-export const useEmpresaActividad = actividad.useList;
+export const useEmpresaActividad = () => {
+  const { actividad, loading, error, refetch } = useEmpresa();
+  return toQueryResult(actividad, loading, error, refetch);
+};
 
-const brokers = createResourceHooks('empresa-brokers', empresaBrokersApi, {
-  labels: { created: 'Broker registrado', updated: 'Broker actualizado' },
-});
-export const useEmpresaBrokers = brokers.useList;
-export const useCrearEmpresaBroker = brokers.useCreate;
-export const useActualizarEmpresaBroker = brokers.useUpdate;
+export const useEmpresaBrokers = () => {
+  const { brokers, loading, error, refetch } = useEmpresa();
+  return toQueryResult(brokers, loading, error, refetch);
+};
+export const useCrearEmpresaBroker = () => {
+  const { createBroker } = useEmpresa();
+  return toCreateMutation(createBroker);
+};
+export const useActualizarEmpresaBroker = () => {
+  const { updateBroker } = useEmpresa();
+  return toUpdateMutation(updateBroker);
+};
 
-const caficultores = createResourceHooks('empresa-caficultores', empresaCaficultoresApi, {
-  labels: { created: 'Caficultor registrado', updated: 'Caficultor actualizado' },
-});
-export const useEmpresaCaficultores = caficultores.useList;
-export const useCrearEmpresaCaficultor = caficultores.useCreate;
-export const useActualizarEmpresaCaficultor = caficultores.useUpdate;
+export const useEmpresaCaficultores = () => {
+  const { caficultores, loading, error, refetch } = useEmpresa();
+  return toQueryResult(caficultores, loading, error, refetch);
+};
+export const useCrearEmpresaCaficultor = () => {
+  const { createCaficultor } = useEmpresa();
+  return toCreateMutation(createCaficultor);
+};
+export const useActualizarEmpresaCaficultor = () => {
+  const { updateCaficultor } = useEmpresa();
+  return toUpdateMutation(updateCaficultor);
+};
 
-const contenedores = createResourceHooks('empresa-contenedores', empresaContenedoresApi, {
-  labels: { created: 'Contenedor registrado', updated: 'Contenedor actualizado' },
-});
-export const useEmpresaContenedores = contenedores.useList;
-export const useCrearEmpresaContenedor = contenedores.useCreate;
-export const useActualizarEmpresaContenedor = contenedores.useUpdate;
+export const useEmpresaContenedores = () => {
+  const { contenedores, loading, error, refetch } = useEmpresa();
+  return toQueryResult(contenedores, loading, error, refetch);
+};
+export const useCrearEmpresaContenedor = () => {
+  const { createContenedor } = useEmpresa();
+  return toCreateMutation(createContenedor);
+};
+export const useActualizarEmpresaContenedor = () => {
+  const { updateContenedor } = useEmpresa();
+  return toUpdateMutation(updateContenedor);
+};
 
-const laboratorios = createResourceHooks('empresa-laboratorios', empresaLaboratoriosApi, {
-  labels: { created: 'Laboratorio registrado', updated: 'Laboratorio actualizado' },
-});
-export const useEmpresaLaboratorios = laboratorios.useList;
-export const useCrearEmpresaLaboratorio = laboratorios.useCreate;
-export const useActualizarEmpresaLaboratorio = laboratorios.useUpdate;
+export const useEmpresaLaboratorios = () => {
+  const { laboratorios, loading, error, refetch } = useEmpresa();
+  return toQueryResult(laboratorios, loading, error, refetch);
+};
+export const useCrearEmpresaLaboratorio = () => {
+  const { createLaboratorio } = useEmpresa();
+  return toCreateMutation(createLaboratorio);
+};
+export const useActualizarEmpresaLaboratorio = () => {
+  const { updateLaboratorio } = useEmpresa();
+  return toUpdateMutation(updateLaboratorio);
+};
 
-const muestras = createResourceHooks('empresa-muestras', empresaMuestrasApi, {
-  labels: { created: 'Muestra registrada', updated: 'Muestra actualizada' },
-});
-export const useEmpresaMuestras = muestras.useList;
-export const useCrearEmpresaMuestra = muestras.useCreate;
-export const useActualizarEmpresaMuestra = muestras.useUpdate;
+export const useEmpresaMuestras = () => {
+  const { muestras, loading, error, refetch } = useEmpresa();
+  return toQueryResult(muestras, loading, error, refetch);
+};
+export const useCrearEmpresaMuestra = () => {
+  const { createMuestra } = useEmpresa();
+  return toCreateMutation(createMuestra);
+};
+export const useActualizarEmpresaMuestra = () => {
+  const { updateMuestra } = useEmpresa();
+  return toUpdateMutation(updateMuestra);
+};
 
-const preofertas = createResourceHooks('empresa-preofertas', empresaPreofertasApi, {
-  labels: { created: 'Pre-oferta registrada', updated: 'Pre-oferta actualizada' },
-});
-export const useEmpresaPreofertas = preofertas.useList;
-export const useCrearEmpresaPreoferta = preofertas.useCreate;
-export const useActualizarEmpresaPreoferta = preofertas.useUpdate;
+export const useEmpresaPreofertas = () => {
+  const { preofertas, loading, error, refetch } = useEmpresa();
+  return toQueryResult(preofertas, loading, error, refetch);
+};
+export const useCrearEmpresaPreoferta = () => {
+  const { createPreoferta } = useEmpresa();
+  return toCreateMutation(createPreoferta);
+};
+export const useActualizarEmpresaPreoferta = () => {
+  const { updatePreoferta } = useEmpresa();
+  return toUpdateMutation(updatePreoferta);
+};
 
-const ofertas = createResourceHooks('empresa-ofertas', empresaOfertasApi, {
-  labels: { created: 'Oferta registrada', updated: 'Oferta actualizada' },
-});
-export const useEmpresaOfertas = ofertas.useList;
-export const useCrearEmpresaOferta = ofertas.useCreate;
-export const useActualizarEmpresaOferta = ofertas.useUpdate;
+export const useEmpresaOfertas = () => {
+  const { ofertas, loading, error, refetch } = useEmpresa();
+  return toQueryResult(ofertas, loading, error, refetch);
+};
+export const useCrearEmpresaOferta = () => {
+  const { createOferta } = useEmpresa();
+  return toCreateMutation(createOferta);
+};
+export const useActualizarEmpresaOferta = () => {
+  const { updateOferta } = useEmpresa();
+  return toUpdateMutation(updateOferta);
+};
 
-const tecnicos = createResourceHooks('empresa-tecnicos', empresaTecnicosApi, {
-  labels: { created: 'Técnico registrado', updated: 'Técnico actualizado' },
-});
-export const useEmpresaTecnicos = tecnicos.useList;
-export const useCrearEmpresaTecnico = tecnicos.useCreate;
-export const useActualizarEmpresaTecnico = tecnicos.useUpdate;
+export const useEmpresaTecnicos = () => {
+  const { tecnicos, loading, error, refetch } = useEmpresa();
+  return toQueryResult(tecnicos, loading, error, refetch);
+};
+export const useCrearEmpresaTecnico = () => {
+  const { createTecnico } = useEmpresa();
+  return toCreateMutation(createTecnico);
+};
+export const useActualizarEmpresaTecnico = () => {
+  const { updateTecnico } = useEmpresa();
+  return toUpdateMutation(updateTecnico);
+};
 
-const ofertasLibres = createResourceHooks('empresa-ofertas-libres', empresaOfertasLibresApi, {
-  labels: { created: 'Oferta libre registrada', updated: 'Oferta libre actualizada' },
-});
-export const useEmpresaOfertasLibres = ofertasLibres.useList;
-export const useCrearEmpresaOfertaLibre = ofertasLibres.useCreate;
-export const useActualizarEmpresaOfertaLibre = ofertasLibres.useUpdate;
+export const useEmpresaOfertasLibres = () => {
+  const { ofertasLibres, loading, error, refetch } = useEmpresa();
+  return toQueryResult(ofertasLibres, loading, error, refetch);
+};
+export const useCrearEmpresaOfertaLibre = () => {
+  const { createPreoferta } = useEmpresa();
+  return toCreateMutation(createPreoferta);
+};
+export const useActualizarEmpresaOfertaLibre = () => {
+  const { updateOfertaLibre } = useEmpresa();
+  return toUpdateMutation(updateOfertaLibre);
+};

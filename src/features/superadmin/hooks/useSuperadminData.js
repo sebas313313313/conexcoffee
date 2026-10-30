@@ -1,107 +1,202 @@
-import { createResourceHooks } from '@/hooks/createResourceHooks';
+import { useSuperAdmin } from '@/hooks/useSuperAdmin';
 import {
-  superadminStatsApi,
-  superadminMetricsApi,
-  superadminActivityApi,
-  superadminModulesApi,
-  superadminBrokersApi,
-  superadminCaficultoresApi,
-  superadminCatadoresApi,
-  superadminCompradoresApi,
-  superadminPedidosApi,
-  superadminContenedoresApi,
-  superadminEmpresasApi,
-  superadminFincasApi,
-  superadminLotesApi,
-  superadminLaboratoriosApi,
-  superadminMuestrasApi,
-  superadminOfertasApi,
-  superadminPreofertasApi,
-  superadminTecnicosApi,
-  superadminUsuariosApi,
-  superadminConfiguracionApi,
-} from '../api/superadminApi';
+  toQueryResult,
+  toCreateMutation,
+  toUpdateMutation,
+} from '@/hooks/contextAdapter';
 
-const stats = createResourceHooks('superadmin-stats', superadminStatsApi);
-export const useSuperadminStats = stats.useList;
+export const useSuperadminStats = () => {
+  const { stats, loading, error, refetch } = useSuperAdmin();
+  return toQueryResult(stats, loading, error, refetch);
+};
 
-const metrics = createResourceHooks('superadmin-metrics', superadminMetricsApi);
-export const useSuperadminMetrics = metrics.useList;
+export const useSuperadminMetrics = () => {
+  const { metrics, loading, error, refetch } = useSuperAdmin();
+  return toQueryResult(metrics, loading, error, refetch);
+};
 
-const activity = createResourceHooks('superadmin-activity', superadminActivityApi);
-export const useSuperadminActivity = activity.useList;
+export const useSuperadminActivity = () => {
+  const { activity, loading, error, refetch } = useSuperAdmin();
+  return toQueryResult(activity, loading, error, refetch);
+};
 
-const modules = createResourceHooks('superadmin-modules', superadminModulesApi);
-export const useSuperadminModules = modules.useList;
+export const useSuperadminModules = () => {
+  const { modules, loading, error, refetch } = useSuperAdmin();
+  return toQueryResult(modules, loading, error, refetch);
+};
 
-const brokers = createResourceHooks('superadmin-brokers', superadminBrokersApi);
-export const useSuperadminBrokers = brokers.useList;
-export const useCrearSuperadminBroker = brokers.useCreate;
-export const useActualizarSuperadminBroker = brokers.useUpdate;
+export const useSuperadminBrokers = () => {
+  const { brokers, loading, error, refetch } = useSuperAdmin();
+  return toQueryResult(brokers, loading, error, refetch);
+};
+export const useCrearSuperadminBroker = () => {
+  const { createBroker } = useSuperAdmin();
+  return toCreateMutation(createBroker);
+};
+export const useActualizarSuperadminBroker = () => {
+  const { updateBroker } = useSuperAdmin();
+  return toUpdateMutation(updateBroker);
+};
 
-const caficultores = createResourceHooks('superadmin-caficultores', superadminCaficultoresApi);
-export const useSuperadminCaficultores = caficultores.useList;
-export const useCrearSuperadminCaficultor = caficultores.useCreate;
-export const useActualizarSuperadminCaficultor = caficultores.useUpdate;
+export const useSuperadminCaficultores = () => {
+  const { caficultores, loading, error, refetch } = useSuperAdmin();
+  return toQueryResult(caficultores, loading, error, refetch);
+};
+export const useCrearSuperadminCaficultor = () => {
+  const { createCaficultor } = useSuperAdmin();
+  return toCreateMutation(createCaficultor);
+};
+export const useActualizarSuperadminCaficultor = () => {
+  const { updateCaficultor } = useSuperAdmin();
+  return toUpdateMutation(updateCaficultor);
+};
 
-const catadores = createResourceHooks('superadmin-catadores', superadminCatadoresApi);
-export const useSuperadminCatadores = catadores.useList;
-export const useCrearSuperadminCatador = catadores.useCreate;
-export const useActualizarSuperadminCatador = catadores.useUpdate;
+export const useSuperadminCatadores = () => {
+  const { catadores, loading, error, refetch } = useSuperAdmin();
+  return toQueryResult(catadores, loading, error, refetch);
+};
+export const useCrearSuperadminCatador = () => {
+  const { createCatador } = useSuperAdmin();
+  return toCreateMutation(createCatador);
+};
+export const useActualizarSuperadminCatador = () => {
+  const { updateCatador } = useSuperAdmin();
+  return toUpdateMutation(updateCatador);
+};
 
-const compradores = createResourceHooks('superadmin-compradores', superadminCompradoresApi);
-export const useSuperadminCompradores = compradores.useList;
-export const useCrearSuperadminComprador = compradores.useCreate;
-export const useActualizarSuperadminComprador = compradores.useUpdate;
+export const useSuperadminCompradores = () => {
+  const { compradores, loading, error, refetch } = useSuperAdmin();
+  return toQueryResult(compradores, loading, error, refetch);
+};
+export const useCrearSuperadminComprador = () => {
+  const { createComprador } = useSuperAdmin();
+  return toCreateMutation(createComprador);
+};
+export const useActualizarSuperadminComprador = () => {
+  const { updateComprador } = useSuperAdmin();
+  return toUpdateMutation(updateComprador);
+};
 
-const pedidos = createResourceHooks('superadmin-pedidos', superadminPedidosApi);
-export const useSuperadminPedidos = pedidos.useList;
+export const useSuperadminPedidos = () => {
+  const { compras, loading, error, refetch } = useSuperAdmin();
+  return toQueryResult(compras, loading, error, refetch);
+};
 
-const contenedores = createResourceHooks('superadmin-contenedores', superadminContenedoresApi);
-export const useSuperadminContenedores = contenedores.useList;
-export const useCrearSuperadminContenedor = contenedores.useCreate;
-export const useActualizarSuperadminContenedor = contenedores.useUpdate;
+export const useSuperadminContenedores = () => {
+  const { contenedores, loading, error, refetch } = useSuperAdmin();
+  return toQueryResult(contenedores, loading, error, refetch);
+};
+export const useCrearSuperadminContenedor = () => {
+  const { createContenedor } = useSuperAdmin();
+  return toCreateMutation(createContenedor);
+};
+export const useActualizarSuperadminContenedor = () => {
+  const { updateContenedor } = useSuperAdmin();
+  return toUpdateMutation(updateContenedor);
+};
 
-const empresas = createResourceHooks('superadmin-empresas', superadminEmpresasApi);
-export const useSuperadminEmpresas = empresas.useList;
-export const useCrearSuperadminEmpresa = empresas.useCreate;
-export const useActualizarSuperadminEmpresa = empresas.useUpdate;
+export const useSuperadminEmpresas = () => {
+  const { empresas, loading, error, refetch } = useSuperAdmin();
+  return toQueryResult(empresas, loading, error, refetch);
+};
+export const useCrearSuperadminEmpresa = () => {
+  const { createEmpresa } = useSuperAdmin();
+  return toCreateMutation(createEmpresa);
+};
+export const useActualizarSuperadminEmpresa = () => {
+  const { updateEmpresa } = useSuperAdmin();
+  return toUpdateMutation(updateEmpresa);
+};
 
-const fincas = createResourceHooks('superadmin-fincas', superadminFincasApi);
-export const useSuperadminFincas = fincas.useList;
-export const useCrearSuperadminFinca = fincas.useCreate;
-export const useActualizarSuperadminFinca = fincas.useUpdate;
+export const useSuperadminFincas = () => {
+  const { fincas, loading, error, refetch } = useSuperAdmin();
+  return toQueryResult(fincas, loading, error, refetch);
+};
+export const useCrearSuperadminFinca = () => {
+  const { createFinca } = useSuperAdmin();
+  return toCreateMutation(createFinca);
+};
+export const useActualizarSuperadminFinca = () => {
+  const { updateFinca } = useSuperAdmin();
+  return toUpdateMutation(updateFinca);
+};
 
-const lotes = createResourceHooks('superadmin-lotes', superadminLotesApi);
-export const useSuperadminLotes = lotes.useList;
-export const useCrearSuperadminLote = lotes.useCreate;
-export const useActualizarSuperadminLote = lotes.useUpdate;
+export const useSuperadminLotes = () => {
+  const { lotes, loading, error, refetch } = useSuperAdmin();
+  return toQueryResult(lotes, loading, error, refetch);
+};
+export const useCrearSuperadminLote = () => {
+  const { createLote } = useSuperAdmin();
+  return toCreateMutation(createLote);
+};
+export const useActualizarSuperadminLote = () => {
+  const { updateLote } = useSuperAdmin();
+  return toUpdateMutation(updateLote);
+};
 
-const laboratorios = createResourceHooks('superadmin-laboratorios', superadminLaboratoriosApi);
-export const useSuperadminLaboratorios = laboratorios.useList;
-export const useCrearSuperadminLaboratorio = laboratorios.useCreate;
-export const useActualizarSuperadminLaboratorio = laboratorios.useUpdate;
+export const useSuperadminLaboratorios = () => {
+  const { laboratorios, loading, error, refetch } = useSuperAdmin();
+  return toQueryResult(laboratorios, loading, error, refetch);
+};
+export const useCrearSuperadminLaboratorio = () => {
+  const { createLaboratorio } = useSuperAdmin();
+  return toCreateMutation(createLaboratorio);
+};
+export const useActualizarSuperadminLaboratorio = () => {
+  const { updateLaboratorio } = useSuperAdmin();
+  return toUpdateMutation(updateLaboratorio);
+};
 
-const muestras = createResourceHooks('superadmin-muestras', superadminMuestrasApi);
-export const useSuperadminMuestras = muestras.useList;
-export const useCrearSuperadminMuestra = muestras.useCreate;
-export const useActualizarSuperadminMuestra = muestras.useUpdate;
+export const useSuperadminMuestras = () => {
+  const { muestras, loading, error, refetch } = useSuperAdmin();
+  return toQueryResult(muestras, loading, error, refetch);
+};
+export const useCrearSuperadminMuestra = () => {
+  const { createMuestra } = useSuperAdmin();
+  return toCreateMutation(createMuestra);
+};
+export const useActualizarSuperadminMuestra = () => {
+  const { asignarLaboratorioMuestra } = useSuperAdmin();
+  return toUpdateMutation(asignarLaboratorioMuestra);
+};
 
-const ofertas = createResourceHooks('superadmin-ofertas', superadminOfertasApi);
-export const useSuperadminOfertas = ofertas.useList;
+export const useSuperadminOfertas = () => {
+  const { ofertas, loading, error, refetch } = useSuperAdmin();
+  return toQueryResult(ofertas, loading, error, refetch);
+};
 
-const preofertas = createResourceHooks('superadmin-preofertas', superadminPreofertasApi);
-export const useSuperadminPreofertas = preofertas.useList;
+export const useSuperadminPreofertas = () => {
+  const { preofertas, loading, error, refetch } = useSuperAdmin();
+  return toQueryResult(preofertas, loading, error, refetch);
+};
 
-const tecnicos = createResourceHooks('superadmin-tecnicos', superadminTecnicosApi);
-export const useSuperadminTecnicos = tecnicos.useList;
-export const useCrearSuperadminTecnico = tecnicos.useCreate;
-export const useActualizarSuperadminTecnico = tecnicos.useUpdate;
+export const useSuperadminTecnicos = () => {
+  const { tecnicos, loading, error, refetch } = useSuperAdmin();
+  return toQueryResult(tecnicos, loading, error, refetch);
+};
+export const useCrearSuperadminTecnico = () => {
+  const { createTecnico } = useSuperAdmin();
+  return toCreateMutation(createTecnico);
+};
+export const useActualizarSuperadminTecnico = () => {
+  const { updateTecnico } = useSuperAdmin();
+  return toUpdateMutation(updateTecnico);
+};
 
-const usuarios = createResourceHooks('superadmin-usuarios', superadminUsuariosApi);
-export const useSuperadminUsuarios = usuarios.useList;
-export const useCrearSuperadminUsuario = usuarios.useCreate;
-export const useActualizarSuperadminUsuario = usuarios.useUpdate;
+export const useSuperadminUsuarios = () => {
+  const { usuarios, loading, error, refetch } = useSuperAdmin();
+  return toQueryResult(usuarios, loading, error, refetch);
+};
+export const useCrearSuperadminUsuario = () => {
+  const { createUsuario } = useSuperAdmin();
+  return toCreateMutation(createUsuario);
+};
+export const useActualizarSuperadminUsuario = () => {
+  const { updateUsuario } = useSuperAdmin();
+  return toUpdateMutation(updateUsuario);
+};
 
-const configuracion = createResourceHooks('superadmin-configuracion', superadminConfiguracionApi);
-export const useSuperadminConfiguracion = configuracion.useList;
+export const useSuperadminConfiguracion = () => {
+  const { configuracion, loading, error, refetch } = useSuperAdmin();
+  return toQueryResult(configuracion, loading, error, refetch);
+};

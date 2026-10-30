@@ -53,3 +53,89 @@ export const PAGINATION = {
  * Diccionario de colores y estilos globales oficiales
  */
 export { BRAND_COLORS, PALETTE, COLOR_STYLES } from './colors';
+
+/**
+ * Catálogos geográficos y agronómicos para formularios de fincas, lotes y pre-ofertas.
+ */
+export const COLOMBIA_GEOGRAFIA = {
+  Huila: {
+    municipios: ['Pitalito', 'San Agustín', 'Acevedo', 'Garzón', 'Gigante', 'La Plata', 'Timaná'],
+    veredas: ['El Mirador', 'La Cabaña', 'San Antonio', 'La Palma', 'El Triunfo', 'Bajo Naranjal'],
+  },
+  Cauca: {
+    municipios: ['Popayán', 'Piendamó', 'Santander de Quilichao', 'Timbío', 'Caldono', 'Morales', 'Inzá'],
+    veredas: ['La Rejoya', 'San Rafael', 'El Rodeo', 'La Meseta', 'Poblazón', 'Rioblanco'],
+  },
+  Nariño: {
+    municipios: ['Pasto', 'La Unión', 'Sandoná', 'Buesaco', 'Consacá', 'Chachagüí', 'La Florida'],
+    veredas: ['La Victoria', 'El Placer', 'San Francisco', 'El Vergel', 'Altamira'],
+  },
+  Tolima: {
+    municipios: ['Planadas', 'Chaparral', 'Ibagué', 'Líbano', 'Fresno', 'Ataco', 'Roncesvalles'],
+    veredas: ['Bilbao', 'Gaitania', 'La Marina', 'El Diamante', 'Santa Rosa'],
+  },
+  Antioquia: {
+    municipios: ['Jericó', 'Andes', 'Fredonia', 'Ciudad Bolívar', 'Santa Bárbara', 'Urrao'],
+    veredas: ['La Soledad', 'San Bartolo', 'Quebrada Arriba', 'La Cascada'],
+  },
+  Caldas: {
+    municipios: ['Chinchiná', 'Manizales', 'Palestina', 'Villamaría', 'Anserma'],
+    veredas: ['El Trébol', 'Bajo Español', 'Guayabal', 'La Floresta'],
+  },
+  Quindío: {
+    municipios: ['Calarcá', 'Armenia', 'Circasia', 'Montenegro', 'Salento', 'Pijao'],
+    veredas: ['La Virginia', 'Boquía', 'La Bella', 'San Rafael'],
+  },
+  Risaralda: {
+    municipios: ['Santa Rosa de Cabal', 'Belén de Umbría', 'Pereira', 'Marsella', 'Santuario'],
+    veredas: ['El Guayabo', 'La Linda', 'La Cristalina', 'San Andrés'],
+  },
+  Santander: {
+    municipios: ['San Gil', 'Socorro', 'Curití', 'Páramo', 'Piedecuesta'],
+    veredas: ['El Carmen', 'San José', 'La Laja', 'El Palmar'],
+  },
+};
+
+export const VARIEDADES_POR_ESPECIE = {
+  Arábica: [
+    'Castillo',
+    'Caturra',
+    'Colombia',
+    'Borbón Rosado',
+    'Geisha',
+    'Típica (Typica)',
+    'Tabi',
+    'Maragogipe',
+    'Pacamara',
+    'Cenicafé 1',
+    'San Bernardo',
+    'Bourbon Rojo',
+    'Bourbon Amarillo',
+  ],
+  Robusta: [
+    'Conilón',
+    'Robusta Tropical',
+    'Kouillou',
+    'Robusta Selección Colombia',
+  ],
+};
+
+export const TIPOS_SECADO = [
+  'Mecánico dinámico',
+  'Mecánico estático',
+  'Mecánico por deshumidificación',
+  'Solar',
+];
+
+export const PROCESOS_COSECHA = [
+  'Honey amarillo',
+  'Honey con fermentación',
+  'Honey negro',
+  'Honey rojo',
+  'Lavado con fermentación',
+  'Lavado tradicional',
+  'Lavado Wet Hulled',
+  'Natural con fermentación',
+  'Natural',
+];
+

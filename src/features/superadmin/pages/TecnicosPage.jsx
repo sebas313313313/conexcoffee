@@ -16,12 +16,14 @@ import {
   useCrearSuperadminTecnico,
   useActualizarSuperadminTecnico,
 } from '../hooks/useSuperadminData';
+import { CrearTecnicoModal } from '@/components/usuarios';
 
 export default function TecnicosPage() {
   const query = useSuperadminTecnicos();
   const tecnicos = query.data ?? [];
   const crearTecnico = useCrearSuperadminTecnico();
   const actualizarTecnico = useActualizarSuperadminTecnico();
+
   const [searchTerm, setSearchTerm] = useState('');
   const [filtroZona, setFiltroZona] = useState('todos');
   const tableRef = useRef(null);
@@ -80,10 +82,9 @@ export default function TecnicosPage() {
     setModalDetalleAbierto(true);
   };
 
-  const guardarCreacion = (e) => {
-    e.preventDefault();
+  const guardarCreacion = (data) => {
     const nuevo = {
-      ...formData,
+      ...data,
       visitasRealizadas: 0,
       activo: true,
       avatar: '/images/users/user-dummy-img.jpg',
@@ -97,6 +98,7 @@ export default function TecnicosPage() {
     actualizarTecnico.mutate({ ...tecnicoActual, ...formData });
     setModalEditarAbierto(false);
   };
+
 
   const zonasUnicas = Array.from(
     new Set(tecnicos.map((t) => t.zonaAsignada).filter(Boolean))
@@ -244,123 +246,12 @@ export default function TecnicosPage() {
       </div>
 
       {/* MODAL REGISTRAR TÉCNICO */}
-      {modalRegistroAbierto && (
-        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
-          <div className="bg-white rounded-2xl max-w-2xl w-full p-6 shadow-2xl border border-surface-200 my-8">
-            <div className="flex items-center justify-between pb-4 border-b border-surface-200">
-              <div className="flex items-center gap-2.5">
-                <div className="h-9 w-9 rounded-xl bg-brand-tint text-brand-terracota flex items-center justify-center">
-                  <UserCheck className="h-5 w-5" />
-                </div>
-                <div>
-                  <h3 className="text-lg font-bold text-surface-900">Registrar Técnico</h3>
-                  <p className="text-xs text-surface-500">Datos personales y zona de trabajo</p>
-                </div>
-              </div>
-              <button
-                onClick={() => setModalRegistroAbierto(false)}
-                className="p-1.5 rounded-lg text-surface-400 hover:bg-surface-100 cursor-pointer"
-              >
-                <X className="h-5 w-5" />
-              </button>
-            </div>
-
-            <form onSubmit={guardarCreacion} className="mt-4 space-y-4">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-bold text-surface-700 mb-1">Cédula de Ciudadanía *</label>
-                  <input
-                    required
-                    type="text"
-                    value={formData.numeroIdentificacion}
-                    onChange={(e) => setFormData({ ...formData, numeroIdentificacion: e.target.value })}
-                    className="w-full px-3 py-2 text-sm rounded-xl border border-surface-200"
-                    placeholder="79845123"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-bold text-surface-700 mb-1">Teléfono Móvil *</label>
-                  <input
-                    required
-                    type="text"
-                    value={formData.telefono}
-                    onChange={(e) => setFormData({ ...formData, telefono: e.target.value })}
-                    className="w-full px-3 py-2 text-sm rounded-xl border border-surface-200"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-bold text-surface-700 mb-1">Primer Nombre *</label>
-                  <input
-                    required
-                    type="text"
-                    value={formData.primerNombre}
-                    onChange={(e) => setFormData({ ...formData, primerNombre: e.target.value.toUpperCase() })}
-                    className="w-full px-3 py-2 text-sm rounded-xl border border-surface-200"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-bold text-surface-700 mb-1">Primer Apellido *</label>
-                  <input
-                    required
-                    type="text"
-                    value={formData.primerApellido}
-                    onChange={(e) => setFormData({ ...formData, primerApellido: e.target.value.toUpperCase() })}
-                    className="w-full px-3 py-2 text-sm rounded-xl border border-surface-200"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-bold text-surface-700 mb-1">Correo Electrónico *</label>
-                  <input
-                    required
-                    type="email"
-                    value={formData.correo}
-                    onChange={(e) => setFormData({ ...formData, correo: e.target.value })}
-                    className="w-full px-3 py-2 text-sm rounded-xl border border-surface-200"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-bold text-surface-700 mb-1">Zona Asignada *</label>
-                  <input
-                    required
-                    type="text"
-                    value={formData.zonaAsignada}
-                    onChange={(e) => setFormData({ ...formData, zonaAsignada: e.target.value })}
-                    className="w-full px-3 py-2 text-sm rounded-xl border border-surface-200"
-                    placeholder="Ej. Huila (Pitalito, Acevedo)"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold text-surface-700 mb-1">Especialidad o Certificación</label>
-                <input
-                  type="text"
-                  value={formData.especialidad}
-                  onChange={(e) => setFormData({ ...formData, especialidad: e.target.value })}
-                  className="w-full px-3 py-2 text-sm rounded-xl border border-surface-200"
-                  placeholder="Ej. Q-Grader, Ingeniero Agrónomo, Auditor de Calidad"
-                />
-              </div>
-
-              <div className="flex justify-end gap-3 pt-3 border-t border-surface-200">
-                <button
-                  type="button"
-                  onClick={() => setModalRegistroAbierto(false)}
-                  className="px-4 py-2 rounded-xl border border-surface-200 text-sm font-semibold text-surface-600 hover:bg-surface-50 cursor-pointer"
-                >
-                  Cancelar
-                </button>
-                <button
-                  type="submit"
-                  className="px-5 py-2 rounded-xl bg-brand-terracota hover:bg-brand-terracota-dark text-white text-sm font-semibold shadow-md cursor-pointer"
-                >
-                  Guardar Técnico
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+      <CrearTecnicoModal
+        isOpen={modalRegistroAbierto}
+        onClose={() => setModalRegistroAbierto(false)}
+        onSubmit={guardarCreacion}
+        loading={crearTecnico.isPending}
+      />
 
       {/* MODAL DETALLES */}
       {modalDetalleAbierto && tecnicoActual && (

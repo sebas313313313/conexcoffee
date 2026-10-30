@@ -10,34 +10,42 @@ import {
 import { ModuloCabecera } from '@/components/data-display';
 import { QueryState } from '@/components/feedback';
 import { useSuperadminConfiguracion } from '../hooks/useSuperadminData';
+import { useSuperAdmin } from '@/hooks/useSuperAdmin';
 
 export default function ConfiguracionPage() {
   const query = useSuperadminConfiguracion();
+  const { configuracion, updateConfiguracion } = useSuperAdmin();
   const [guardadoExitoso, setGuardadoExitoso] = useState(false);
   const [config, setConfig] = useState({
-    nombrePlataforma: 'ConexCoffee — Plataforma de Café Especial',
-    emailSoporte: 'soporte@conexcoffee.com',
-    telefonoContacto: '+57 311 234 4546',
+    nombrePlataforma: configuracion?.nombrePlataforma || 'ConexCoffee — Plataforma de Café Especial',
+    emailSoporte: configuracion?.correoSoporte || 'soporte@conexcoffee.com',
+    telefonoContacto: configuracion?.telefonoSoporte || '+57 311 234 4546',
     registroPublicoHabilitado: true,
     captchaHabilitado: true,
-    notificacionesEmail: true,
+    notificacionesEmail: configuracion?.notificacionesEmail ?? true,
     monedaPrincipal: 'USD / COP',
     unidadPesoDefecto: 'Kilogramos (kg)',
-    umbralHumedadMax: 12.5,
-    puntajeMinimoSca: 84.0,
+    umbralHumedadMax: configuracion?.humedadMaximaPermitida || 12.5,
+    puntajeMinimoSca: configuracion?.puntajeScaMinimo || 84.0,
   });
 
   useEffect(() => {
     if (query.data?.[0]) {
-      setConfig(query.data[0]);
+      setConfig((prev) => ({ ...prev, ...query.data[0] }));
+    } else if (configuracion) {
+      setConfig((prev) => ({ ...prev, ...configuracion }));
     }
-  }, [query.data]);
+  }, [query.data, configuracion]);
 
-  const guardarConfiguracion = (e) => {
+  const guardarConfiguracion = async (e) => {
     e.preventDefault();
+    if (updateConfiguracion) {
+      await updateConfiguracion(config);
+    }
     setGuardadoExitoso(true);
     setTimeout(() => setGuardadoExitoso(false), 3000);
   };
+
 
   return (
     <div className="space-y-6">

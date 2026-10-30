@@ -7,13 +7,13 @@ import {
   Printer,
   FlaskConical,
 } from 'lucide-react';
-import toast from 'react-hot-toast';
 import { QueryState } from '@/components/feedback';
-import { useResultados } from '../hooks/useLaboratorioData';
+import { useResultados, useActualizarResultado } from '../hooks/useLaboratorioData';
 import { VerResultadoModal, GenerarReporteModal } from '../components';
 
 export default function LaboratorioResultadosPage() {
   const query = useResultados();
+  const actualizarResultado = useActualizarResultado();
   const resultados = query.data ?? [];
   const [searchTerm, setSearchTerm] = useState('');
   const [filtroEstado, setFiltroEstado] = useState('Todos');
@@ -25,8 +25,7 @@ export default function LaboratorioResultadosPage() {
   const [modalReporte, setModalReporte] = useState(false);
   const [hojaReporte, setHojaReporte] = useState(null);
 
-  const [resultadosLocal, setResultadosLocal] = useState(null);
-  const listaResultados = resultadosLocal ?? resultados;
+  const listaResultados = resultados;
 
   // Filtrado
   const resultadosFiltrados = listaResultados.filter((item) => {
@@ -54,20 +53,15 @@ export default function LaboratorioResultadosPage() {
   };
 
   const handleAprobarMuestra = (item) => {
-    setResultadosLocal((prev) =>
-      (prev ?? resultados).map((r) =>
-        r.id === item.id ? { ...r, estado: 'Aprobada' } : r
-      )
-    );
+    actualizarResultado.mutate({
+      ...item,
+      estado: 'Aprobada',
+      es_conforme: true,
+    });
 
     if (resultadoSeleccionado && resultadoSeleccionado.id === item.id) {
       setResultadoSeleccionado((prev) => ({ ...prev, estado: 'Aprobada' }));
     }
-
-    toast.success(`¡Muestra ${item.codigo} aprobada exitosamente!`, {
-      icon: '✅',
-      duration: 4000,
-    });
   };
 
   const handleAbrirReporte = (item) => {

@@ -1,6 +1,7 @@
 import { useState, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { register } from '../api/authApi';
+import useAuth from '@/hooks/useAuth';
+import { getErrorMessage } from '@/lib/axios';
 import { Input, Button, Captcha } from '@/components/ui';
 import { UserPlus, Camera, XCircle, Save } from 'lucide-react';
 import toast from 'react-hot-toast';
@@ -205,6 +206,7 @@ export default function RegisterForm({ onSuccess, onCancel }) {
   const captchaTokenRef = useRef('');
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
+  const { register } = useAuth();
   const navigate = useNavigate();
   const fileInputRef = useRef(null);
 
@@ -316,8 +318,7 @@ export default function RegisterForm({ onSuccess, onCancel }) {
       if (onSuccess) onSuccess(formData.email);
       else navigate('/login');
     } catch (error) {
-      const message = error.response?.data?.message || 'Error al registrarse';
-      toast.error(message);
+      toast.error(getErrorMessage(error, 'Error al registrarse'));
     } finally {
       setLoading(false);
     }

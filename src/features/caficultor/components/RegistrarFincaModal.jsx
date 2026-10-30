@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Coffee, X, Upload } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { COLOMBIA_GEOGRAFIA } from '../data/caficultorData';
+import { COLOMBIA_GEOGRAFIA } from '../../../lib/constants';
 
 export default function RegistrarFincaModal({ isOpen, onClose, onGuardar }) {
   const [formData, setFormData] = useState({

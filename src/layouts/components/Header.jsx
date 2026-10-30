@@ -1,9 +1,8 @@
 import { useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { animate } from 'animejs';
-import useAuthStore from '@/store/useAuthStore';
+import useAuth from '@/hooks/useAuth';
 import useUIStore from '@/store/useUIStore';
-import useAuth from '@/features/auth/hooks/useAuth';
 import { ROLES } from '@/lib/constants';
 import { Menu, LogOut, User, Bell } from 'lucide-react';
 
@@ -14,11 +13,10 @@ import { Menu, LogOut, User, Bell } from 'lucide-react';
 // ============================================
 
 export default function Header() {
-  const user = useAuthStore((s) => s.user);
-  const role = useAuthStore((s) => s.role);
+  const { user, role, logout } = useAuth();
   const sidebarOpen = useUIStore((s) => s.sidebarOpen);
   const toggleSidebar = useUIStore((s) => s.toggleSidebar);
-  const { logout } = useAuth();
+
   const navigate = useNavigate();
   const menuBtnRef = useRef(null);
 
@@ -62,6 +60,7 @@ export default function Header() {
       navigate('/login');
     }
   };
+
 
   const rolMostrar =
     role === ROLES.CAFICULTOR || user?.role === ROLES.CAFICULTOR
