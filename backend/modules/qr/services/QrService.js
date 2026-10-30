@@ -129,22 +129,21 @@ class QrService {
       throw new Error('Items debe ser un arreglo.');
     }
 
-    const results = [];
-    for (const item of items) {
-      const qrResult = await this.generateSvgWithLogo({
-        data: item.data,
-        ...commonOptions,
-      });
+    return await Promise.all(
+      items.map(async (item) => {
+        const qrResult = await this.generateSvgWithLogo({
+          data: item.data,
+          ...commonOptions,
+        });
 
-      results.push({
-        id: item.id,
-        label: item.label || null,
-        data: item.data,
-        ...qrResult,
-      });
-    }
-
-    return results;
+        return {
+          id: item.id,
+          label: item.label || null,
+          data: item.data,
+          ...qrResult,
+        };
+      })
+    );
   }
 }
 

@@ -62,8 +62,10 @@ class LoteCultivoService extends BaseService {
   }
 
   async create(data, options = {}) {
-    const finca_id = await this.resolveFincaId(data);
-    const variedad_id = await this.resolveVariedadId(data);
+    const [finca_id, variedad_id] = await Promise.all([
+      this.resolveFincaId(data),
+      this.resolveVariedadId(data)
+    ]);
     const payload = this.normalize({ ...data, finca_id, variedad_id }, true);
     return await super.create(payload, options);
   }
