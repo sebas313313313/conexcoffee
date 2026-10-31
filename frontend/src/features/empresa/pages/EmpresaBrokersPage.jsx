@@ -45,6 +45,7 @@ export default function EmpresaBrokersPage() {
     municipio_residencia: 'Popayán',
     correo: '',
     password: '',
+    confirmPassword: '',
     zona_comercial: 'Norteamérica & Unión Europea',
   });
 
@@ -68,53 +69,34 @@ export default function EmpresaBrokersPage() {
     if (
       !nuevoBroker.numero_identificacion ||
       !nuevoBroker.nombres ||
-      !nuevoBroker.apellidos ||
-      !nuevoBroker.correo
+      !nuevoBroker.apellidos
     ) {
       toast.error('Complete los campos obligatorios (*)');
       return;
     }
 
-    const nombresPartes = nuevoBroker.nombres.trim().split(' ');
-    const apellidosPartes = nuevoBroker.apellidos.trim().split(' ');
+    if (!nuevoBroker.correo?.trim()) {
+      toast.error('El correo electrónico es un campo obligatorio (*)');
+      return;
+    }
 
-    const nuevo = {
-      id: Date.now(),
-      numero_identificacion: nuevoBroker.numero_identificacion,
-      primer_nombre: nombresPartes[0]?.toUpperCase() || '',
-      segundo_nombre: nombresPartes.slice(1).join(' ')?.toUpperCase() || '',
-      primer_apellido: apellidosPartes[0]?.toUpperCase() || '',
-      segundo_apellido: apellidosPartes.slice(1).join(' ')?.toUpperCase() || '',
-      fecha_nacimiento: nuevoBroker.fecha_nacimiento,
-      direccion: nuevoBroker.direccion,
-      telefono: nuevoBroker.telefono,
-      genero: nuevoBroker.genero,
-      pais: nuevoBroker.pais_residencia,
-      departamento: nuevoBroker.departamento_residencia,
-      municipio: nuevoBroker.municipio_residencia,
-      correo: nuevoBroker.correo,
-      zona_comercial: nuevoBroker.zona_comercial,
-      contratos_activos: 1,
-      estado: 'Activo',
-    };
+    if (!nuevoBroker.password) {
+      toast.error('La contraseña es un campo obligatorio (*)');
+      return;
+    }
 
-    crearBroker.mutate(nuevo);
-    setModalRegistrar(false);
-    setNuevoBroker({
-      numero_identificacion: '',
-      nombres: '',
-      apellidos: '',
-      fecha_nacimiento: '1985-05-12',
-      direccion: '',
-      telefono: '',
-      genero: 'Masculino',
-      pais_residencia: 'Colombia',
-      departamento_residencia: 'Cauca',
-      municipio_residencia: 'Popayán',
-      correo: '',
-      password: '',
-      zona_comercial: 'Norteamérica & Unión Europea',
-    });
+    if (nuevoBroker.password.length < 6) {
+      toast.error('La contraseña debe tener al menos 6 caracteres');
+      return;
+    }
+
+    if (nuevoBroker.password !== nuevoBroker.confirmPassword) {
+      toast.error('Las contraseñas no coinciden');
+      return;
+    }
+
+    // Aún no conectado al backend
+    toast.error('Error de conexión con el backend: El servicio de registro con credenciales aún no está conectado al servidor.');
   };
 
   const handleGuardarEdicion = (e) => {
@@ -416,28 +398,40 @@ export default function EmpresaBrokersPage() {
                 </div>
               </div>
 
+                            <div>
+                <label className="block font-semibold text-stone-700 mb-1">
+                  Correo Electrónico *
+                </label>
+                <input
+                  type="email"
+                  required
+                  placeholder="broker@empresa.com"
+                  value={nuevoBroker.correo}
+                  onChange={(e) => setNuevoBroker({ ...nuevoBroker, correo: e.target.value })}
+                  className="w-full px-3 py-2 border border-stone-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-700/20"
+                />
+              </div>
+
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block font-semibold text-stone-700 mb-1">
-                    Correo Electrónico *
-                  </label>
+                  <label className="block font-semibold text-stone-700 mb-1">Inserta Contraseña *</label>
                   <input
-                    type="email"
+                    type="password"
                     required
-                    placeholder="broker@empresa.com"
-                    value={nuevoBroker.correo}
-                    onChange={(e) => setNuevoBroker({ ...nuevoBroker, correo: e.target.value })}
+                    placeholder="Mínimo 6 caracteres"
+                    value={nuevoBroker.password}
+                    onChange={(e) => setNuevoBroker({ ...nuevoBroker, password: e.target.value })}
                     className="w-full px-3 py-2 border border-stone-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-700/20"
                   />
                 </div>
                 <div>
-                  <label className="block font-semibold text-stone-700 mb-1">Contraseña *</label>
+                  <label className="block font-semibold text-stone-700 mb-1">Confirma Contraseña *</label>
                   <input
                     type="password"
                     required
-                    placeholder="••••••••"
-                    value={nuevoBroker.password}
-                    onChange={(e) => setNuevoBroker({ ...nuevoBroker, password: e.target.value })}
+                    placeholder="Repite la contraseña"
+                    value={nuevoBroker.confirmPassword}
+                    onChange={(e) => setNuevoBroker({ ...nuevoBroker, confirmPassword: e.target.value })}
                     className="w-full px-3 py-2 border border-stone-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-700/20"
                   />
                 </div>

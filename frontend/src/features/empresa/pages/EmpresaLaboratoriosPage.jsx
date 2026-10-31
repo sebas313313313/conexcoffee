@@ -38,6 +38,8 @@ export default function EmpresaLaboratoriosPage() {
     nombre: '',
     telefono: '',
     correo: '',
+    contrasena: '',
+    confirmarContrasena: '',
     direccion: '',
     municipio: 'Cajibío',
     departamento: 'Cauca',
@@ -65,29 +67,28 @@ export default function EmpresaLaboratoriosPage() {
       return;
     }
 
-    const nuevo = {
-      id: Date.now(),
-      ...nuevoLab,
-      muestras_procesadas: 0,
-      activo: true,
-    };
+    if (!nuevoLab.correo?.trim()) {
+      toast.error('El correo electrónico es un campo obligatorio (*)');
+      return;
+    }
 
-    crearMutation.mutate(nuevo, {
-      onSuccess: () => {
-        setModalRegistrar(false);
-        setNuevoLab({
-          nit: '',
-          nombre: '',
-          telefono: '',
-          correo: '',
-          direccion: '',
-          municipio: 'Cajibío',
-          departamento: 'Cauca',
-          certificaciones: 'CQI Q-Venue Certified / SCAA Campus',
-          q_graders_activos: 2,
-        });
-      },
-    });
+    if (!nuevoLab.contrasena) {
+      toast.error('La contraseña es un campo obligatorio (*)');
+      return;
+    }
+
+    if (nuevoLab.contrasena.length < 6) {
+      toast.error('La contraseña debe tener al menos 6 caracteres');
+      return;
+    }
+
+    if (nuevoLab.contrasena !== nuevoLab.confirmarContrasena) {
+      toast.error('Las contraseñas no coinciden');
+      return;
+    }
+
+    // Aún no conectado al backend
+    toast.error('Error de conexión con el backend: El servicio de registro con credenciales aún no está conectado al servidor.');
   };
 
   const handleGuardarEdicion = (e) => {
@@ -300,6 +301,30 @@ export default function EmpresaLaboratoriosPage() {
                   onChange={(e) => setNuevoLab({ ...nuevoLab, correo: e.target.value })}
                   className="w-full px-3 py-2 border border-stone-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-700/20"
                 />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block font-semibold text-stone-700 mb-1">Inserta Contraseña *</label>
+                  <input
+                    type="password"
+                    required
+                    placeholder="Mínimo 6 caracteres"
+                    value={nuevoLab.contrasena}
+                    onChange={(e) => setNuevoLab({ ...nuevoLab, contrasena: e.target.value })}
+                    className="w-full px-3 py-2 border border-stone-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-700/20"
+                  />
+                </div>
+                <div>
+                  <label className="block font-semibold text-stone-700 mb-1">Confirma Contraseña *</label>
+                  <input
+                    type="password"
+                    required
+                    placeholder="Repite la contraseña"
+                    value={nuevoLab.confirmarContrasena}
+                    onChange={(e) => setNuevoLab({ ...nuevoLab, confirmarContrasena: e.target.value })}
+                    className="w-full px-3 py-2 border border-stone-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-700/20"
+                  />
+                </div>
               </div>
 
               <div>

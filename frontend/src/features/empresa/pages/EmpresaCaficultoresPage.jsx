@@ -40,6 +40,9 @@ export default function EmpresaCaficultoresPage() {
     genero: 'Masculino',
     direccion: '',
     telefono: '',
+    correo: '',
+    contrasena: '',
+    confirmarContrasena: '',
     numero_hijos: 2,
     estado_civil: 'Casado(a)',
     pais_residencia: 'Colombia',
@@ -71,52 +74,28 @@ export default function EmpresaCaficultoresPage() {
       return;
     }
 
-    const nombresPartes = nuevoCaficultor.nombres.trim().split(' ');
-    const apellidosPartes = nuevoCaficultor.apellidos.trim().split(' ');
+    if (!nuevoCaficultor.correo?.trim()) {
+      toast.error('El correo electrónico es un campo obligatorio (*)');
+      return;
+    }
 
-    const nuevo = {
-      id: Date.now(),
-      numero_identificacion: nuevoCaficultor.numero_identificacion,
-      primer_nombre: nombresPartes[0]?.toUpperCase() || '',
-      segundo_nombre: nombresPartes.slice(1).join(' ')?.toUpperCase() || '',
-      primer_apellido: apellidosPartes[0]?.toUpperCase() || '',
-      segundo_apellido: apellidosPartes.slice(1).join(' ')?.toUpperCase() || '',
-      fecha_nacimiento: nuevoCaficultor.fecha_nacimiento,
-      genero: nuevoCaficultor.genero,
-      direccion: nuevoCaficultor.direccion,
-      telefono: nuevoCaficultor.telefono,
-      numero_hijos: Number(nuevoCaficultor.numero_hijos) || 0,
-      estado_civil: nuevoCaficultor.estado_civil,
-      pais: nuevoCaficultor.pais_residencia,
-      departamento: nuevoCaficultor.departamento_residencia,
-      municipio: nuevoCaficultor.municipio_residencia,
-      finca_principal: nuevoCaficultor.finca_principal,
-      variedad_predominante: nuevoCaficultor.variedad_predominante,
-      estado: 'Activo',
-      fincas_asociadas: 1,
-    };
+    if (!nuevoCaficultor.contrasena) {
+      toast.error('La contraseña es un campo obligatorio (*)');
+      return;
+    }
 
-    crearMutation.mutate(nuevo, {
-      onSuccess: () => {
-        setModalRegistrar(false);
-        setNuevoCaficultor({
-          numero_identificacion: '',
-          nombres: '',
-          apellidos: '',
-          fecha_nacimiento: '1980-04-18',
-          genero: 'Masculino',
-          direccion: '',
-          telefono: '',
-          numero_hijos: 2,
-          estado_civil: 'Casado(a)',
-          pais_residencia: 'Colombia',
-          departamento_residencia: 'Cauca',
-          municipio_residencia: 'Popayán',
-          finca_principal: 'La Bonita',
-          variedad_predominante: 'Caturra Chiroso',
-        });
-      },
-    });
+    if (nuevoCaficultor.contrasena.length < 6) {
+      toast.error('La contraseña debe tener al menos 6 caracteres');
+      return;
+    }
+
+    if (nuevoCaficultor.contrasena !== nuevoCaficultor.confirmarContrasena) {
+      toast.error('Las contraseñas no coinciden');
+      return;
+    }
+
+    // Aún no conectado al backend
+    toast.error('Error de conexión con el backend: El servicio de registro con credenciales aún no está conectado al servidor.');
   };
 
   const handleGuardarEdicion = (e) => {
@@ -438,6 +417,54 @@ export default function EmpresaCaficultoresPage() {
                     }
                     className="w-full px-3 py-2 border border-stone-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-700/20"
                   />
+                </div>
+              </div>
+
+                            <div className="border-t border-stone-100 pt-3 mt-1">
+                <p className="font-semibold text-stone-800 mb-2">Credenciales de Acceso a ConexCoffee</p>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div>
+                    <label className="block font-semibold text-stone-700 mb-1">Correo Electrónico *</label>
+                    <input
+                      type="email"
+                      required
+                      placeholder="caficultor@correo.com"
+                      value={nuevoCaficultor.correo}
+                      onChange={(e) =>
+                        setNuevoCaficultor({ ...nuevoCaficultor, correo: e.target.value })
+                      }
+                      className="w-full px-3 py-2 border border-stone-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-700/20"
+                    />
+                  </div>
+                  <div>
+                    <label className="block font-semibold text-stone-700 mb-1">Inserta Contraseña *</label>
+                    <input
+                      type="password"
+                      required
+                      placeholder="Mínimo 6 caracteres"
+                      value={nuevoCaficultor.contrasena}
+                      onChange={(e) =>
+                        setNuevoCaficultor({ ...nuevoCaficultor, contrasena: e.target.value })
+                      }
+                      className="w-full px-3 py-2 border border-stone-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-700/20"
+                    />
+                  </div>
+                  <div>
+                    <label className="block font-semibold text-stone-700 mb-1">Confirma Contraseña *</label>
+                    <input
+                      type="password"
+                      required
+                      placeholder="Repite la contraseña"
+                      value={nuevoCaficultor.confirmarContrasena}
+                      onChange={(e) =>
+                        setNuevoCaficultor({
+                          ...nuevoCaficultor,
+                          confirmarContrasena: e.target.value,
+                        })
+                      }
+                      className="w-full px-3 py-2 border border-stone-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-700/20"
+                    />
+                  </div>
                 </div>
               </div>
 

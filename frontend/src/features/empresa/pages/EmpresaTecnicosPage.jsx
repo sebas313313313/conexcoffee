@@ -41,6 +41,8 @@ export default function EmpresaTecnicosPage() {
     segundo_apellido: '',
     telefono: '',
     correo: '',
+    contrasena: '',
+    confirmarContrasena: '',
     zona_asignada: 'Huila Sur (Pitalito, San Agustín)',
     fincas_a_cargo: 10,
     especialidad: 'Agrónomo Especialista en Suelos y Q-Grader',
@@ -68,34 +70,28 @@ export default function EmpresaTecnicosPage() {
       return;
     }
 
-    const nuevo = {
-      id: Date.now(),
-      ...nuevoTecnico,
-      primer_nombre: nuevoTecnico.primer_nombre.toUpperCase(),
-      segundo_nombre: nuevoTecnico.segundo_nombre.toUpperCase(),
-      primer_apellido: nuevoTecnico.primer_apellido.toUpperCase(),
-      segundo_apellido: nuevoTecnico.segundo_apellido.toUpperCase(),
-      fincas_a_cargo: Number(nuevoTecnico.fincas_a_cargo) || 0,
-    };
+    if (!nuevoTecnico.correo?.trim()) {
+      toast.error('El correo electrónico es un campo obligatorio (*)');
+      return;
+    }
 
-    crearMutation.mutate(nuevo, {
-      onSuccess: () => {
-        setModalRegistrar(false);
-        setNuevoTecnico({
-          numero_identificacion: '',
-          primer_nombre: '',
-          segundo_nombre: '',
-          primer_apellido: '',
-          segundo_apellido: '',
-          telefono: '',
-          correo: '',
-          zona_asignada: 'Huila Sur (Pitalito, San Agustín)',
-          fincas_a_cargo: 10,
-          especialidad: 'Agrónomo Especialista en Suelos y Q-Grader',
-          estado: 'Activo',
-        });
-      },
-    });
+    if (!nuevoTecnico.contrasena) {
+      toast.error('La contraseña es un campo obligatorio (*)');
+      return;
+    }
+
+    if (nuevoTecnico.contrasena.length < 6) {
+      toast.error('La contraseña debe tener al menos 6 caracteres');
+      return;
+    }
+
+    if (nuevoTecnico.contrasena !== nuevoTecnico.confirmarContrasena) {
+      toast.error('Las contraseñas no coinciden');
+      return;
+    }
+
+    // Aún no conectado al backend
+    toast.error('Error de conexión con el backend: El servicio de registro con credenciales aún no está conectado al servidor.');
   };
 
   const handleGuardarEdicion = (e) => {
@@ -340,13 +336,41 @@ export default function EmpresaTecnicosPage() {
                   />
                 </div>
                 <div>
-                  <label className="block font-semibold text-stone-700 mb-1">Correo *</label>
+                  <label className="block font-semibold text-stone-700 mb-1">Correo Electrónico *</label>
                   <input
                     type="email"
                     required
                     value={nuevoTecnico.correo}
                     onChange={(e) =>
                       setNuevoTecnico({ ...nuevoTecnico, correo: e.target.value })
+                    }
+                    className="w-full px-3 py-2 border border-stone-200 rounded-xl"
+                  />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block font-semibold text-stone-700 mb-1">Inserta Contraseña *</label>
+                  <input
+                    type="password"
+                    required
+                    placeholder="Mínimo 6 caracteres"
+                    value={nuevoTecnico.contrasena}
+                    onChange={(e) =>
+                      setNuevoTecnico({ ...nuevoTecnico, contrasena: e.target.value })
+                    }
+                    className="w-full px-3 py-2 border border-stone-200 rounded-xl"
+                  />
+                </div>
+                <div>
+                  <label className="block font-semibold text-stone-700 mb-1">Confirma Contraseña *</label>
+                  <input
+                    type="password"
+                    required
+                    placeholder="Repite la contraseña"
+                    value={nuevoTecnico.confirmarContrasena}
+                    onChange={(e) =>
+                      setNuevoTecnico({ ...nuevoTecnico, confirmarContrasena: e.target.value })
                     }
                     className="w-full px-3 py-2 border border-stone-200 rounded-xl"
                   />
