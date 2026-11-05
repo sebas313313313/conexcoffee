@@ -17,6 +17,7 @@ import { ERROR_CATALOG } from './utils/errorCatalog.js';
 // Routers de Módulos ConexCoffee
 import CatalogoErrorRouter from './modules/catalogo_errores/router/CatalogoErrorRouter.js';
 import UsuarioSistemaRouter from './modules/usuarios_sistema/router/UsuarioSistemaRouter.js';
+import WebPushRouter from './modules/webpush-router.js';
 import CaficultorRouter from './modules/caficultores/router/CaficultorRouter.js';
 import CatadorRouter from './modules/catadores/router/CatadorRouter.js';
 import { EmpresaExportadoraRouter } from './modules/empresas_exportadoras/EmpresaExportadora.js';
@@ -40,6 +41,8 @@ import ContenedorVirtualRouter from './modules/contenedores_virtuales/router/Con
 import PedidoInternacionalRouter from './modules/pedidos_internacionales/router/PedidoInternacionalRouter.js';
 import AlertaSeguridadRouter from './modules/alertas_seguridad/router/AlertaSeguridadRouter.js';
 import QrRouter from './modules/qr/router/QrRouter.js';
+
+import PublicacionBlogRouter from './modules/publicaciones_blog/PublicacionBlog.js';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -128,8 +131,10 @@ app.get('/api/health', (req, res) => {
 // ==========================================
 // Rutas de Módulos ConexCoffee
 // ==========================================
+app.use('/api/publicaciones-blog', PublicacionBlogRouter);
 app.use('/api/catalogo-errores', CatalogoErrorRouter);
 app.use('/api/usuarios-sistema', UsuarioSistemaRouter);
+app.use('/api/web-push', WebPushRouter);
 app.use('/api/auth', UsuarioSistemaRouter);
 app.use('/api/caficultores', CaficultorRouter);
 app.use('/api/catadores', CatadorRouter);

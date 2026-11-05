@@ -156,14 +156,15 @@ const seedDatabase = async () => {
     for (const c of caficultoresData) {
       const [caf] = await sequelize.query(
         `INSERT INTO personas.caficultores 
-          (usuario_id, tipo_documento, numero_documento, nombres, apellidos, telefono_movil, departamento, municipio, estado_verificacion, billetera_saldo_cop)
+          (usuario_id, empresa_exportadora_id, tipo_documento, numero_documento, nombres, apellidos, telefono_movil, departamento, municipio, estado_verificacion, billetera_saldo_cop)
          VALUES 
-          (:usuario_id, 'CC', :doc, :nombres, :apellidos, :tel, 'Cauca', :mun, 'APROBADO', :saldo)
-         ON CONFLICT (numero_documento) DO UPDATE SET billetera_saldo_cop = EXCLUDED.billetera_saldo_cop
+          (:usuario_id, :empresa_id, 'CC', :doc, :nombres, :apellidos, :tel, 'Cauca', :mun, 'APROBADO', :saldo)
+         ON CONFLICT (numero_documento) DO UPDATE SET billetera_saldo_cop = EXCLUDED.billetera_saldo_cop, empresa_exportadora_id = EXCLUDED.empresa_exportadora_id
          RETURNING id`,
         {
           replacements: {
             usuario_id: usuariosMap[c.email],
+            empresa_id: empresaId,
             doc: c.doc,
             nombres: c.nombres,
             apellidos: c.apellidos,

@@ -76,7 +76,51 @@ export const AuthProvider = ({ children }) => {
     }
   }, []);
 
+  const getPushSubscription = useCallback(async () => {
+    if (!('serviceWorker' in navigator) || !('PushManager' in window)) return null;
+    const registration = await navigator.serviceWorker.getRegistration('/');
+    return registration?.pushManager.getSubscription() || null;
+  }, []);
+
+  const enablePush = useCallback(async () => {
+    if (!window.isSecureContext || !('serviceWorker' in navigator) || !('PushManager' in window) || !('Notification' in window)) {
+      throw new Error('Este navegador requiere HTTPS o localhost para activar notificaciones.');
+    }
+    const { data } = await api.get('/web-push/public-key', { strictResponse: true });
+    const key = data?.publicKey;
+    if (!key) throw new Error('La clave pública de notificaciones no está disponible.');
+    const permission = await Notification.requestPermission();
+    if (permission !== 'granted') throw new Error('El navegador no concedió permiso para notificaciones.');
+    const registration = await navigator.serviceWorker.register('/push-sw.js');
+    const padding = '='.repeat((4 - key.length % 4) % 4);
+    const binary = atob((key + padding).replace(/-/g, '+').replace(/_/g, '/'));
+    const applicationServerKey = Uint8Array.from(binary, (char) => char.charCodeAt(0));
+    const existing = await registration.pushManager.getSubscription();
+    const subscription = existing || await registration.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey });
+    try {
+      await api.post('/web-push/subscription', { subscription: subscription.toJSON() }, { strictResponse: true });
+    } catch (error) {
+      if (!existing) await subscription.unsubscribe();
+      throw error;
+    }
+    return subscription;
+  }, []);
+
+  const disablePush = useCallback(async () => {
+    const subscription = await getPushSubscription();
+    if (!subscription) return;
+    await api.delete('/web-push/subscription', {
+      data: { endpoint: subscription.endpoint }, strictResponse: true,
+    });
+    await subscription.unsubscribe();
+  }, [getPushSubscription]);
+
   const logout = useCallback(async () => {
+    try {
+      await disablePush();
+    } catch {
+      // El cierre de sesión debe continuar si falla la baja de la suscripción.
+    }
     try {
       await api.post('/usuarios-sistema/logout');
     } catch {
@@ -84,7 +128,7 @@ export const AuthProvider = ({ children }) => {
     } finally {
       clearAuth();
     }
-  }, [clearAuth]);
+  }, [clearAuth, disablePush]);
 
   const getDashboardRoute = useCallback(
     () => ROLE_DASHBOARD_ROUTES[role] || '/',
@@ -102,6 +146,9 @@ export const AuthProvider = ({ children }) => {
         checkSession,
         login,
         register,
+        getPushSubscription,
+        enablePush,
+        disablePush,
         logout,
         getDashboardRoute,
       }}

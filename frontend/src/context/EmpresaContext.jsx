@@ -29,6 +29,8 @@ export const EmpresaProvider = ({ children }) => {
   const [error, setError] = useState(null);
 
   const [brokers, setBrokers] = useState([]);
+  const [precintos, setPrecintos] = useState([]);
+  const [precintosMeta, setPrecintosMeta] = useState(null);
   const [caficultores, setCaficultores] = useState([]);
   const [contenedores, setContenedores] = useState([]);
   const [laboratorios, setLaboratorios] = useState([]);
@@ -170,8 +172,8 @@ export const EmpresaProvider = ({ children }) => {
   // ── BROKERS ────────────────────────────────────────────────────────────────
   const createBroker = async (payload) => {
     try {
-      const { data } = await axiosClient.post('/brokers', payload);
-      const mapped = mapBroker({ ...payload, ...data });
+      const { data } = await axiosClient.post('/brokers', payload, { strictResponse: true });
+      const mapped = mapBroker({ ...data, correo: payload.correo });
       setBrokers((prev) => [mapped, ...prev]);
       toast.success('Broker registrado correctamente');
       return mapped;
@@ -181,9 +183,43 @@ export const EmpresaProvider = ({ children }) => {
     }
   };
 
+  const cargarPrecintos = useCallback(async (page = 1) => {
+    const { data, meta } = await axiosClient.get('/inventario-precintos-qr', {
+      params: { page, limit: 100 }, strictResponse: true,
+    });
+    setPrecintos(Array.isArray(data) ? data : []);
+    setPrecintosMeta(meta);
+  }, []);
+
+  const crearLotePrecintos = async (payload) => {
+    try {
+      const { data } = await axiosClient.post('/inventario-precintos-qr/lotes', payload, { strictResponse: true });
+      await cargarPrecintos(1);
+      toast.success(`${data.cantidad} precintos creados`);
+      return data;
+    } catch (error) { toast.error(getErrorMessage(error)); throw error; }
+  };
+
+  const entregarPrecintos = async (payload) => {
+    try {
+      const { data } = await axiosClient.post('/inventario-precintos-qr/entregas', payload, { strictResponse: true });
+      await cargarPrecintos(1);
+      toast.success(`${data.entregados} precintos entregados`);
+      return data;
+    } catch (error) { toast.error(getErrorMessage(error)); throw error; }
+  };
+
+  const anularPrecinto = async (id, motivo) => {
+    try {
+      await axiosClient.patch(`/inventario-precintos-qr/${id}/anular`, { motivo }, { strictResponse: true });
+      await cargarPrecintos(1);
+      toast.success('Precinto anulado');
+    } catch (error) { toast.error(getErrorMessage(error)); throw error; }
+  };
+
   const updateBroker = async (id, payload) => {
     try {
-      const { data } = await axiosClient.put(`/brokers/${id}`, payload);
+      const { data } = await axiosClient.put(`/brokers/${id}`, payload, { strictResponse: true });
       setBrokers((prev) => prev.map((b) => (b.id === id ? mapBroker({ ...b, ...payload, ...data }) : b)));
       toast.success('Broker actualizado correctamente');
     } catch (err) {
@@ -195,8 +231,8 @@ export const EmpresaProvider = ({ children }) => {
   // ── CAFICULTORES ───────────────────────────────────────────────────────────
   const createCaficultor = async (payload) => {
     try {
-      const { data } = await axiosClient.post('/caficultores', payload);
-      const mapped = mapCaficultor({ ...payload, ...data }, { fincas });
+      const { data } = await axiosClient.post('/caficultores', payload, { strictResponse: true });
+      const mapped = mapCaficultor({ ...data, correo: payload.correo }, { fincas });
       setCaficultores((prev) => [mapped, ...prev]);
       toast.success('Caficultor registrado correctamente');
       return mapped;
@@ -468,6 +504,12 @@ export const EmpresaProvider = ({ children }) => {
         kpis,
         actividad,
         brokers,
+        precintos,
+        precintosMeta,
+        cargarPrecintos,
+        crearLotePrecintos,
+        entregarPrecintos,
+        anularPrecinto,
         caficultores,
         contenedores,
         laboratorios,

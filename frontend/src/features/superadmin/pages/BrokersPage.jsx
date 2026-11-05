@@ -31,6 +31,7 @@ export default function BrokersPage() {
 
   // Modales
   const [modalRegistroAbierto, setModalRegistroAbierto] = useState(false);
+  const [guardandoBroker, setGuardandoBroker] = useState(false);
   const [modalEditarAbierto, setModalEditarAbierto] = useState(false);
   const [modalDetalleAbierto, setModalDetalleAbierto] = useState(false);
 
@@ -93,16 +94,15 @@ export default function BrokersPage() {
     setModalDetalleAbierto(true);
   };
 
-  const guardarCreacion = (data) => {
-    const nuevo = {
-      ...data,
-      empresasVinculadas: [],
-      totalNegociaciones: 0,
-      activo: true,
-      avatar: '/images/users/user-dummy-img.jpg',
-    };
-    crearBroker.mutate(nuevo);
-    setModalRegistroAbierto(false);
+  const guardarCreacion = async (data) => {
+    if (guardandoBroker) return;
+    setGuardandoBroker(true);
+    try {
+      await crearBroker.mutateAsync(data);
+      setModalRegistroAbierto(false);
+    } finally {
+      setGuardandoBroker(false);
+    }
   };
 
   const guardarEdicion = (e) => {
@@ -264,7 +264,7 @@ export default function BrokersPage() {
         isOpen={modalRegistroAbierto}
         onClose={() => setModalRegistroAbierto(false)}
         onSubmit={guardarCreacion}
-        loading={crearBroker.isPending}
+        loading={guardandoBroker}
       />
 
       {/* MODAL DETALLES */}

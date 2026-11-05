@@ -1,9 +1,16 @@
 import { useState, useEffect } from 'react';
-import { X, Building2, MapPin, Mail, Phone, FileText, Lock } from 'lucide-react';
+import { X, Building2, MapPin, Phone, Lock } from 'lucide-react';
 import toast from 'react-hot-toast';
+import Captcha from '@/components/ui/Captcha';
 
 const INITIAL_FORM_STATE = {
   nit: '',
+  representante_legal: '',
+  nombre_comercial: '',
+  codigo_exportador_dian: '',
+  cuenta_bancaria_info: '',
+  porcentaje_comision_defecto: '5.00',
+  estado_aprobacion: 'APROBADA',
   nombre: '',
   telefono: '',
   correo: '',
@@ -24,10 +31,13 @@ export default function CrearEmpresaModal({
   titulo = 'Registrar Empresa',
 }) {
   const [formData, setFormData] = useState(INITIAL_FORM_STATE);
+  const [captchaToken, setCaptchaToken] = useState('');
 
   useEffect(() => {
+    setCaptchaToken('');
     if (initialData) {
       setFormData({
+        ...INITIAL_FORM_STATE,
         nit: initialData.nit || '',
         nombre: initialData.nombre || '',
         telefono: initialData.telefono || '',
@@ -46,8 +56,17 @@ export default function CrearEmpresaModal({
 
   if (!isOpen) return null;
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    if (loading) return;
+    if (!initialData && !captchaToken) {
+      toast.error('Completa la verificación de seguridad');
+      return;
+    }
+    if (['nit', 'nombre', 'representante_legal', 'telefono', 'direccion'].some((key) => !formData[key].trim())) {
+      toast.error('Completa los campos obligatorios sin usar solo espacios');
+      return;
+    }
 
     if (!initialData) {
       if (!formData.password || formData.password.length < 6) {
@@ -61,7 +80,29 @@ export default function CrearEmpresaModal({
     }
 
     const { confirmarPassword, ...datosLimpios } = formData;
-    onSubmit(datosLimpios);
+    let cuenta = null;
+    if (formData.cuenta_bancaria_info.trim()) {
+      try { cuenta = JSON.parse(formData.cuenta_bancaria_info); }
+      catch { toast.error('La información bancaria debe ser un JSON válido'); return; }
+    }
+    try {
+      await onSubmit({
+        ...datosLimpios,
+        captchaToken,
+        nit: formData.nit.trim(),
+        razon_social: formData.nombre.trim(),
+        representante_legal: formData.representante_legal.trim(),
+        telefono_contacto: formData.telefono.trim(),
+        direccion: formData.direccion.trim(),
+        correo: formData.correo.trim(),
+        nombre_comercial: formData.nombre_comercial.trim() || null,
+        codigo_exportador_dian: formData.codigo_exportador_dian.trim() || null,
+        cuenta_bancaria_info: cuenta,
+        porcentaje_comision_defecto: Number(formData.porcentaje_comision_defecto),
+      });
+    } catch {
+      // El Provider muestra el error; conservar los datos permite reintentar.
+    }
   };
 
   return (
@@ -82,6 +123,8 @@ export default function CrearEmpresaModal({
           </div>
           <button
             type="button"
+            disabled={loading}
+            aria-label="Cerrar registro de empresa"
             onClick={onClose}
             className="p-1.5 text-surface-400 hover:text-surface-700 hover:bg-surface-100 rounded-lg transition-colors cursor-pointer"
           >
@@ -102,6 +145,7 @@ export default function CrearEmpresaModal({
                 type="text"
                 placeholder="Ej. 900.123.456-7"
                 value={formData.nit}
+                maxLength={25}
                 onChange={(e) => setFormData({ ...formData, nit: e.target.value })}
                 className="w-full px-3 py-2 text-sm rounded-xl border border-surface-200 focus:ring-2 focus:ring-brand-terracota/20 focus:border-brand-terracota bg-white"
               />
@@ -115,6 +159,7 @@ export default function CrearEmpresaModal({
                 type="text"
                 placeholder="Ej. Café Andino S.A.S"
                 value={formData.nombre}
+                maxLength={150}
                 onChange={(e) => setFormData({ ...formData, nombre: e.target.value })}
                 className="w-full px-3 py-2 text-sm rounded-xl border border-surface-200 focus:ring-2 focus:ring-brand-terracota/20 focus:border-brand-terracota bg-white"
               />
@@ -136,6 +181,7 @@ export default function CrearEmpresaModal({
                   type="tel"
                   placeholder="Ej. +57 601 2345678"
                   value={formData.telefono}
+                  maxLength={20}
                   onChange={(e) => setFormData({ ...formData, telefono: e.target.value })}
                   className="w-full px-3 py-2 text-sm rounded-xl border border-surface-200 focus:ring-2 focus:ring-brand-terracota/20 bg-white"
                 />
@@ -223,11 +269,42 @@ export default function CrearEmpresaModal({
                 type="text"
                 placeholder="Carrera o Calle con número"
                 value={formData.direccion}
+                required
                 onChange={(e) => setFormData({ ...formData, direccion: e.target.value })}
                 className="w-full px-3 py-2 text-sm rounded-xl border border-surface-200 focus:ring-2 focus:ring-brand-terracota/20 bg-white"
               />
             </div>
           </div>
+
+          <fieldset disabled={loading} className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <legend className="text-sm font-bold text-surface-700 mb-3">Datos de exportación</legend>
+            {[
+              ['representante_legal', 'Representante legal', 150, true],
+              ['nombre_comercial', 'Nombre comercial', 150, false],
+              ['codigo_exportador_dian', 'Código exportador DIAN', 50, false],
+            ].map(([name, label, maxLength, required]) => (
+              <label key={name} className="block text-xs font-semibold text-surface-700 space-y-1">
+                <span>{label}{required ? ' *' : ''}</span>
+                <input required={required} maxLength={maxLength} value={formData[name]} onChange={(e) => setFormData({ ...formData, [name]: e.target.value })} className="w-full px-3 py-2 text-sm rounded-xl border border-surface-200" />
+              </label>
+            ))}
+            <label className="block text-xs font-semibold text-surface-700 space-y-1">
+              <span>Comisión por defecto (%) *</span>
+              <input required type="number" min="0" max="100" step="0.01" value={formData.porcentaje_comision_defecto} onChange={(e) => setFormData({ ...formData, porcentaje_comision_defecto: e.target.value })} className="w-full px-3 py-2 text-sm rounded-xl border border-surface-200" />
+            </label>
+            <label className="block text-xs font-semibold text-surface-700 space-y-1">
+              <span>Estado de aprobación</span>
+              <select value={formData.estado_aprobacion} onChange={(e) => setFormData({ ...formData, estado_aprobacion: e.target.value })} className="w-full px-3 py-2 text-sm rounded-xl border border-surface-200">
+                <option value="APROBADA">Aprobada</option>
+                <option value="EN_EVALUACION">En evaluación</option>
+                <option value="SUSPENDIDA">Suspendida</option>
+              </select>
+            </label>
+            <label className="block text-xs font-semibold text-surface-700 space-y-1 sm:col-span-2">
+              <span>Información bancaria (JSON, opcional)</span>
+              <textarea rows={3} value={formData.cuenta_bancaria_info} onChange={(e) => setFormData({ ...formData, cuenta_bancaria_info: e.target.value })} placeholder='{"banco": "", "numero_cuenta": ""}' className="w-full px-3 py-2 text-sm rounded-xl border border-surface-200" />
+            </label>
+          </fieldset>
 
           {/* Descripción */}
           <div className="space-y-1">
@@ -243,6 +320,8 @@ export default function CrearEmpresaModal({
             />
           </div>
 
+          {!initialData && <Captcha onVerify={setCaptchaToken} onExpire={() => setCaptchaToken('')} onError={() => setCaptchaToken('')} />}
+
           {/* Botones de acción */}
           <div className="flex justify-end gap-3 pt-3 border-t border-surface-200 shrink-0">
             <button
@@ -255,7 +334,7 @@ export default function CrearEmpresaModal({
             </button>
             <button
               type="submit"
-              disabled={loading}
+              disabled={loading || (!initialData && !captchaToken)}
               className="px-5 py-2 rounded-xl bg-brand-terracota hover:bg-brand-terracota-dark text-white text-sm font-semibold shadow-md transition-colors cursor-pointer disabled:opacity-50 flex items-center gap-2"
             >
               {loading ? 'Guardando...' : 'Guardar Empresa'}

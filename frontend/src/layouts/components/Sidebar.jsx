@@ -6,7 +6,6 @@ import useUIStore from '@/store/useUIStore';
 import { ROLES } from '@/lib/constants';
 import {
   LayoutDashboard,
-  Users,
   Settings,
   Package,
   Handshake,
@@ -55,7 +54,7 @@ const NAV_BY_ROLE = {
     { label: 'Muestras', path: '/superadmin/muestras', icon: Archive },
     { label: 'Ofertas', path: '/superadmin/ofertas', icon: Gift },
     { label: 'Técnicos', path: '/superadmin/tecnicos', icon: UserCheck },
-    { label: 'Usuarios', path: '/superadmin/users', icon: Users },
+    { label: 'Blog', path: '/superadmin/blog', icon: FileText },
     { label: 'Página Web', path: '/', icon: Globe },
     { label: 'Configuración', path: '/superadmin/settings', icon: Settings },
   ],
@@ -70,6 +69,7 @@ const NAV_BY_ROLE = {
     { label: 'Laboratorios', path: '/empresa/laboratorios', icon: FlaskConical },
     { label: 'Muestras', path: '/empresa/muestras', icon: Archive },
     { label: 'Técnicos', path: '/empresa/tecnicos', icon: UserCheck },
+    { label: 'Precintos QR', path: '/empresa/precintos', icon: Package },
     { label: 'Página Web', path: '/', icon: Globe },
   ],
   [ROLES.BROKER]: [
@@ -101,6 +101,7 @@ const NAV_BY_ROLE = {
   ],
   [ROLES.TECNICO]: [
     { label: 'Dashboard',  path: '/tecnico/dashboard', icon: LayoutDashboard },
+    { label: 'Mis precintos', path: '/tecnico/precintos', icon: Package },
     { label: 'Página Web', path: '/',                  icon: Globe },
   ],
   [ROLES.CATADOR]: [

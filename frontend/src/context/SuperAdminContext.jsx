@@ -39,10 +39,51 @@ const safeGet = async (url) => {
   }
 };
 
+// Cargar todas las páginas para que el selector disponga de todos los IDs.
+const fetchEmpresas = async () => {
+  const empresas = [];
+  let page = 1;
+  let totalPages;
+  do {
+    const response = await axiosClient.get('/empresas-exportadoras', {
+      params: { page, limit: 100 }, strictResponse: true,
+    });
+    empresas.push(...response.data);
+    totalPages = response.meta?.totalPages ?? 1;
+    page += 1;
+  } while (page <= totalPages);
+  return empresas;
+};
+
 export const SuperAdminProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  const listarPublicaciones = async (page = 1) => {
+    const response = await axiosClient.get('/publicaciones-blog', { params: { page, limit: 20 }, strictResponse: true });
+    return { publicaciones: response.data, meta: response.meta };
+  };
+  const guardarPublicacion = async (payload, id) => {
+    const response = id
+      ? await axiosClient.put('/publicaciones-blog/' + id, payload, { strictResponse: true })
+      : await axiosClient.post('/publicaciones-blog', payload, { strictResponse: true });
+    return response.data;
+  };
+  const eliminarPublicacion = async (id) => {
+    await axiosClient.delete('/publicaciones-blog/' + id, { strictResponse: true });
+  };
+  const listarProductoresBlog = async () => {
+    const productores = [];
+    let page = 1;
+    let totalPages;
+    do {
+      const response = await axiosClient.get('/caficultores', { params: { page, limit: 100 }, strictResponse: true });
+      productores.push(...response.data);
+      totalPages = response.meta?.totalPages || 1;
+      page += 1;
+    } while (page <= totalPages);
+    return productores;
+  };
   const [usuarios, setUsuarios] = useState([]);
   const [caficultores, setCaficultores] = useState([]);
   const [catadores, setCatadores] = useState([]);
@@ -100,7 +141,7 @@ export const SuperAdminProvider = ({ children }) => {
         safeGet('/usuarios-sistema'),
         safeGet('/caficultores'),
         safeGet('/catadores'),
-        safeGet('/empresas-exportadoras'),
+        fetchEmpresas(),
         safeGet('/asistentes-tecnicos'),
         safeGet('/laboratorios'),
         safeGet('/brokers'),
@@ -291,8 +332,8 @@ export const SuperAdminProvider = ({ children }) => {
   // ── CAFICULTORES CRUD ──────────────────────────────────────────────────────
   const createCaficultor = async (payload) => {
     try {
-      const { data } = await axiosClient.post('/caficultores', payload);
-      const mapped = mapCaficultor({ ...payload, ...data }, { fincas, empresas, usuarios });
+      const { data } = await axiosClient.post('/caficultores', payload, { strictResponse: true });
+      const mapped = mapCaficultor({ ...data, correo: payload.correo }, { fincas, empresas, usuarios });
       setCaficultores((prev) => [mapped, ...prev]);
       toast.success('Caficultor registrado correctamente');
       return mapped;
@@ -304,7 +345,7 @@ export const SuperAdminProvider = ({ children }) => {
 
   const updateCaficultor = async (id, payload) => {
     try {
-      const { data } = await axiosClient.put(`/caficultores/${id}`, payload);
+      const { data } = await axiosClient.put(`/caficultores/${id}`, payload, { strictResponse: true });
       setCaficultores((prev) =>
         prev.map((c) =>
           c.id === id ? mapCaficultor({ ...c, ...payload, ...data }, { fincas, empresas, usuarios }) : c
@@ -317,11 +358,8 @@ export const SuperAdminProvider = ({ children }) => {
     }
   };
 
-  const asignarEmpresaCaficultor = async (caficultorId, empresaNombre) => {
-    setCaficultores((prev) =>
-      prev.map((c) => (c.id === caficultorId ? { ...c, empresaAsignada: empresaNombre } : c))
-    );
-    toast.success(`Empresa ${empresaNombre} asignada al caficultor`);
+  const asignarEmpresaCaficultor = async (caficultorId, empresaId) => {
+    await updateCaficultor(caficultorId, { empresa_exportadora_id: empresaId || null });
   };
 
   // ── CATADORES CRUD ─────────────────────────────────────────────────────────
@@ -356,8 +394,8 @@ export const SuperAdminProvider = ({ children }) => {
   // ── EMPRESAS CRUD ──────────────────────────────────────────────────────────
   const createEmpresa = async (payload) => {
     try {
-      const { data } = await axiosClient.post('/empresas-exportadoras', payload);
-      const mapped = mapEmpresa({ ...payload, ...data }, { caficultores, preofertas, usuarios });
+      const { data } = await axiosClient.post('/empresas-exportadoras', payload, { strictResponse: true });
+      const mapped = mapEmpresa({ ...data, correo: payload.correo }, { caficultores, preofertas, usuarios });
       setEmpresas((prev) => [mapped, ...prev]);
       toast.success('Empresa exportadora registrada correctamente');
       return mapped;
@@ -439,8 +477,8 @@ export const SuperAdminProvider = ({ children }) => {
   // ── BROKERS CRUD ───────────────────────────────────────────────────────────
   const createBroker = async (payload) => {
     try {
-      const { data } = await axiosClient.post('/brokers', payload);
-      const mapped = mapBroker({ ...payload, ...data }, { pedidos: compras, usuarios });
+      const { data } = await axiosClient.post('/brokers', payload, { strictResponse: true });
+      const mapped = mapBroker({ ...data, correo: payload.correo }, { pedidos: compras, usuarios });
       setBrokers((prev) => [mapped, ...prev]);
       toast.success('Broker registrado correctamente');
       return mapped;
@@ -755,18 +793,15 @@ export const SuperAdminProvider = ({ children }) => {
 
   const modules = [
     {
-      id: 'mod-usuarios',
-      title: 'Gestión de Usuarios y Roles',
-      name: 'Gestión de Usuarios y Roles',
-      description: `${usuarios.length} cuentas activas con RBAC y cookies HttpOnly`,
-      desc: `${usuarios.length} cuentas activas con RBAC y cookies HttpOnly`,
-      path: '/superadmin/usuarios',
+      id: 'mod-blog',
+      title: 'Publicaciones del blog',
+      name: 'Publicaciones del blog',
+      description: 'Crear, editar y eliminar artículos del blog',
+      desc: 'Gestionar artículos publicados y borradores',
+      path: '/superadmin/blog',
       icon: ShieldAlert,
       iconName: 'ShieldAlert',
-      stats: [
-        { label: 'Total', value: usuarios.length },
-        { label: 'Activos', value: usuarios.filter((u) => u.estado === 'Activo').length },
-      ],
+      stats: [],
     },
     {
       id: 'mod-empresas',
@@ -867,6 +902,7 @@ export const SuperAdminProvider = ({ children }) => {
         contenedores,
         compras,
         configuracion,
+        listarPublicaciones, guardarPublicacion, eliminarPublicacion, listarProductoresBlog,
         createUsuario,
         updateUsuario,
         toggleEstadoUsuario,

@@ -185,6 +185,18 @@ export const LaboratorioProvider = ({ children }) => {
     }
   };
 
+  const cargarFlujoPrecinto = useCallback(async (token) => {
+    const { data } = await axiosClient.get(`/trazabilidad-escaneos/flujo/${token}`, { strictResponse: true });
+    return data;
+  }, []);
+
+  const registrarAnalisisQr = async (token, payload) => {
+    const { data } = await axiosClient.post(`/trazabilidad-escaneos/laboratorio/${token}/analisis`, payload, { strictResponse: true });
+    await fetchAll();
+    toast.success('Análisis físico registrado');
+    return data;
+  };
+
   const updateAnalisisFisico = async (id, payload) => {
     try {
       const { data } = await axiosClient.put(`/evaluaciones-fisicas/${id}`, payload);
@@ -333,6 +345,8 @@ export const LaboratorioProvider = ({ children }) => {
         updateCatador,
         removeCatador,
         createAnalisisFisico,
+        cargarFlujoPrecinto,
+        registrarAnalisisQr,
         updateAnalisisFisico,
         createAnalisisSensorial,
         updateAnalisisSensorial,

@@ -1,315 +1,145 @@
-import { useState, useEffect } from 'react';
-import { X, Briefcase, Phone, Mail, MapPin, Lock } from 'lucide-react';
+import { useState } from 'react';
+import { Dialog, DialogPanel, DialogTitle } from '@headlessui/react';
+import { Handshake, X } from 'lucide-react';
 import toast from 'react-hot-toast';
+import Captcha from '@/components/ui/Captcha';
 
-const INITIAL_FORM_STATE = {
-  numeroIdentificacion: '',
-  primerNombre: '',
-  segundoNombre: '',
-  primerApellido: '',
-  segundoApellido: '',
-  telefono: '',
-  correo: '',
-  password: '',
-  confirmarPassword: '',
-  fechaNacimiento: '',
-  genero: 'M',
-  direccion: '',
-  municipio: '',
-  departamento: '',
+const EMPTY = {
+  nombre_empresa: '', identificacion_fiscal_pais: '', pais_operacion: '', ciudad: '',
+  direccion_bodega: '', telefono_contacto: '', porcentaje_comision_split: '5.00',
+  datos_bancarios_internacionales: '', activo: true, correo: '', password: '', confirmarPassword: '',
 };
+const FIELDS = [
+  ['nombre_empresa', 'Nombre de la empresa', 150],
+  ['identificacion_fiscal_pais', 'Identificación fiscal en el país', 50],
+  ['pais_operacion', 'País de operación', 60],
+  ['ciudad', 'Ciudad', 60],
+  ['telefono_contacto', 'Teléfono de contacto', 30, 'tel'],
+];
+const inputClass = 'w-full px-3 py-2 text-sm rounded-xl border border-surface-200 bg-white focus:outline-none focus:ring-2 focus:ring-brand-terracota/20 focus:border-brand-terracota';
 
-export default function CrearBrokerModal({
-  isOpen,
-  onClose,
-  onSubmit,
-  loading = false,
-  initialData = null,
-  titulo = 'Registrar Broker',
-}) {
-  const [formData, setFormData] = useState(INITIAL_FORM_STATE);
-
-  useEffect(() => {
-    if (initialData) {
-      setFormData({
-        numeroIdentificacion: initialData.numeroIdentificacion || initialData.numero_identificacion || '',
-        primerNombre: initialData.primerNombre || initialData.primer_nombre || '',
-        segundoNombre: initialData.segundoNombre || initialData.segundo_nombre || '',
-        primerApellido: initialData.primerApellido || initialData.primer_apellido || '',
-        segundoApellido: initialData.segundoApellido || initialData.segundo_apellido || '',
-        telefono: initialData.telefono || '',
-        correo: initialData.correo || '',
-        password: '',
-        confirmarPassword: '',
-        fechaNacimiento: initialData.fechaNacimiento || initialData.fecha_nacimiento || '',
-        genero: initialData.genero || 'M',
-        direccion: initialData.direccion || '',
-        municipio: initialData.municipio || '',
-        departamento: initialData.departamento || '',
-      });
-    } else {
-      setFormData(INITIAL_FORM_STATE);
-    }
-  }, [initialData, isOpen]);
-
-  if (!isOpen) return null;
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-
-    if (!initialData) {
-      if (!formData.password || formData.password.length < 6) {
-        toast.error('La contraseña debe tener al menos 6 caracteres');
-        return;
-      }
-      if (formData.password !== formData.confirmarPassword) {
-        toast.error('Las contraseñas no coinciden');
-        return;
-      }
-    }
-
-    const { confirmarPassword, ...datosLimpios } = formData;
-    onSubmit(datosLimpios);
+function BrokerForm({ onClose, onSubmit, loading, initialData }) {
+  const [form, setForm] = useState(() => ({
+    ...EMPTY, ...initialData,
+    datos_bancarios_internacionales: initialData?.datos_bancarios_internacionales == null ? '' : JSON.stringify(initialData.datos_bancarios_internacionales, null, 2),
+    password: '', confirmarPassword: '',
+  }));
+  const [captchaToken, setCaptchaToken] = useState('');
+  const change = (event) => {
+    const { name, value, type, checked } = event.target;
+    setForm((prev) => ({ ...prev, [name]: type === 'checkbox' ? checked : value }));
   };
-
+  const submit = async (event) => {
+    event.preventDefault();
+    if (loading) return;
+    const payload = Object.fromEntries([...FIELDS.map(([name]) => name), 'direccion_bodega'].map((name) => [name, form[name].trim()]));
+    if (Object.values(payload).some((value) => !value)) {
+      toast.error('Completa los campos obligatorios sin usar solo espacios');
+      return;
+    }
+    const comision = Number(form.porcentaje_comision_split);
+    if (form.porcentaje_comision_split === '' || !Number.isFinite(comision) || comision < 0 || comision > 100 || Math.abs(comision * 100 - Math.round(comision * 100)) > 0.000001) {
+      toast.error('La comisión debe estar entre 0 y 100, con máximo dos decimales');
+      return;
+    }
+    let datosBancarios = null;
+    if (form.datos_bancarios_internacionales.trim()) {
+      try { datosBancarios = JSON.parse(form.datos_bancarios_internacionales); }
+      catch { toast.error('Los datos bancarios deben tener un formato JSON válido'); return; }
+    }
+    if (!initialData) {
+      if (!form.correo.trim() || form.password.length < 6 || form.password !== form.confirmarPassword) {
+        toast.error('Ingresa un correo y contraseñas iguales de al menos 6 caracteres');
+        return;
+      }
+      if (!captchaToken) { toast.error('Completa la verificación de seguridad'); return; }
+    }
+    try {
+      await onSubmit({
+        ...payload, porcentaje_comision_split: comision,
+        datos_bancarios_internacionales: datosBancarios, activo: form.activo,
+        ...(!initialData ? { correo: form.correo.trim(), password: form.password, captchaToken } : {}),
+      });
+    } catch {
+      // El Provider informa el error; conservar los datos permite reintentar.
+    }
+  };
   return (
-    <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
-      <div className="bg-white rounded-2xl max-w-2xl w-full p-6 shadow-2xl border border-surface-200 my-8 max-h-[90vh] flex flex-col">
-        {/* Cabecera */}
-        <div className="flex items-center justify-between pb-4 border-b border-surface-200 shrink-0">
-          <div className="flex items-center gap-3">
-            <div className="h-10 w-10 rounded-xl bg-brand-terracota/10 text-brand-terracota flex items-center justify-center">
-              <Briefcase className="h-5 w-5" />
-            </div>
-            <div>
-              <h3 className="text-lg font-bold text-surface-900">{titulo}</h3>
-              <p className="text-xs text-surface-500">
-                Intermediario comercial para negociación de lotes y contratos
-              </p>
-            </div>
-          </div>
-          <button
-            type="button"
-            onClick={onClose}
-            className="p-1.5 text-surface-400 hover:text-surface-700 hover:bg-surface-100 rounded-lg transition-colors cursor-pointer"
-          >
-            <X className="h-5 w-5" />
-          </button>
+    <form onSubmit={submit} className="mt-4 space-y-4" aria-busy={loading}>
+      <fieldset disabled={loading} className="space-y-4">
+        <legend className="text-sm font-bold text-surface-700 mb-3">Información del broker</legend>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {FIELDS.map(([name, label, maxLength, type = 'text']) => (
+            <label key={name} className="block text-xs font-semibold text-surface-700 space-y-1">
+              <span>{label} *</span>
+              <input required name={name} type={type} maxLength={maxLength} value={form[name]} onChange={change} className={inputClass} />
+            </label>
+          ))}
+          <label className="block text-xs font-semibold text-surface-700 space-y-1">
+            <span>Comisión split (%) *</span>
+            <input required name="porcentaje_comision_split" type="number" min="0" max="100" step="0.01" value={form.porcentaje_comision_split} onChange={change} className={inputClass} />
+          </label>
         </div>
-
-        {/* Formulario */}
-        <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto py-4 space-y-4 pr-1">
-          {/* Datos Personales */}
-          <div className="bg-surface-50/70 p-4 rounded-xl border border-surface-200 space-y-3">
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              <div>
-                <label className="block text-xs font-semibold text-surface-700 mb-1">
-                  Número de Identificación *
+        <label className="block text-xs font-semibold text-surface-700 space-y-1">
+          <span>Dirección de la bodega *</span>
+          <textarea required name="direccion_bodega" rows={2} value={form.direccion_bodega} onChange={change} className={inputClass} />
+        </label>
+        <label className="block text-xs font-semibold text-surface-700 space-y-1">
+          <span>Datos bancarios internacionales (JSON, opcional)</span>
+          <textarea name="datos_bancarios_internacionales" rows={3} value={form.datos_bancarios_internacionales} onChange={change} placeholder='{"banco": "", "swift": "", "iban": ""}' className={inputClass} />
+        </label>
+        <label className="flex items-center gap-2 text-sm text-surface-700">
+          <input type="checkbox" name="activo" checked={form.activo} onChange={change} />Broker activo
+        </label>
+        {!initialData && (
+          <div className="space-y-3 border-t border-surface-200 pt-4">
+            <p className="text-sm font-bold text-surface-700">Usuario de acceso</p>
+            <p className="text-xs text-surface-500">Se creará el usuario asociado al broker con estas credenciales.</p>
+            <label className="block text-xs font-semibold text-surface-700 space-y-1">
+              <span>Correo electrónico *</span>
+              <input required name="correo" type="email" autoComplete="off" value={form.correo} onChange={change} className={inputClass} />
+            </label>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {[['password', 'Contraseña'], ['confirmarPassword', 'Confirmar contraseña']].map(([name, label]) => (
+                <label key={name} className="block text-xs font-semibold text-surface-700 space-y-1">
+                  <span>{label} *</span>
+                  <input required type="password" name={name} minLength={6} autoComplete="new-password" value={form[name]} onChange={change} className={inputClass} />
                 </label>
-                <input
-                  required
-                  type="text"
-                  placeholder="Ej. 12053621"
-                  value={formData.numeroIdentificacion}
-                  onChange={(e) => setFormData({ ...formData, numeroIdentificacion: e.target.value })}
-                  className="w-full px-3 py-2 text-sm rounded-xl border border-surface-200 focus:ring-2 focus:ring-brand-terracota/20 bg-white"
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-semibold text-surface-700 mb-1">Primer Nombre *</label>
-                <input
-                  required
-                  type="text"
-                  placeholder="Primer nombre"
-                  value={formData.primerNombre}
-                  onChange={(e) => setFormData({ ...formData, primerNombre: e.target.value.toUpperCase() })}
-                  className="w-full px-3 py-2 text-sm rounded-xl border border-surface-200 focus:ring-2 focus:ring-brand-terracota/20 bg-white"
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-semibold text-surface-700 mb-1">Segundo Nombre</label>
-                <input
-                  type="text"
-                  placeholder="Segundo nombre (opcional)"
-                  value={formData.segundoNombre}
-                  onChange={(e) => setFormData({ ...formData, segundoNombre: e.target.value.toUpperCase() })}
-                  className="w-full px-3 py-2 text-sm rounded-xl border border-surface-200 focus:ring-2 focus:ring-brand-terracota/20 bg-white"
-                />
-              </div>
+              ))}
             </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div>
-                <label className="block text-xs font-semibold text-surface-700 mb-1">Primer Apellido *</label>
-                <input
-                  required
-                  type="text"
-                  placeholder="Primer apellido"
-                  value={formData.primerApellido}
-                  onChange={(e) => setFormData({ ...formData, primerApellido: e.target.value.toUpperCase() })}
-                  className="w-full px-3 py-2 text-sm rounded-xl border border-surface-200 focus:ring-2 focus:ring-brand-terracota/20 bg-white"
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-semibold text-surface-700 mb-1">Segundo Apellido</label>
-                <input
-                  type="text"
-                  placeholder="Segundo apellido (opcional)"
-                  value={formData.segundoApellido}
-                  onChange={(e) => setFormData({ ...formData, segundoApellido: e.target.value.toUpperCase() })}
-                  className="w-full px-3 py-2 text-sm rounded-xl border border-surface-200 focus:ring-2 focus:ring-brand-terracota/20 bg-white"
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div>
-                <label className="block text-xs font-semibold text-surface-700 mb-1">Fecha de Nacimiento</label>
-                <input
-                  type="date"
-                  value={formData.fechaNacimiento}
-                  onChange={(e) => setFormData({ ...formData, fechaNacimiento: e.target.value })}
-                  className="w-full px-3 py-2 text-sm rounded-xl border border-surface-200 focus:ring-2 focus:ring-brand-terracota/20 bg-white"
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-semibold text-surface-700 mb-1">Género</label>
-                <select
-                  value={formData.genero}
-                  onChange={(e) => setFormData({ ...formData, genero: e.target.value })}
-                  className="w-full px-3 py-2 text-sm rounded-xl border border-surface-200 focus:ring-2 focus:ring-brand-terracota/20 bg-white"
-                >
-                  <option value="M">Masculino</option>
-                  <option value="F">Femenino</option>
-                  <option value="O">Otro</option>
-                </select>
-              </div>
-            </div>
+            <Captcha onVerify={setCaptchaToken} onExpire={() => setCaptchaToken('')} onError={() => setCaptchaToken('')} />
           </div>
-
-          {/* Contacto y Credenciales */}
-          <div className="bg-surface-50/70 p-4 rounded-xl border border-surface-200 space-y-3">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div>
-                <label className="block text-xs font-semibold text-surface-700 mb-1">Teléfono *</label>
-                <input
-                  required
-                  type="tel"
-                  placeholder="Ej. +57 310 4256987"
-                  value={formData.telefono}
-                  onChange={(e) => setFormData({ ...formData, telefono: e.target.value })}
-                  className="w-full px-3 py-2 text-sm rounded-xl border border-surface-200 focus:ring-2 focus:ring-brand-terracota/20 bg-white"
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-semibold text-surface-700 mb-1">Correo Electrónico *</label>
-                <input
-                  required
-                  type="email"
-                  placeholder="broker@conexcoffee.com"
-                  value={formData.correo}
-                  onChange={(e) => setFormData({ ...formData, correo: e.target.value })}
-                  className="w-full px-3 py-2 text-sm rounded-xl border border-surface-200 focus:ring-2 focus:ring-brand-terracota/20 bg-white"
-                />
-              </div>
-            </div>
-
-            {!initialData && (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1 border-t border-surface-200">
-                <div>
-                  <label className="block text-xs font-semibold text-surface-700 mb-1 flex items-center gap-1">
-                    <Lock className="h-3.5 w-3.5 text-brand-terracota" />
-                    Contraseña *
-                  </label>
-                  <input
-                    required
-                    type="password"
-                    placeholder="Mínimo 6 caracteres"
-                    value={formData.password}
-                    onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                    className="w-full px-3 py-2 text-sm rounded-xl border border-surface-200 focus:ring-2 focus:ring-brand-terracota/20 focus:border-brand-terracota bg-white"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-semibold text-surface-700 mb-1 flex items-center gap-1">
-                    <Lock className="h-3.5 w-3.5 text-brand-terracota" />
-                    Confirmar Contraseña *
-                  </label>
-                  <input
-                    required
-                    type="password"
-                    placeholder="Repita la contraseña"
-                    value={formData.confirmarPassword}
-                    onChange={(e) => setFormData({ ...formData, confirmarPassword: e.target.value })}
-                    className="w-full px-3 py-2 text-sm rounded-xl border border-surface-200 focus:ring-2 focus:ring-brand-terracota/20 focus:border-brand-terracota bg-white"
-                  />
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* Ubicación y Oficina */}
-          <div className="bg-surface-50/70 p-4 rounded-xl border border-surface-200 space-y-3">
-            <div className="flex items-center gap-2 text-xs font-bold text-surface-700 uppercase tracking-wider">
-              <MapPin className="h-4 w-4 text-brand-terracota" />
-              <span>Ubicación y Oficina</span>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div>
-                <label className="block text-xs font-semibold text-surface-700 mb-1">Ciudad / Municipio</label>
-                <input
-                  type="text"
-                  placeholder="Ej. Medellín"
-                  value={formData.municipio}
-                  onChange={(e) => setFormData({ ...formData, municipio: e.target.value })}
-                  className="w-full px-3 py-2 text-sm rounded-xl border border-surface-200 focus:ring-2 focus:ring-brand-terracota/20 bg-white"
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-semibold text-surface-700 mb-1">Departamento</label>
-                <input
-                  type="text"
-                  placeholder="Ej. Antioquia"
-                  value={formData.departamento}
-                  onChange={(e) => setFormData({ ...formData, departamento: e.target.value })}
-                  className="w-full px-3 py-2 text-sm rounded-xl border border-surface-200 focus:ring-2 focus:ring-brand-terracota/20 bg-white"
-                />
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-xs font-semibold text-surface-700 mb-1">Dirección de Oficina</label>
-              <input
-                type="text"
-                placeholder="Dirección comercial o de correspondencia"
-                value={formData.direccion}
-                onChange={(e) => setFormData({ ...formData, direccion: e.target.value })}
-                className="w-full px-3 py-2 text-sm rounded-xl border border-surface-200 focus:ring-2 focus:ring-brand-terracota/20 bg-white"
-              />
-            </div>
-          </div>
-
-          {/* Botones de acción */}
-          <div className="flex justify-end gap-3 pt-3 border-t border-surface-200 shrink-0">
-            <button
-              type="button"
-              onClick={onClose}
-              disabled={loading}
-              className="px-4 py-2 rounded-xl border border-surface-200 text-sm font-semibold text-surface-600 hover:bg-surface-50 transition-colors cursor-pointer disabled:opacity-50"
-            >
-              Cancelar
-            </button>
-            <button
-              type="submit"
-              disabled={loading}
-              className="px-5 py-2 rounded-xl bg-brand-terracota hover:bg-brand-terracota-dark text-white text-sm font-semibold shadow-md transition-colors cursor-pointer disabled:opacity-50 flex items-center gap-2"
-            >
-              {loading ? 'Guardando...' : 'Guardar Broker'}
-            </button>
-          </div>
-        </form>
+        )}
+      </fieldset>
+      <div className="flex justify-end gap-3 border-t border-surface-200 pt-4">
+        <button type="button" onClick={onClose} disabled={loading} className="px-4 py-2 rounded-xl border border-surface-200 text-sm font-semibold disabled:opacity-50">Cancelar</button>
+        <button type="submit" disabled={loading || (!initialData && !captchaToken)} className="px-5 py-2 rounded-xl bg-brand-terracota hover:bg-brand-terracota-dark text-white text-sm font-semibold disabled:opacity-50">{loading ? 'Guardando...' : 'Guardar Broker'}</button>
       </div>
-    </div>
+    </form>
+  );
+}
+
+export default function CrearBrokerModal({ isOpen, onClose, onSubmit, loading = false, initialData = null, titulo = 'Registrar Broker' }) {
+  return (
+    <Dialog open={isOpen} onClose={() => { if (!loading) onClose(); }} className="relative z-50">
+      <div className="fixed inset-0 bg-black/50 backdrop-blur-xs" aria-hidden="true" />
+      <div className="fixed inset-0 overflow-y-auto p-4">
+        <div className="flex min-h-full items-center justify-center">
+          <DialogPanel className="w-full max-w-2xl rounded-2xl bg-white p-6 shadow-2xl border border-surface-200">
+            <div className="flex items-center justify-between gap-3 border-b border-surface-200 pb-4">
+              <div className="flex items-center gap-3">
+                <Handshake className="h-6 w-6 text-brand-terracota" />
+                <div>
+                  <DialogTitle className="text-lg font-bold text-surface-900">{titulo}</DialogTitle>
+                  <p className="text-xs text-surface-500">Los campos con * son obligatorios.</p>
+                </div>
+              </div>
+              <button type="button" disabled={loading} onClick={onClose} aria-label="Cerrar formulario de broker" className="p-2 rounded-lg hover:bg-surface-100 disabled:opacity-50"><X className="h-5 w-5" /></button>
+            </div>
+            {isOpen && <BrokerForm onClose={onClose} onSubmit={onSubmit} loading={loading} initialData={initialData} />}
+          </DialogPanel>
+        </div>
+      </div>
+    </Dialog>
   );
 }

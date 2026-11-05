@@ -26,6 +26,11 @@ const FRONTEND_TO_ROLE = {
   broker: 'BROKER',
   comprador: 'COMPRADOR_INTERNACIONAL',
 };
+const PUBLIC_ROLES = new Set([
+  'ASISTENTE_TECNICO', 'CAFICULTOR', 'LABORATORIO', 'CATADOR',
+  'BROKER', 'COMPRADOR_INTERNACIONAL',
+]);
+const ALL_ROLES = new Set(Object.keys(ROLE_TO_FRONTEND));
 
 class UsuarioSistemaService extends BaseService {
   /**
@@ -138,10 +143,20 @@ class UsuarioSistemaService extends BaseService {
   /**
    * Registro de nuevo usuario
    */
-  async register(payload) {
+  async register(payload, { publicRegistration = true } = {}) {
     const rawEmail = payload.correo_electronico || payload.email || '';
     const rawPass = payload.contrasena || payload.password || 'Password123!';
     const rawRol = payload.rol_principal || FRONTEND_TO_ROLE[payload.role] || 'COMPRADOR_INTERNACIONAL';
+    if ((payload.role && !FRONTEND_TO_ROLE[payload.role]) ||
+        !ALL_ROLES.has(rawRol) || (publicRegistration && !PUBLIC_ROLES.has(rawRol)) ||
+        (payload.rol_principal && payload.role && FRONTEND_TO_ROLE[payload.role] !== rawRol)) {
+      throw new DomainError(
+        ERROR_CATALOG.ROLE_UNAUTHORIZED.code,
+        'El rol solicitado no está permitido para este registro',
+        null,
+        403
+      );
+    }
     const creado_por_usuario_id = payload.creado_por_usuario_id || null;
 
     const email = rawEmail.toLowerCase().trim();
@@ -287,10 +302,25 @@ class UsuarioSistemaService extends BaseService {
    */
   async create(data) {
     if (data.contrasena || data.password || !data.hash_contrasena) {
-      const reg = await this.register(data);
+      const reg = await this.register(data, { publicRegistration: false });
       return reg.usuario;
     }
     return await super.create(data);
+  }
+
+  async update(id, data, options = {}) {
+    const user = await this.getById(id);
+    if ((data.rol_principal && data.rol_principal !== user.rol_principal) ||
+        (data.role && FRONTEND_TO_ROLE[data.role] !== user.rol_principal)) {
+      throw new DomainError(
+        ERROR_CATALOG.ROLE_UNAUTHORIZED.code,
+        'El rol de un usuario existente no se puede modificar',
+        null,
+        403
+      );
+    }
+    const { rol_principal: _role, role: _frontendRole, ...safeData } = data;
+    return await super.update(id, safeData, options);
   }
 
   /**

@@ -17,6 +17,7 @@ import { CaficultorProvider } from '@/context/CaficultorContext';
 import { CompradorProvider } from '@/context/CompradorContext';
 import { LaboratorioProvider } from '@/context/LaboratorioContext';
 import { TecnicoProvider } from '@/context/TecnicoContext';
+import { TrazabilidadProvider } from '@/context/TrazabilidadContext';
 import { CatadorProvider } from '@/context/CatadorContext';
 
 // Feedback
@@ -49,6 +50,7 @@ const NosotrosPage = lazyPage(landing, 'NosotrosPage');
 const BlogPage = lazyPage(landing, 'BlogPage');
 const ContactPage = lazyPage(landing, 'ContactPage');
 const AddProductPage = lazyPage(landing, 'AddProductPage');
+const TrazabilidadPage = lazyPage(() => import('@/features/trazabilidad'), 'TrazabilidadPage');
 
 const legal = () => import('@/features/legal');
 const TermsPage = lazyPage(legal, 'TermsPage');
@@ -77,7 +79,7 @@ const LaboratoriosPage = lazyPage(superadmin, 'LaboratoriosPage');
 const MuestrasPage = lazyPage(superadmin, 'MuestrasPage');
 const OfertasPage = lazyPage(superadmin, 'OfertasPage');
 const TecnicosPage = lazyPage(superadmin, 'TecnicosPage');
-const UsuariosPage = lazyPage(superadmin, 'UsuariosPage');
+const BlogAdminPage = lazyPage(superadmin, 'BlogAdminPage');
 const ConfiguracionPage = lazyPage(superadmin, 'ConfiguracionPage');
 
 // ---------- Empresa ----------
@@ -92,6 +94,7 @@ const EmpresaPreOfertasPage = lazyPage(empresa, 'EmpresaPreOfertasPage');
 const EmpresaOfertasPage = lazyPage(empresa, 'EmpresaOfertasPage');
 const EmpresaOfertasLibresPage = lazyPage(empresa, 'EmpresaOfertasLibresPage');
 const EmpresaTecnicosPage = lazyPage(empresa, 'EmpresaTecnicosPage');
+const EmpresaPrecintosPage = lazyPage(empresa, 'EmpresaPrecintosPage');
 
 // ---------- Broker ----------
 const broker = () => import('@/features/broker');
@@ -124,6 +127,7 @@ const LaboratorioMuestrasPage = lazyPage(laboratorio, 'LaboratorioMuestrasPage')
 // ---------- Técnico ----------
 const tecnico = () => import('@/features/tecnico');
 const TecnicoDashboardPage = lazyPage(tecnico, 'TecnicoDashboardPage');
+const TecnicoPrecintosPage = lazyPage(tecnico, 'TecnicoPrecintosPage');
 
 // ---------- Catador ----------
 const catador = () => import('@/features/catador');
@@ -170,6 +174,7 @@ const router = createBrowserRouter([
       { path: '/contacto', element: page(ContactPage) },
       { path: '/contactanos', element: <Navigate to="/contacto" replace /> },
       { path: '/agregar-producto', element: page(AddProductPage) },
+      { path: '/trazabilidad/:token', element: <TrazabilidadProvider>{page(TrazabilidadPage)}</TrazabilidadProvider> },
       { path: '/terms', element: page(TermsPage) },
       { path: '/privacy', element: page(PrivacyPage) },
       { path: '/legal', element: page(LegalNoticePage) },
@@ -215,8 +220,7 @@ const router = createBrowserRouter([
         { path: '/superadmin/muestras',     element: page(MuestrasPage) },
         { path: '/superadmin/ofertas',      element: page(OfertasPage) },
         { path: '/superadmin/tecnicos',     element: page(TecnicosPage) },
-        { path: '/superadmin/users',        element: page(UsuariosPage) },
-        { path: '/superadmin/usuarios',     element: <Navigate to="/superadmin/users" replace /> },
+        { path: '/superadmin/blog', element: page(BlogAdminPage) },
         { path: '/superadmin/settings',     element: page(ConfiguracionPage) },
         { path: '/superadmin/configuracion', element: <Navigate to="/superadmin/settings" replace /> },
       ]),
@@ -233,6 +237,7 @@ const router = createBrowserRouter([
         { path: '/empresa/pre-ofertas',    element: page(EmpresaPreOfertasPage) },
         { path: '/empresa/ofertas',        element: page(EmpresaOfertasPage) },
         { path: '/empresa/tecnicos',       element: page(EmpresaTecnicosPage) },
+        { path: '/empresa/precintos',      element: page(EmpresaPrecintosPage) },
       ]),
 
       roleRoutes(ROLES.BROKER, BrokerProvider, [
@@ -271,6 +276,7 @@ const router = createBrowserRouter([
       roleRoutes(ROLES.TECNICO, TecnicoProvider, [
         { path: '/tecnico',           element: <Navigate to="/tecnico/dashboard" replace /> },
         { path: '/tecnico/dashboard', element: page(TecnicoDashboardPage) },
+        { path: '/tecnico/precintos', element: page(TecnicoPrecintosPage) },
       ]),
 
       roleRoutes(ROLES.CATADOR, CatadorProvider, [

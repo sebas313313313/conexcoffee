@@ -18,6 +18,8 @@ export const TecnicoProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [visitas, setVisitas] = useState([]);
+  const [precintos, setPrecintos] = useState([]);
+  const [precintosMeta, setPrecintosMeta] = useState(null);
   const [preofertas, setPreofertas] = useState([]);
   const [caficultores, setCaficultores] = useState([]);
   const [fincas, setFincas] = useState([]);
@@ -98,6 +100,37 @@ export const TecnicoProvider = ({ children }) => {
     }
   };
 
+  const cargarMisPrecintos = useCallback(async (page = 1) => {
+    const { data, meta } = await axiosClient.get('/inventario-precintos-qr', {
+      params: { page, limit: 100 }, strictResponse: true,
+    });
+    setPrecintos(Array.isArray(data) ? data : []);
+    setPrecintosMeta(meta);
+  }, []);
+
+  const vincularSaco = async (payload) => {
+    try {
+      const { data } = await axiosClient.post('/inventario-precintos-qr/vincular-saco', payload, { strictResponse: true });
+      await cargarMisPrecintos(1);
+      toast.success('Saco vinculado al precinto');
+      return data;
+    } catch (error) { toast.error(getErrorMessage(error)); throw error; }
+  };
+
+  const cargarFlujoPrecinto = useCallback(async (token) => {
+    const { data } = await axiosClient.get(`/trazabilidad-escaneos/flujo/${token}`, { strictResponse: true });
+    return data;
+  }, []);
+
+  const corregirVinculo = async (token, payload) => {
+    try {
+      const { data } = await axiosClient.patch(`/inventario-precintos-qr/vinculos/${token}`, payload, { strictResponse: true });
+      await cargarMisPrecintos(1);
+      toast.success('Vinculación corregida');
+      return data;
+    } catch (error) { toast.error(getErrorMessage(error)); throw error; }
+  };
+
   const stats = [
     {
       label: 'Visitas Técnicas Realizadas',
@@ -133,6 +166,13 @@ export const TecnicoProvider = ({ children }) => {
         refetch: fetchAll,
         stats,
         visitas,
+        preofertas,
+        precintos,
+        precintosMeta,
+        cargarMisPrecintos,
+        vincularSaco,
+        cargarFlujoPrecinto,
+        corregirVinculo,
         createVisita,
       }}
     >

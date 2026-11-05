@@ -13,9 +13,7 @@ import ActionButton from '../components/ActionButton';
 import { useTableEntranceAnimation } from '../hooks/useSuperadminAnimations';
 import {
   useSuperadminFincas,
-  useCrearSuperadminFinca,
   useSuperadminLotes,
-  useCrearSuperadminLote,
 } from '../hooks/useSuperadminData';
 
 export default function FincasPage() {
@@ -23,11 +21,9 @@ export default function FincasPage() {
 
   const fincasQuery = useSuperadminFincas();
   const fincas = fincasQuery.data ?? [];
-  const crearFinca = useCrearSuperadminFinca();
 
   const lotesQuery = useSuperadminLotes();
   const lotes = lotesQuery.data ?? [];
-  const crearLote = useCrearSuperadminLote();
 
   const [searchTerm, setSearchTerm] = useState('');
   const [filtroDepartamento, setFiltroDepartamento] = useState('todos');
@@ -35,86 +31,13 @@ export default function FincasPage() {
   const tableFincasRef = useRef(null);
   const tableLotesRef = useRef(null);
 
-  const [modalRegistroFinca, setModalRegistroFinca] = useState(false);
-  const [modalRegistroLote, setModalRegistroLote] = useState(false);
   const [modalDetalleFinca, setModalDetalleFinca] = useState(false);
   const [fincaActual, setFincaActual] = useState(null);
-
-  const [formDataFinca, setFormDataFinca] = useState({
-    nombre: '',
-    altura: '',
-    areaCafe: '',
-    areaTotal: '',
-    municipio: '',
-    departamento: '',
-    caficultor: '',
-  });
-
-  const [formDataLote, setFormDataLote] = useState({
-    nombreLote: '',
-    finca: '',
-    variedadCafe: 'Caturra',
-    area: '',
-    proceso: 'Lavado Tradicional',
-    altura: '',
-  });
-
-  const abrirModalCrear = () => {
-    if (pestanaActiva === 'fincas') {
-      setFormDataFinca({
-        nombre: '',
-        altura: '',
-        areaCafe: '',
-        areaTotal: '',
-        municipio: '',
-        departamento: '',
-        caficultor: '',
-      });
-      setModalRegistroFinca(true);
-    } else {
-      setFormDataLote({
-        nombreLote: '',
-        finca: fincas[0]?.nombre || '',
-        variedadCafe: 'Caturra',
-        area: '',
-        proceso: 'Lavado Tradicional',
-        altura: '',
-      });
-      setModalRegistroLote(true);
-    }
-  };
 
   const abrirDetalleFinca = (f) => {
     setFincaActual(f);
     setModalDetalleFinca(true);
   };
-
-  const guardarFinca = (e) => {
-    e.preventDefault();
-    const nueva = {
-      ...formDataFinca,
-      altura: Number(formDataFinca.altura),
-      areaCafe: Number(formDataFinca.areaCafe),
-      areaTotal: Number(formDataFinca.areaTotal || formDataFinca.areaCafe),
-      variedades: ['Castillo'],
-      lotesCount: 0,
-    };
-    crearFinca.mutate(nueva);
-    setModalRegistroFinca(false);
-  };
-
-  const guardarLote = (e) => {
-    e.preventDefault();
-    const nuevo = {
-      ...formDataLote,
-      area: Number(formDataLote.area),
-      altura: Number(formDataLote.altura || 1700),
-      estado: 'Activo',
-    };
-    crearLote.mutate(nuevo);
-    setModalRegistroLote(false);
-  };
-
 
   const departamentosUnicos = Array.from(
     new Set(fincas.map((f) => f.departamento).filter(Boolean))
@@ -150,11 +73,9 @@ export default function FincasPage() {
         titulo="Fincas y Lotes"
         subtitulo="Registro catastral cafetero, altimetría y trazabilidad de parcelas productivas"
         imagenPortada="/images/portadas/finca.jpg"
-        mensaje="En este modulo podras registrar la información detallada de cada una de tus fincas."
+        mensaje="Consulta y supervisión de las fincas y lotes registrados por los productores y las empresas."
         icono={Coffee}
         totalRegistros={pestanaActiva === 'fincas' ? fincasFiltradas.length : lotesFiltrados.length}
-        onRegistrar={abrirModalCrear}
-        textoBotonRegistrar={pestanaActiva === 'fincas' ? 'Registrar Finca' : 'Registrar Lote'}
       />
 
       <QueryState query={fincasQuery} />
@@ -337,115 +258,6 @@ export default function FincasPage() {
         </div>
       )}
 
-      {/* MODAL REGISTRAR FINCA */}
-      {modalRegistroFinca && (
-        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
-          <div className="bg-white rounded-2xl max-w-xl w-full p-6 shadow-2xl border border-surface-200 my-8">
-            <div className="flex items-center justify-between pb-4 border-b border-surface-200">
-              <div className="flex items-center gap-2.5">
-                <div className="h-9 w-9 rounded-xl bg-brand-tint text-brand-terracota flex items-center justify-center">
-                  <Coffee className="h-5 w-5" />
-                </div>
-                <div>
-                  <h3 className="text-lg font-bold text-surface-900">Registrar Finca</h3>
-                  <p className="text-xs text-surface-500">Parámetros agronómicos de la finca</p>
-                </div>
-              </div>
-              <button
-                onClick={() => setModalRegistroFinca(false)}
-                className="p-1.5 rounded-lg text-surface-400 hover:bg-surface-100 cursor-pointer"
-              >
-                <X className="h-5 w-5" />
-              </button>
-            </div>
-
-            <form onSubmit={guardarFinca} className="mt-4 space-y-4">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-bold text-surface-700 mb-1">Nombre de la Finca *</label>
-                  <input
-                    required
-                    type="text"
-                    value={formDataFinca.nombre}
-                    onChange={(e) => setFormDataFinca({ ...formDataFinca, nombre: e.target.value })}
-                    className="w-full px-3 py-2 text-sm rounded-xl border border-surface-200"
-                    placeholder="Ej. Finca El Paraíso"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-bold text-surface-700 mb-1">Altura (msnm) *</label>
-                  <input
-                    required
-                    type="number"
-                    value={formDataFinca.altura}
-                    onChange={(e) => setFormDataFinca({ ...formDataFinca, altura: e.target.value })}
-                    className="w-full px-3 py-2 text-sm rounded-xl border border-surface-200"
-                    placeholder="Ej. 1750"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-bold text-surface-700 mb-1">Área Café (ha) *</label>
-                  <input
-                    required
-                    type="number"
-                    step="0.1"
-                    value={formDataFinca.areaCafe}
-                    onChange={(e) => setFormDataFinca({ ...formDataFinca, areaCafe: e.target.value })}
-                    className="w-full px-3 py-2 text-sm rounded-xl border border-surface-200"
-                    placeholder="Ej. 4.5"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-bold text-surface-700 mb-1">Caficultor Dueño *</label>
-                  <input
-                    required
-                    type="text"
-                    value={formDataFinca.caficultor}
-                    onChange={(e) => setFormDataFinca({ ...formDataFinca, caficultor: e.target.value })}
-                    className="w-full px-3 py-2 text-sm rounded-xl border border-surface-200"
-                    placeholder="Nombre del productor"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-bold text-surface-700 mb-1">Municipio</label>
-                  <input
-                    type="text"
-                    value={formDataFinca.municipio}
-                    onChange={(e) => setFormDataFinca({ ...formDataFinca, municipio: e.target.value })}
-                    className="w-full px-3 py-2 text-sm rounded-xl border border-surface-200"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-bold text-surface-700 mb-1">Departamento</label>
-                  <input
-                    type="text"
-                    value={formDataFinca.departamento}
-                    onChange={(e) => setFormDataFinca({ ...formDataFinca, departamento: e.target.value })}
-                    className="w-full px-3 py-2 text-sm rounded-xl border border-surface-200"
-                  />
-                </div>
-              </div>
-
-              <div className="flex justify-end gap-3 pt-3 border-t border-surface-200">
-                <button
-                  type="button"
-                  onClick={() => setModalRegistroFinca(false)}
-                  className="px-4 py-2 rounded-xl border border-surface-200 text-sm font-semibold text-surface-600 hover:bg-surface-50 cursor-pointer"
-                >
-                  Cancelar
-                </button>
-                <button
-                  type="submit"
-                  className="px-5 py-2 rounded-xl bg-brand-terracota hover:bg-brand-terracota-dark text-white text-sm font-semibold shadow-md cursor-pointer"
-                >
-                  Guardar Finca
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
       {/* MODAL DETALLES FINCA */}
       {modalDetalleFinca && fincaActual && (
         <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
@@ -512,117 +324,6 @@ export default function FincasPage() {
         </div>
       )}
 
-      {/* MODAL REGISTRAR LOTE */}
-      {modalRegistroLote && (
-        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
-          <div className="bg-white rounded-2xl max-w-xl w-full p-6 shadow-2xl border border-surface-200 my-8">
-            <div className="flex items-center justify-between pb-4 border-b border-surface-200">
-              <div className="flex items-center gap-2.5">
-                <div className="h-9 w-9 rounded-xl bg-brand-tint text-brand-terracota flex items-center justify-center">
-                  <Layers className="h-5 w-5" />
-                </div>
-                <div>
-                  <h3 className="text-lg font-bold text-surface-900">Registrar Nuevo Lote</h3>
-                  <p className="text-xs text-surface-500">Parcela de café y varietal sembrado</p>
-                </div>
-              </div>
-              <button
-                onClick={() => setModalRegistroLote(false)}
-                className="p-1.5 rounded-lg text-surface-400 hover:bg-surface-100 cursor-pointer"
-              >
-                <X className="h-5 w-5" />
-              </button>
-            </div>
-
-            <form onSubmit={guardarLote} className="mt-4 space-y-4">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-bold text-surface-700 mb-1">Nombre / Código del Lote *</label>
-                  <input
-                    required
-                    type="text"
-                    value={formDataLote.nombreLote}
-                    onChange={(e) => setFormDataLote({ ...formDataLote, nombreLote: e.target.value })}
-                    className="w-full px-3 py-2 text-sm rounded-xl border border-surface-200"
-                    placeholder="Ej. Lote El Mirador"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-bold text-surface-700 mb-1">Finca Perteneciente *</label>
-                  <select
-                    value={formDataLote.finca}
-                    onChange={(e) => setFormDataLote({ ...formDataLote, finca: e.target.value })}
-                    className="w-full px-3 py-2 text-sm rounded-xl border border-surface-200"
-                  >
-                    {fincas.map((f) => (
-                      <option key={f.id} value={f.nombre}>{f.nombre}</option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-xs font-bold text-surface-700 mb-1">Variedad de Café *</label>
-                  <input
-                    required
-                    type="text"
-                    value={formDataLote.variedadCafe}
-                    onChange={(e) => setFormDataLote({ ...formDataLote, variedadCafe: e.target.value })}
-                    className="w-full px-3 py-2 text-sm rounded-xl border border-surface-200"
-                    placeholder="Ej. Pink Bourbon, Geisha, Caturra"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-bold text-surface-700 mb-1">Área del Lote (ha) *</label>
-                  <input
-                    required
-                    type="number"
-                    step="0.1"
-                    value={formDataLote.area}
-                    onChange={(e) => setFormDataLote({ ...formDataLote, area: e.target.value })}
-                    className="w-full px-3 py-2 text-sm rounded-xl border border-surface-200"
-                    placeholder="Ej. 1.5"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-bold text-surface-700 mb-1">Proceso Postcosecha</label>
-                  <input
-                    type="text"
-                    value={formDataLote.proceso}
-                    onChange={(e) => setFormDataLote({ ...formDataLote, proceso: e.target.value })}
-                    className="w-full px-3 py-2 text-sm rounded-xl border border-surface-200"
-                    placeholder="Ej. Honey, Lavado Anaeróbico, Natural"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-bold text-surface-700 mb-1">Altimetría Específica (msnm)</label>
-                  <input
-                    type="number"
-                    value={formDataLote.altura}
-                    onChange={(e) => setFormDataLote({ ...formDataLote, altura: e.target.value })}
-                    className="w-full px-3 py-2 text-sm rounded-xl border border-surface-200"
-                    placeholder="Ej. 1800"
-                  />
-                </div>
-              </div>
-
-              <div className="flex justify-end gap-3 pt-3 border-t border-surface-200">
-                <button
-                  type="button"
-                  onClick={() => setModalRegistroLote(false)}
-                  className="px-4 py-2 rounded-xl border border-surface-200 text-sm font-semibold text-surface-600 hover:bg-surface-50 cursor-pointer"
-                >
-                  Cancelar
-                </button>
-                <button
-                  type="submit"
-                  className="px-5 py-2 rounded-xl bg-brand-terracota hover:bg-brand-terracota-dark text-white text-sm font-semibold shadow-md cursor-pointer"
-                >
-                  Guardar Lote
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
