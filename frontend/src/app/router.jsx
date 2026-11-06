@@ -46,6 +46,7 @@ const page = (Component) => (
 const landing = () => import('@/features/landing');
 const LandingPage = lazyPage(landing, 'LandingPage');
 const DestinosPage = lazyPage(landing, 'DestinosPage');
+const DestinoContenedorPage = lazyPage(landing, 'DestinoContenedorPage');
 const NosotrosPage = lazyPage(landing, 'NosotrosPage');
 const BlogPage = lazyPage(landing, 'BlogPage');
 const ContactPage = lazyPage(landing, 'ContactPage');
@@ -175,6 +176,7 @@ const router = createBrowserRouter([
     children: [
       { path: '/', element: page(LandingPage) },
       { path: '/destinos', element: page(DestinosPage) },
+      { path: '/destinos/:destinoId', element: page(DestinoContenedorPage) },
       { path: '/nosotros', element: page(NosotrosPage) },
       { path: '/blog', element: page(BlogPage) },
       { path: '/contacto', element: page(ContactPage) },

@@ -39,6 +39,7 @@ import SacoCafeRouter from './modules/sacos_cafe/router/SacoCafeRouter.js';
 import TrazabilidadEscaneoRouter from './modules/trazabilidad_escaneos/router/TrazabilidadEscaneoRouter.js';
 import ContenedorVirtualRouter from './modules/contenedores_virtuales/router/ContenedorVirtualRouter.js';
 import PedidoInternacionalRouter from './modules/pedidos_internacionales/router/PedidoInternacionalRouter.js';
+import PagosPasarelaRouter from './modules/pagos_pasarela/router/PagosPasarelaRouter.js';
 import AlertaSeguridadRouter from './modules/alertas_seguridad/router/AlertaSeguridadRouter.js';
 import QrRouter from './modules/qr/router/QrRouter.js';
 
@@ -94,7 +95,7 @@ const corsOptions = {
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin', 'Cache-Control', 'Pragma'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin', 'Cache-Control', 'Pragma', 'X-Idempotency-Key', 'X-PaymentsWay-Signature', 'X-Signature'],
   optionsSuccessStatus: 200
 };
 
@@ -161,6 +162,8 @@ app.use('/api/contenedores-virtuales', ContenedorVirtualRouter);
 app.use('/api/contenedores', ContenedorVirtualRouter);
 app.use('/api/pedidos-internacionales', PedidoInternacionalRouter);
 app.use('/api/pedidos', PedidoInternacionalRouter);
+app.use('/api/pagos', PagosPasarelaRouter);
+app.use('/api/payments-way', PagosPasarelaRouter);
 app.use('/api/alertas-seguridad', AlertaSeguridadRouter);
 app.use('/api/qr', QrRouter);
 

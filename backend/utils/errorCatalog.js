@@ -109,6 +109,36 @@ export const ERROR_CATALOG = {
     category: 'LOGISTICA',
     message: 'Capacidad máxima de contenedor virtual excedida',
     statusCode: 400
+  },
+  PAYMENT_INVALID_SIGNATURE: {
+    code: 'CC-0F31',
+    category: 'PAGOS_SEGURIDAD',
+    message: 'Firma criptográfica de pasarela inválida o alterada',
+    statusCode: 401
+  },
+  PAYMENT_IDEMPOTENCY_CONFLICT: {
+    code: 'CC-0F32',
+    category: 'PAGOS_SEGURIDAD',
+    message: 'Esta transacción ya está siendo procesada o ya fue ejecutada (Idempotencia)',
+    statusCode: 409
+  },
+  PAYMENT_AMOUNT_TAMPERED: {
+    code: 'CC-0F33',
+    category: 'PAGOS_SEGURIDAD',
+    message: 'Discrepancia detectada en los montos del carrito frente al catálogo oficial',
+    statusCode: 422
+  },
+  PAYMENT_GATEWAY_REJECTED: {
+    code: 'CC-0F34',
+    category: 'PAGOS',
+    message: 'La transacción fue rechazada por la pasarela Payments Way o la entidad emisora',
+    statusCode: 402
+  },
+  PAYMENT_SESSION_EXPIRED: {
+    code: 'CC-0F35',
+    category: 'PAGOS_SEGURIDAD',
+    message: 'La sesión de pago ha expirado o ya fue utilizada',
+    statusCode: 400
   }
 };
 

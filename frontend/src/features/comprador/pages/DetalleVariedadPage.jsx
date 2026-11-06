@@ -6,7 +6,7 @@ import {
   Truck, Info, Plus, Minus,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
-import RadarChart from '../components/RadarChart';
+import { RadarChart, FincaMapa } from '@/components/data-display';
 import { useContenedoresComprador } from '../hooks/useCompradorData';
 import { useComprador } from '@/hooks/useComprador';
 
@@ -370,23 +370,12 @@ export default function DetalleVariedadPage() {
                 <Leaf className="h-3.5 w-3.5 text-green-500" />
                 {variedad.ubicacionFinca.nombre}
               </p>
-              <div className="rounded-xl overflow-hidden border border-surface-200 h-52">
-                <iframe
-                  title={`Mapa ${variedad.historia?.finca || variedad.nombre}`}
-                  width="100%"
-                  height="100%"
-                  loading="lazy"
-                  sandbox="allow-scripts allow-popups"
-                  referrerPolicy="no-referrer-when-downgrade"
-                  src={`https://www.google.com/maps/embed/v1/place?key=AIzaSyD-9tSrke72PouQMnMX-a7eZSW0jkFMBWY&q=${variedad.ubicacionFinca.lat},${variedad.ubicacionFinca.lng}&zoom=12`}
-                  style={{ border: 0 }}
-                  allowFullScreen
-                />
-              </div>
-              <div className="flex gap-3 mt-2 text-xs text-surface-400">
-                <span>Lat: {variedad.ubicacionFinca.lat}</span>
-                <span>Lng: {variedad.ubicacionFinca.lng}</span>
-              </div>
+              <FincaMapa
+                lat={variedad.ubicacionFinca.lat}
+                lng={variedad.ubicacionFinca.lng}
+                nombre={variedad.historia?.finca || variedad.nombre}
+                className="h-52"
+              />
             </>
           )}
         </div>

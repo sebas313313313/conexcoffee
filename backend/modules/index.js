@@ -29,6 +29,7 @@ import SacoCafe from './sacos_cafe/SacoCafe.js';
 import TrazabilidadEscaneo from './trazabilidad_escaneos/TrazabilidadEscaneo.js';
 import ContenedorVirtual from './contenedores_virtuales/ContenedorVirtual.js';
 import PedidoInternacional from './pedidos_internacionales/PedidoInternacional.js';
+import TransaccionPago from './pagos_pasarela/TransaccionPago.js';
 import AlertaSeguridad from './alertas_seguridad/AlertaSeguridad.js';
 
 export const models = {
@@ -58,6 +59,7 @@ export const models = {
   TrazabilidadEscaneo,
   ContenedorVirtual,
   PedidoInternacional,
+  TransaccionPago,
   AlertaSeguridad
 };
 
@@ -161,5 +163,9 @@ PedidoInternacional.belongsTo(ContenedorVirtual, { foreignKey: 'contenedor_id', 
 // Preoferta <-> Pedidos
 Preoferta.hasMany(PedidoInternacional, { foreignKey: 'preoferta_id', as: 'pedidos' });
 PedidoInternacional.belongsTo(Preoferta, { foreignKey: 'preoferta_id', as: 'preoferta' });
+
+// Pedido <-> Transacciones de Pago (Pasarela Payments Way)
+PedidoInternacional.hasMany(TransaccionPago, { foreignKey: 'pedido_id', as: 'transacciones_pago' });
+TransaccionPago.belongsTo(PedidoInternacional, { foreignKey: 'pedido_id', as: 'pedido' });
 
 export default models;

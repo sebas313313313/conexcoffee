@@ -2,7 +2,8 @@ import { useState } from 'react';
 import { Outlet } from 'react-router-dom';
 import PublicNavbar from './components/PublicNavbar';
 import PublicFooter from './components/PublicFooter';
-import { AddProductModal } from '@/components/modals';
+import { AddProductModal, CartDrawerModal } from '@/components/modals';
+import { PaymentsWayCheckoutModal } from '@/features/payments';
 
 // ============================================
 // PublicLayout — Layout para todas las páginas públicas
@@ -37,6 +38,8 @@ export default function PublicLayout() {
         isOpen={addProductModalOpen}
         onClose={() => setAddProductModalOpen(false)}
       />
+      <CartDrawerModal />
+      <PaymentsWayCheckoutModal />
     </div>
   );
 }

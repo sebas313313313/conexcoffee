@@ -7,9 +7,11 @@ import {
   LayoutDashboard,
   Menu,
   X,
+  ShoppingCart,
 } from 'lucide-react';
 import { Button } from '@/components/ui';
 import useAuthStore from '@/store/useAuthStore';
+import useCartStore, { formatCOP } from '@/store/useCartStore';
 
 // ============================================
 // PublicNavbar — Barra de navegación transparente
@@ -29,8 +31,16 @@ export default function PublicNavbar({ onOpenAddProduct }) {
   const location = useLocation();
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   const role = useAuthStore((s) => s.role);
+  const cartItems = useCartStore((s) => s.items);
+  const openCart = useCartStore((s) => s.openCart);
   const mobileToggleRef = useRef(null);
   const mobileMenuRef = useRef(null);
+
+  const totalCartUnits = cartItems.reduce((sum, i) => sum + Number(i.cantidad || 0), 0);
+  const totalCartCOP = cartItems.reduce(
+    (sum, i) => sum + Number(i.precioUnitarioCOP || 0) * Number(i.cantidad || 0),
+    0
+  );
 
   useEffect(() => {
     const handleScroll = () => {
@@ -72,8 +82,8 @@ export default function PublicNavbar({ onOpenAddProduct }) {
   return (
     <header
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-        isScrolled
-          ? 'bg-black/75 backdrop-blur-md border-b border-white/10 shadow-xl'
+        isScrolled || location.pathname !== '/'
+          ? 'bg-surface-900/90 backdrop-blur-md border-b border-white/10 shadow-xl'
           : 'bg-transparent border-b border-white/10'
       }`}
     >
@@ -92,7 +102,7 @@ export default function PublicNavbar({ onOpenAddProduct }) {
             />
           </Link>
 
-          {/* Desktop Navigation Links */}
+          {/* Desktop Navigation Links + Icono del Carrito al lado de Contactos */}
           <nav className="hidden lg:flex items-center gap-7" aria-label="Navegación principal">
             {NAV_LINKS.map((link) => {
               const isActive = location.pathname === link.path;
@@ -110,6 +120,26 @@ export default function PublicNavbar({ onOpenAddProduct }) {
                 </Link>
               );
             })}
+
+            {/* Icono del carrito al lado de Contactos */}
+            <button
+              type="button"
+              onClick={openCart}
+              className="relative inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 border border-white/20 text-white transition-all cursor-pointer focus:outline-none focus:ring-2 focus:ring-brand-orange"
+              title={
+                totalCartUnits > 0
+                  ? `Carrito: ${totalCartUnits} unidad(es) — ${formatCOP(totalCartCOP)}`
+                  : 'Abrir carrito de compras'
+              }
+              aria-label="Abrir carrito de compras"
+            >
+              <ShoppingCart className="w-4 h-4 text-brand-orange" />
+              {totalCartUnits > 0 && (
+                <span className="inline-flex items-center justify-center min-w-5 h-5 px-1.5 rounded-full bg-brand-terracota text-white text-[11px] font-extrabold">
+                  {totalCartUnits}
+                </span>
+              )}
+            </button>
           </nav>
 
           {/* Desktop Action Buttons */}
@@ -145,6 +175,19 @@ export default function PublicNavbar({ onOpenAddProduct }) {
 
           {/* Mobile Actions & Menu Toggle */}
           <div className="flex lg:hidden items-center gap-2">
+            <button
+              type="button"
+              onClick={openCart}
+              className="relative p-2 rounded-lg text-white hover:bg-white/10 focus:outline-none cursor-pointer"
+              aria-label="Abrir carrito de compras"
+            >
+              <ShoppingCart className="h-5 w-5 text-brand-orange" />
+              {totalCartUnits > 0 && (
+                <span className="absolute -top-1 -right-1 min-w-5 h-5 px-1 rounded-full bg-brand-terracota text-white text-[10px] font-extrabold flex items-center justify-center">
+                  {totalCartUnits}
+                </span>
+              )}
+            </button>
             <button
               ref={mobileToggleRef}
               onClick={handleToggleMobile}
