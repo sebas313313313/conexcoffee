@@ -23,14 +23,7 @@ class TrazabilidadEscaneoController extends BaseController {
   obtenerTrazabilidadTecnica = (req, res) =>
     this.execute(res, async () => {
       const { tokenQrExterno } = req.params;
-      const metaInfo = {
-        ip: req.ip || req.connection?.remoteAddress,
-        userAgent: req.headers['user-agent'],
-        latitud: req.query.latitud ? parseFloat(req.query.latitud) : null,
-        longitud: req.query.longitud ? parseFloat(req.query.longitud) : null
-      };
-
-      return await this.service.obtenerTrazabilidadTecnica(tokenQrExterno, req.user, metaInfo);
+      return await this.service.obtenerFlujo(tokenQrExterno, req.user);
     });
 }
 

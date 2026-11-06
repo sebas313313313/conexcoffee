@@ -2,17 +2,9 @@ import { useCallback, useEffect, useState, useSyncExternalStore } from 'react';
 import { useLocation } from 'react-router-dom';
 import api from '../../lib/axios';
 import { createRoleDataController } from './roleDataController';
+import { readRoleCollection } from './readRoleCollection';
 
-async function readCollection(url, signal) {
-  try {
-    const { data } = await api.get(url, { signal });
-    return Array.isArray(data) ? data : [];
-  } catch (error) {
-    if (signal.aborted) throw error;
-    // Conserva la tolerancia a endpoints opcionales que tenían los Providers.
-    return [];
-  }
-}
+const readCollection = (source, signal) => readRoleCollection(api, source, signal);
 
 /** Carga únicamente las dependencias de la pantalla montada bajo el Provider. */
 export function useRoleData(definition) {

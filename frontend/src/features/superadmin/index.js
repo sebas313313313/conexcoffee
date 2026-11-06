@@ -14,6 +14,5 @@ export { default as LaboratoriosPage }        from './pages/LaboratoriosPage';
 export { default as MuestrasPage }            from './pages/MuestrasPage';
 export { default as OfertasPage }             from './pages/OfertasPage';
 export { default as TecnicosPage }            from './pages/TecnicosPage';
-export { default as UsuariosPage }            from './pages/UsuariosPage';
-export { default as BlogAdminPage }           from './pages/BlogAdminPage';
+export { default as BlogAdminPage } from './pages/BlogAdminPage';
 export { default as ConfiguracionPage }       from './pages/ConfiguracionPage';

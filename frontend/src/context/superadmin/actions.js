@@ -62,8 +62,8 @@ export function createSuperAdminActions(state, setters) {
   // ── CAFICULTORES CRUD ──────────────────────────────────────────────────────
   const createCaficultor = async (payload) => {
     try {
-      const { data } = await axiosClient.post('/caficultores', payload);
-      const mapped = mapCaficultor({ ...payload, ...data }, { fincas, empresas, usuarios });
+      const { data } = await axiosClient.post('/caficultores', payload, { strictResponse: true });
+      const mapped = mapCaficultor({ ...data, correo: payload.correo }, { fincas, empresas, usuarios });
       setCaficultores((prev) => [mapped, ...prev]);
       toast.success('Caficultor registrado correctamente');
       return mapped;
@@ -75,7 +75,7 @@ export function createSuperAdminActions(state, setters) {
 
   const updateCaficultor = async (id, payload) => {
     try {
-      const { data } = await axiosClient.put(`/caficultores/${id}`, payload);
+      const { data } = await axiosClient.put(`/caficultores/${id}`, payload, { strictResponse: true });
       setCaficultores((prev) =>
         prev.map((c) =>
           c.id === id ? mapCaficultor({ ...c, ...payload, ...data }, { fincas, empresas, usuarios }) : c
@@ -88,11 +88,8 @@ export function createSuperAdminActions(state, setters) {
     }
   };
 
-  const asignarEmpresaCaficultor = async (caficultorId, empresaNombre) => {
-    setCaficultores((prev) =>
-      prev.map((c) => (c.id === caficultorId ? { ...c, empresaAsignada: empresaNombre } : c))
-    );
-    toast.success(`Empresa ${empresaNombre} asignada al caficultor`);
+  const asignarEmpresaCaficultor = async (caficultorId, empresaId) => {
+    await updateCaficultor(caficultorId, { empresa_exportadora_id: empresaId || null });
   };
 
   // ── CATADORES CRUD ─────────────────────────────────────────────────────────
@@ -127,8 +124,8 @@ export function createSuperAdminActions(state, setters) {
   // ── EMPRESAS CRUD ──────────────────────────────────────────────────────────
   const createEmpresa = async (payload) => {
     try {
-      const { data } = await axiosClient.post('/empresas-exportadoras', payload);
-      const mapped = mapEmpresa({ ...payload, ...data }, { caficultores, preofertas, usuarios });
+      const { data } = await axiosClient.post('/empresas-exportadoras', payload, { strictResponse: true });
+      const mapped = mapEmpresa({ ...data, correo: payload.correo }, { caficultores, preofertas, usuarios });
       setEmpresas((prev) => [mapped, ...prev]);
       toast.success('Empresa exportadora registrada correctamente');
       return mapped;
@@ -210,8 +207,8 @@ export function createSuperAdminActions(state, setters) {
   // ── BROKERS CRUD ───────────────────────────────────────────────────────────
   const createBroker = async (payload) => {
     try {
-      const { data } = await axiosClient.post('/brokers', payload);
-      const mapped = mapBroker({ ...payload, ...data }, { pedidos: compras, usuarios });
+      const { data } = await axiosClient.post('/brokers', payload, { strictResponse: true });
+      const mapped = mapBroker({ ...data, correo: payload.correo }, { pedidos: compras, usuarios });
       setBrokers((prev) => [mapped, ...prev]);
       toast.success('Broker registrado correctamente');
       return mapped;

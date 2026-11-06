@@ -1,3 +1,4 @@
+import { createLaboratorioQrActions } from './laboratorio/qr';
 import { createContext, useMemo } from 'react';
 import { useRoleData } from './shared/useRoleData';
 import { laboratorioData } from './laboratorio/data';
@@ -10,7 +11,9 @@ export const LaboratorioProvider = ({ children }) => {
   const { state, setters, loading, error, refetch } = useRoleData(laboratorioData);
   const actions = useMemo(() => createLaboratorioActions(state, setters), [state, setters]);
   const summary = useMemo(() => selectLaboratorioSummary(state), [state]);
+  const qrActions = useMemo(() => createLaboratorioQrActions(refetch), [refetch]);
   const value = useMemo(() => ({
+    ...qrActions,
     loading,
     error,
     refetch,
@@ -34,7 +37,7 @@ export const LaboratorioProvider = ({ children }) => {
     createMuestra: actions.createMuestra,
     updateMuestra: actions.updateMuestra,
     updateResultado: actions.updateResultado,
-  }), [state, actions, loading, error, refetch, summary]);
+  }), [state, qrActions, actions, loading, error, refetch, summary]);
 
   return <LaboratorioContext.Provider value={value}>{children}</LaboratorioContext.Provider>;
 };

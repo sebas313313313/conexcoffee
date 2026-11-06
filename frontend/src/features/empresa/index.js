@@ -8,3 +8,4 @@ export { default as EmpresaPreOfertasPage } from './pages/EmpresaPreOfertasPage'
 export { default as EmpresaOfertasPage } from './pages/EmpresaOfertasPage';
 export { default as EmpresaOfertasLibresPage } from './pages/EmpresaOfertasLibresPage';
 export { default as EmpresaTecnicosPage } from './pages/EmpresaTecnicosPage';
+export { default as EmpresaPrecintosPage } from './pages/EmpresaPrecintosPage';

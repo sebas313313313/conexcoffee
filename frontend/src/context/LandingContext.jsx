@@ -99,9 +99,15 @@ function mapContenedorPublico(raw, variedadesList = []) {
   };
 }
 
-export const LandingProvider = ({ children }) => {
+export const LandingProvider = ({ children, cargarContenedores = true }) => {
   const [contenedores, setContenedores] = useState([]);
   const [loading, setLoading] = useState(true);
+  const listarBlogPublico = useCallback(async (page = 1, signal) => {
+    const response = await axiosClient.get('/publicaciones-blog/publicas', {
+      params: { page, limit: 12 }, signal, strictResponse: true, skipAuthRedirect: true,
+    });
+    return { publicaciones: response.data, meta: response.meta };
+  }, []);
 
   const cargarContenedoresPublicos = useCallback(async () => {
     setLoading(true);
@@ -129,14 +135,15 @@ export const LandingProvider = ({ children }) => {
   }, []);
 
   useEffect(() => {
-    cargarContenedoresPublicos();
-  }, [cargarContenedoresPublicos]);
+    if (cargarContenedores) cargarContenedoresPublicos();
+  }, [cargarContenedoresPublicos, cargarContenedores]);
 
   return (
     <LandingContext.Provider
       value={{
         contenedores,
         loading,
+        listarBlogPublico,
         recargar: cargarContenedoresPublicos,
       }}
     >

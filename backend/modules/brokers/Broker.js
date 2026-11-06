@@ -6,6 +6,9 @@ import BaseController from '../baseController.js';
 import { Router } from 'express';
 import checkAuth from '../../middleware/checkAuth.js';
 import { ensureUsuarioSistema } from '../../utils/ensureUsuarioSistema.js';
+import { DomainError } from '../../utils/DomainError.js';
+import { ERROR_CATALOG } from '../../utils/errorCatalog.js';
+import checkRoles from '../../middleware/checkRoles.js';
 
 class Broker extends Model {}
 
@@ -13,6 +16,7 @@ Broker.init(
   {
     id: { type: DataTypes.UUID, defaultValue: DataTypes.UUIDV4, primaryKey: true, allowNull: false },
     usuario_id: { type: DataTypes.UUID, allowNull: false, unique: true },
+    empresa_exportadora_is: { type: DataTypes.UUID, allowNull: true },
     nombre_empresa: { type: DataTypes.STRING(150), allowNull: false },
     identificacion_fiscal_pais: { type: DataTypes.STRING(50), allowNull: false },
     pais_operacion: { type: DataTypes.STRING(60), allowNull: false },
@@ -39,7 +43,7 @@ class BrokerRepository extends BaseRepository {
   }
 }
 
-class BrokerService extends BaseService {
+export class BrokerService extends BaseService {
   constructor(repo = new BrokerRepository()) {
     super(repo, 'Broker Internacional');
   }
@@ -79,9 +83,52 @@ class BrokerService extends BaseService {
   }
 
   async create(data, options = {}) {
-    const usuario_id = await ensureUsuarioSistema(data, 'BROKER');
-    const payload = this.normalize({ ...data, usuario_id }, true);
-    return await super.create(payload, options);
+    const persist = async (transaction) => {
+      const txOptions = { ...options, transaction };
+      const usuario_id = await ensureUsuarioSistema(data, 'BROKER', txOptions);
+      const payload = this.normalize({ ...data, usuario_id }, true);
+      return await super.create(payload, txOptions);
+    };
+    return options.transaction ? persist(options.transaction) : sequelize.transaction(persist);
+  }
+
+  async empresaIdForActor(actor) {
+    if (actor.rol_principal !== 'EMPRESA_EXPORTADORA') return null;
+    const [rows] = await sequelize.query(
+      'SELECT id FROM personas.empresas_exportadoras WHERE usuario_id = :userId LIMIT 1',
+      { replacements: { userId: actor.id } }
+    );
+    if (!rows.length) throw new DomainError(ERROR_CATALOG.NOT_FOUND.code, 'No existe una empresa asociada a esta sesión', null, 404);
+    return rows[0].id;
+  }
+
+  async createForActor(actor, data) {
+    const empresaId = await this.empresaIdForActor(actor);
+    const { empresa_exportadora_is: _ignored, usuario_id: _userId, ...safeData } = data;
+    return this.create({ ...safeData, empresa_exportadora_is: empresaId });
+  }
+
+  async listForActor(actor, query) {
+    const empresaId = await this.empresaIdForActor(actor);
+    if (!empresaId) return this.getAll(query);
+    const { page, limit } = query;
+    const result = await this.repository.findAll({ page, limit, where: { empresa_exportadora_is: empresaId } });
+    return { data: result.rows, meta: result.meta };
+  }
+
+  async brokerForActor(actor, id) {
+    const broker = await this.getById(id);
+    const empresaId = await this.empresaIdForActor(actor);
+    if (empresaId && broker.empresa_exportadora_is !== empresaId) {
+      throw new DomainError(ERROR_CATALOG.ROLE_UNAUTHORIZED.code, 'Este broker no pertenece a tu empresa', null, 403);
+    }
+    return broker;
+  }
+
+  async updateForActor(actor, id, data) {
+    await this.brokerForActor(actor, id);
+    const { empresa_exportadora_is: _ignored, usuario_id: _userId, ...safeData } = data;
+    return this.update(id, safeData);
   }
 
   async update(id, data, options = {}) {
@@ -98,10 +145,12 @@ class BrokerController extends BaseController {
 
 export const BrokerRouter = Router();
 const controller = new BrokerController();
-BrokerRouter.get('/', checkAuth, controller.getAll);
-BrokerRouter.get('/:id', checkAuth, controller.getById);
-BrokerRouter.post('/', checkAuth, controller.create);
-BrokerRouter.put('/:id', checkAuth, controller.update);
-BrokerRouter.delete('/:id', checkAuth, controller.delete);
+BrokerRouter.get('/', checkAuth, checkRoles('EMPRESA_EXPORTADORA'), (req, res) => controller.execute(res, () => controller.service.listForActor(req.user, req.query)));
+BrokerRouter.get('/:id', checkAuth, checkRoles('EMPRESA_EXPORTADORA'), (req, res) => controller.execute(res, () => controller.service.brokerForActor(req.user, req.params.id)));
+BrokerRouter.post('/', checkAuth, checkRoles('EMPRESA_EXPORTADORA'), (req, res) =>
+  controller.execute(res, () => controller.service.createForActor(req.user, req.body), 201));
+BrokerRouter.put('/:id', checkAuth, checkRoles('EMPRESA_EXPORTADORA'), (req, res) =>
+  controller.execute(res, () => controller.service.updateForActor(req.user, req.params.id, req.body)));
+BrokerRouter.delete('/:id', checkAuth, checkRoles('ADMINISTRADOR'), controller.delete);
 
 export default Broker;

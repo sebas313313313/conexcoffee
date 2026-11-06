@@ -1,3 +1,4 @@
+import { createEmpresaPrecintosActions } from './empresa/precintos';
 import { createContext, useMemo } from 'react';
 import { useRoleData } from './shared/useRoleData';
 import { empresaData } from './empresa/data';
@@ -10,7 +11,11 @@ export const EmpresaProvider = ({ children }) => {
   const { state, setters, loading, error, refetch } = useRoleData(empresaData);
   const actions = useMemo(() => createEmpresaActions(state, setters), [state, setters]);
   const summary = useMemo(() => selectEmpresaSummary(state), [state]);
+  const precintosActions = useMemo(() => createEmpresaPrecintosActions(setters), [setters]);
   const value = useMemo(() => ({
+    ...precintosActions,
+    precintos: state.precintos,
+    precintosMeta: state.precintosMeta,
     loading,
     error,
     refetch,
@@ -42,7 +47,7 @@ export const EmpresaProvider = ({ children }) => {
     updateOfertaLibre: actions.updateOfertaLibre,
     createTecnico: actions.createTecnico,
     updateTecnico: actions.updateTecnico,
-  }), [state, actions, loading, error, refetch, summary]);
+  }), [state, precintosActions, actions, loading, error, refetch, summary]);
 
   return <EmpresaContext.Provider value={value}>{children}</EmpresaContext.Provider>;
 };

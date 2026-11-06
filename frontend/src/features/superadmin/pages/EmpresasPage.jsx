@@ -29,6 +29,7 @@ export default function EmpresasPage() {
   const tableRef = useRef(null);
 
   const [modalRegistroAbierto, setModalRegistroAbierto] = useState(false);
+  const [guardandoEmpresa, setGuardandoEmpresa] = useState(false);
   const [modalEditarAbierto, setModalEditarAbierto] = useState(false);
   const [modalDetalleAbierto, setModalDetalleAbierto] = useState(false);
   const [empresaActual, setEmpresaActual] = useState(null);
@@ -78,14 +79,15 @@ export default function EmpresasPage() {
     setModalDetalleAbierto(true);
   };
 
-  const guardarCreacion = (data) => {
-    const nueva = {
-      ...data,
-      caficultoresCount: 0,
-      ofertasActivas: 0,
-    };
-    crearEmpresa.mutate(nueva);
-    setModalRegistroAbierto(false);
+  const guardarCreacion = async (data) => {
+    if (guardandoEmpresa) return;
+    setGuardandoEmpresa(true);
+    try {
+      await crearEmpresa.mutateAsync(data);
+      setModalRegistroAbierto(false);
+    } finally {
+      setGuardandoEmpresa(false);
+    }
   };
 
   const guardarEdicion = (e) => {
@@ -235,7 +237,7 @@ export default function EmpresasPage() {
         isOpen={modalRegistroAbierto}
         onClose={() => setModalRegistroAbierto(false)}
         onSubmit={guardarCreacion}
-        loading={crearEmpresa.isPending}
+        loading={guardandoEmpresa}
       />
 
       {/* MODAL EDITAR EMPRESA */}

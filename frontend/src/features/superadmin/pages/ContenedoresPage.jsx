@@ -7,7 +7,6 @@ import {
   Package,
   Send,
   EyeOff,
-  ShoppingBag,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { QueryState } from '@/components/feedback';
@@ -15,14 +14,12 @@ import ActionButton from '../components/ActionButton';
 import { useTableEntranceAnimation } from '../hooks/useSuperadminAnimations';
 import {
   useSuperadminContenedores,
-  useCrearSuperadminContenedor,
   useActualizarSuperadminContenedor,
 } from '../hooks/useSuperadminData';
 
 export default function ContenedoresPage() {
   const query = useSuperadminContenedores();
   const contenedores = query.data ?? [];
-  const crearContenedor = useCrearSuperadminContenedor();
   const actualizarContenedor = useActualizarSuperadminContenedor();
 
   const [searchTerm, setSearchTerm] = useState('');
@@ -30,31 +27,9 @@ export default function ContenedoresPage() {
   const tableRef = useRef(null);
 
   // Modales
-  const [modalRegistrarAbierto, setModalRegistrarAbierto] = useState(false);
   const [modalDetalleAbierto, setModalDetalleAbierto] = useState(false);
-  const [modalAsignarAbierto, setModalAsignarAbierto] = useState(false);
 
   const [contenedorSeleccionado, setContenedorSeleccionado] = useState(null);
-
-  // Formulario nuevo
-  const [nuevoContenedor, setNuevoContenedor] = useState({
-    codigo: '',
-    pais_origen: 'Colombia (Puerto Buenaventura)',
-    pais_destino: 'Países Bajos (Puerto de Rotterdam)',
-    fecha_apertura: '',
-    fecha_cierre_estimada: '',
-    cantidad_cafe_kg: 0,
-    capacidad_total_kg: 21600,
-    temperatura_controlada: '18°C',
-  });
-
-  // Oferta temporal a asignar
-  const [nuevaOfertaAsignar, setNuevaOfertaAsignar] = useState({
-    codigo: 'OFR-ANTIOQUIA-008',
-    variedad: 'Bourbon Chiroso',
-    sacos: 20,
-    peso_kg: 1200,
-  });
 
   // Filtrar
   const contenedoresFiltrados = contenedores.filter((c) => {
@@ -72,38 +47,6 @@ export default function ContenedoresPage() {
 
   useTableEntranceAnimation(tableRef, [contenedoresFiltrados.length]);
 
-  // Guardar nuevo
-  const handleGuardarNuevo = (e) => {
-    e.preventDefault();
-    if (!nuevoContenedor.codigo || !nuevoContenedor.fecha_apertura) {
-      toast.error('Complete los campos requeridos (*)');
-      return;
-    }
-
-    const nuevo = {
-      id: Date.now(),
-      ...nuevoContenedor,
-      cantidad_cafe_kg: Number(nuevoContenedor.cantidad_cafe_kg) || 0,
-      capacidad_total_kg: Number(nuevoContenedor.capacidad_total_kg) || 21600,
-      estado: 'Creado',
-      ofertas_asignadas: [],
-    };
-
-    crearContenedor.mutate(nuevo);
-    toast.success('Contenedor de exportación creado con éxito');
-    setModalRegistrarAbierto(false);
-    setNuevoContenedor({
-      codigo: '',
-      pais_origen: 'Colombia (Puerto Buenaventura)',
-      pais_destino: 'Países Bajos (Puerto de Rotterdam)',
-      fecha_apertura: '',
-      fecha_cierre_estimada: '',
-      cantidad_cafe_kg: 0,
-      capacidad_total_kg: 21600,
-      temperatura_controlada: '18°C',
-    });
-  };
-
   // Toggle publicar / ocultar
   const handleTogglePublicacion = (contenedor) => {
     const nuevoEstado = contenedor.estado === 'Publicado' ? 'Creado' : 'Publicado';
@@ -115,31 +58,6 @@ export default function ContenedoresPage() {
     );
   };
 
-  // Asignar oferta
-  const handleAsignarOferta = (e) => {
-    e.preventDefault();
-    if (!contenedorSeleccionado) return;
-
-    const nuevasOfertas = [
-      ...contenedorSeleccionado.ofertas_asignadas,
-      nuevaOfertaAsignar,
-    ];
-    const nuevoPeso =
-      contenedorSeleccionado.cantidad_cafe_kg + Number(nuevaOfertaAsignar.peso_kg);
-
-    const actualizado = {
-      ...contenedorSeleccionado,
-      ofertas_asignadas: nuevasOfertas,
-      cantidad_cafe_kg: nuevoPeso,
-    };
-
-    actualizarContenedor.mutate(actualizado);
-    setContenedorSeleccionado(actualizado);
-    toast.success(`Oferta ${nuevaOfertaAsignar.codigo} asignada al contenedor`);
-    setModalAsignarAbierto(false);
-  };
-
-
   return (
     <div className="space-y-6">
       {/* Cabecera idéntica al componente Blade original */}
@@ -147,11 +65,9 @@ export default function ContenedoresPage() {
         titulo="Contenedores"
         subtitulo="Gestión logística de consolidación marítima y despacho internacional de café"
         imagenPortada="/images/portadas/contenedor.jpg"
-        mensaje="En este módulo podrás registrar y gestionar la información detallada de cada uno de tus contenedores."
+        mensaje="Consulta y supervisión de los contenedores registrados por las empresas."
         icono={Package}
         totalRegistros={contenedores.length}
-        textoBotonRegistrar="Registrar Contenedor"
-        onRegistrar={() => setModalRegistrarAbierto(true)}
       />
 
       <QueryState query={query} />
@@ -265,15 +181,6 @@ export default function ContenedoresPage() {
                             }}
                           />
                           <ActionButton
-                            icon={ShoppingBag}
-                            title="Asignar oferta"
-                            variant="primary"
-                            onClick={() => {
-                              setContenedorSeleccionado(c);
-                              setModalAsignarAbierto(true);
-                            }}
-                          />
-                          <ActionButton
                             icon={c.estado === 'Publicado' ? EyeOff : Send}
                             title={
                               c.estado === 'Publicado'
@@ -303,276 +210,6 @@ export default function ContenedoresPage() {
       </div>
 
       {/* ========================================================================= */}
-      {/* MODAL: REGISTRAR CONTENEDOR                                               */}
-      {/* ========================================================================= */}
-      {modalRegistrarAbierto && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-xs">
-          <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl border border-stone-200">
-            <div className="p-6 border-b border-stone-200 flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-amber-100 text-amber-800 flex items-center justify-center">
-                  <Package className="w-5 h-5" />
-                </div>
-                <div>
-                  <h3 className="text-lg font-bold text-stone-900">Registrar Contenedor</h3>
-                  <p className="text-xs text-stone-500">
-                    Definición de ruta marítima y parámetros de carga consolidada
-                  </p>
-                </div>
-              </div>
-              <button
-                onClick={() => setModalRegistrarAbierto(false)}
-                className="text-stone-400 hover:text-stone-600 p-1"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            <form onSubmit={handleGuardarNuevo} className="p-6 space-y-4">
-              <div>
-                <label className="block text-xs font-semibold text-stone-700 mb-1">
-                  Código de Identificación del Contenedor *
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={nuevoContenedor.codigo}
-                  onChange={(e) =>
-                    setNuevoContenedor({ ...nuevoContenedor, codigo: e.target.value })
-                  }
-                  placeholder="Ej. CTN-BOG-ROT-2026-04"
-                  className="w-full border border-stone-300 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-amber-700/20"
-                />
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-semibold text-stone-700 mb-1">
-                    Puerto y País de Origen *
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={nuevoContenedor.pais_origen}
-                    onChange={(e) =>
-                      setNuevoContenedor({ ...nuevoContenedor, pais_origen: e.target.value })
-                    }
-                    className="w-full border border-stone-300 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-amber-700/20"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-semibold text-stone-700 mb-1">
-                    Puerto y País de Destino *
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={nuevoContenedor.pais_destino}
-                    onChange={(e) =>
-                      setNuevoContenedor({ ...nuevoContenedor, pais_destino: e.target.value })
-                    }
-                    className="w-full border border-stone-300 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-amber-700/20"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-semibold text-stone-700 mb-1">
-                    Fecha de Apertura de Consolidación *
-                  </label>
-                  <input
-                    type="date"
-                    required
-                    value={nuevoContenedor.fecha_apertura}
-                    onChange={(e) =>
-                      setNuevoContenedor({
-                        ...nuevoContenedor,
-                        fecha_apertura: e.target.value,
-                      })
-                    }
-                    className="w-full border border-stone-300 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-amber-700/20"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-semibold text-stone-700 mb-1">
-                    Fecha Estimada de Cierre de Despacho
-                  </label>
-                  <input
-                    type="date"
-                    value={nuevoContenedor.fecha_cierre_estimada}
-                    onChange={(e) =>
-                      setNuevoContenedor({
-                        ...nuevoContenedor,
-                        fecha_cierre_estimada: e.target.value,
-                      })
-                    }
-                    className="w-full border border-stone-300 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-amber-700/20"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-semibold text-stone-700 mb-1">
-                    Capacidad Total (Kg)
-                  </label>
-                  <input
-                    type="number"
-                    value={nuevoContenedor.capacidad_total_kg}
-                    onChange={(e) =>
-                      setNuevoContenedor({
-                        ...nuevoContenedor,
-                        capacidad_total_kg: e.target.value,
-                      })
-                    }
-                    className="w-full border border-stone-300 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-amber-700/20"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-semibold text-stone-700 mb-1">
-                    Control Térmico / Humedad
-                  </label>
-                  <input
-                    type="text"
-                    value={nuevoContenedor.temperatura_controlada}
-                    onChange={(e) =>
-                      setNuevoContenedor({
-                        ...nuevoContenedor,
-                        temperatura_controlada: e.target.value,
-                      })
-                    }
-                    className="w-full border border-stone-300 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-amber-700/20"
-                  />
-                </div>
-              </div>
-
-              <div className="flex items-center justify-end gap-3 pt-4 border-t border-stone-100">
-                <button
-                  type="button"
-                  onClick={() => setModalRegistrarAbierto(false)}
-                  className="px-4 py-2 text-sm text-stone-600 hover:bg-stone-100 rounded-xl"
-                >
-                  Cancelar
-                </button>
-                <button
-                  type="submit"
-                  className="px-5 py-2 text-sm bg-amber-800 text-white font-semibold rounded-xl hover:bg-amber-900 transition-colors shadow-sm"
-                >
-                  Guardar Contenedor
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* ========================================================================= */}
-      {/* MODAL: ASIGNAR OFERTA AL CONTENEDOR                                       */}
-      {/* ========================================================================= */}
-      {modalAsignarAbierto && contenedorSeleccionado && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-xs">
-          <div className="bg-white rounded-2xl max-w-lg w-full shadow-2xl border border-stone-200">
-            <div className="p-6 border-b border-stone-200 flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-amber-100 text-amber-800 flex items-center justify-center">
-                  <ShoppingBag className="w-5 h-5" />
-                </div>
-                <div>
-                  <h3 className="text-lg font-bold text-stone-900">Asignar Oferta a Contenedor</h3>
-                  <p className="text-xs text-stone-500">{contenedorSeleccionado.codigo}</p>
-                </div>
-              </div>
-              <button
-                onClick={() => setModalAsignarAbierto(false)}
-                className="text-stone-400 hover:text-stone-600 p-1"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            <form onSubmit={handleAsignarOferta} className="p-6 space-y-4">
-              <div>
-                <label className="block text-xs font-semibold text-stone-700 mb-1">
-                  Código de Oferta Aprobada
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={nuevaOfertaAsignar.codigo}
-                  onChange={(e) =>
-                    setNuevaOfertaAsignar({ ...nuevaOfertaAsignar, codigo: e.target.value })
-                  }
-                  className="w-full border border-stone-300 rounded-xl px-3 py-2 text-sm"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-semibold text-stone-700 mb-1">
-                    Variedad de Café
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={nuevaOfertaAsignar.variedad}
-                    onChange={(e) =>
-                      setNuevaOfertaAsignar({ ...nuevaOfertaAsignar, variedad: e.target.value })
-                    }
-                    className="w-full border border-stone-300 rounded-xl px-3 py-2 text-sm"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-semibold text-stone-700 mb-1">
-                    Número de Sacos
-                  </label>
-                  <input
-                    type="number"
-                    required
-                    value={nuevaOfertaAsignar.sacos}
-                    onChange={(e) =>
-                      setNuevaOfertaAsignar({ ...nuevaOfertaAsignar, sacos: e.target.value })
-                    }
-                    className="w-full border border-stone-300 rounded-xl px-3 py-2 text-sm"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-stone-700 mb-1">
-                  Peso Total (Kg)
-                </label>
-                <input
-                  type="number"
-                  required
-                  value={nuevaOfertaAsignar.peso_kg}
-                  onChange={(e) =>
-                    setNuevaOfertaAsignar({ ...nuevaOfertaAsignar, peso_kg: e.target.value })
-                  }
-                  className="w-full border border-stone-300 rounded-xl px-3 py-2 text-sm"
-                />
-              </div>
-
-              <div className="flex items-center justify-end gap-3 pt-4 border-t border-stone-100">
-                <button
-                  type="button"
-                  onClick={() => setModalAsignarAbierto(false)}
-                  className="px-4 py-2 text-sm text-stone-600 hover:bg-stone-100 rounded-xl"
-                >
-                  Cancelar
-                </button>
-                <button
-                  type="submit"
-                  className="px-5 py-2 text-sm bg-amber-800 text-white font-semibold rounded-xl hover:bg-amber-900 transition-colors"
-                >
-                  Consolidar Oferta
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
       {/* ========================================================================= */}
       {/* MODAL: VER DETALLE / TRAZABILIDAD CONTENEDOR                              */}
       {/* ========================================================================= */}

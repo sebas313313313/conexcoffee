@@ -1,3 +1,4 @@
+import { createBlogActions } from './superadmin/blog';
 import { createContext, useMemo } from 'react';
 import { useRoleData } from './shared/useRoleData';
 import { superAdminData } from './superadmin/data';
@@ -10,7 +11,9 @@ export const SuperAdminProvider = ({ children }) => {
   const { state, setters, loading, error, refetch } = useRoleData(superAdminData);
   const actions = useMemo(() => createSuperAdminActions(state, setters), [state, setters]);
   const summary = useMemo(() => selectSuperAdminSummary(state), [state]);
+  const blogActions = useMemo(() => createBlogActions(), []);
   const value = useMemo(() => ({
+    ...blogActions,
     loading,
     error,
     refetch,
@@ -63,7 +66,7 @@ export const SuperAdminProvider = ({ children }) => {
     toggleEstadoContenedor: actions.toggleEstadoContenedor,
     asignarOfertaContenedor: actions.asignarOfertaContenedor,
     updateConfiguracion: actions.updateConfiguracion,
-  }), [state, actions, loading, error, refetch, summary]);
+  }), [state, blogActions, actions, loading, error, refetch, summary]);
 
   return <SuperAdminContext.Provider value={value}>{children}</SuperAdminContext.Provider>;
 };

@@ -78,6 +78,9 @@ api.interceptors.response.use(
     const method = (config.method || 'get').toLowerCase();
     const isAuth = isAuthEndpoint(url);
 
+    // Estos flujos requieren confirmar la persistencia real.
+    if (config.strictResponse) return Promise.reject(error);
+
     // Solo expulsar sesión en 401 si es un endpoint de sesión sin skipAuthRedirect
     if (status === 401 && !config.skipAuthRedirect && isAuth) {
       if (typeof onUnauthorizedHandler === 'function') {
@@ -107,16 +110,7 @@ api.interceptors.response.use(
         `[ConexCoffee] Endpoint [${method.toUpperCase()}] ${url} respondió ${status || 'SIN_CONEXION'}. Se mantiene la página activa con respaldo seguro.`
       );
 
-      if (method === 'get') {
-        return Promise.resolve({
-          data: [],
-          status: 200,
-          statusText: 'Fallback Empty Array',
-          headers: {},
-          config,
-          _isFallback: true,
-        });
-      }
+      
 
       const body = parseConfigData(config.data);
       return Promise.resolve({

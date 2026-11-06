@@ -27,13 +27,12 @@ export function mapCaficultor(raw = {}, { empresas = [], fincas = [], lotes = []
     raw.correo ||
     raw.email ||
     userMatch?.correo_electronico ||
-    `${(n.first || 'productor').toLowerCase()}@conexcoffee.com`;
-  const municipio = raw.municipio || 'Popayán';
-  const departamento = raw.departamento || 'Cauca';
-  const empresaNombre =
-    raw.empresa !== undefined
-      ? raw.empresa
-      : raw.observaciones_verificacion || empresas[0]?.nombre_comercial || empresas[0]?.razon_social || null;
+    '';
+  const municipio = raw.municipio || '';
+  const departamento = raw.departamento || '';
+  const empresaId = raw.empresa_exportadora_id || null;
+  const empresa = empresas.find((e) => e.id === empresaId);
+  const empresaNombre = empresa?.nombre_comercial || empresa?.razon_social || empresa?.nombre || null;
 
   return {
     ...raw,
@@ -55,29 +54,23 @@ export function mapCaficultor(raw = {}, { empresas = [], fincas = [], lotes = []
     telefono_movil: tel,
     correo: email,
     email,
-    fechaNacimiento: raw.fechaNacimiento || raw.fecha_nacimiento || '1985-06-15',
-    fecha_nacimiento: raw.fecha_nacimiento || raw.fechaNacimiento || '1985-06-15',
-    genero: raw.genero || 'M',
-    direccion: raw.direccion || `Vereda Central, ${municipio}`,
+    fecha_nacimiento: raw.fecha_nacimiento ?? null,
+    genero: raw.genero ?? '',
+    direccion: raw.direccion ?? '',
     municipio,
     departamento,
     pais: raw.pais || 'Colombia',
-    numeroHijos: Number(raw.numeroHijos ?? raw.numero_hijos ?? 2),
-    numero_hijos: Number(raw.numero_hijos ?? raw.numeroHijos ?? 2),
-    estado_civil: raw.estado_civil || 'Casado(a)',
-    historia:
-      raw.historia ||
-      misFincas[0]?.historia_familiar ||
-      'Productor de café especial de alta montaña con trazabilidad certificada.',
+    historia: raw.historia ?? '',
+    empresa_exportadora_id: empresaId,
     empresa: empresaNombre,
-    fincasCount: misFincas.length || Number(raw.fincasCount ?? 1),
-    fincas_asociadas: misFincas.length || Number(raw.fincas_asociadas ?? 1),
-    lotesCount: misLotes.length || Number(raw.lotesCount ?? 1),
-    finca_nombre: misFincas[0]?.nombre_finca || raw.finca_principal || 'Finca La Esperanza',
-    finca_principal: misFincas[0]?.nombre_finca || raw.finca_principal || 'Finca La Esperanza',
-    variedad_principal: raw.variedad_predominante || 'Castillo / Geisha',
-    variedad_predominante: raw.variedad_predominante || 'Castillo / Geisha',
-    hectareas: Number(misFincas[0]?.area_total_hectareas ?? 4.5),
+    fincasCount: misFincas.length || Number(raw.fincasCount ?? 0),
+    fincas_asociadas: misFincas.length || Number(raw.fincas_asociadas ?? 0),
+    lotesCount: misLotes.length || Number(raw.lotesCount ?? 0),
+    finca_nombre: misFincas[0]?.nombre_finca || raw.finca_principal || '',
+    finca_principal: misFincas[0]?.nombre_finca || raw.finca_principal || '',
+    variedad_principal: raw.variedad_predominante || '',
+    variedad_predominante: raw.variedad_predominante || '',
+    hectareas: Number(misFincas[0]?.area_total_hectareas ?? 0),
     estado: raw.estado_verificacion === 'RECHAZADO' ? 'Inactivo' : 'Activo',
     avatar: raw.avatar || '/images/users/user-dummy-img.jpg',
   };

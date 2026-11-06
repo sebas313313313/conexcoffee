@@ -10,7 +10,6 @@ import {
   Truck,
   XCircle,
   Pencil,
-  Plus,
   Globe2,
   Mail,
   Phone,
@@ -23,7 +22,6 @@ import { useTableEntranceAnimation } from '../hooks/useSuperadminAnimations';
 import {
   useSuperadminPedidos,
   useSuperadminCompradores,
-  useCrearSuperadminComprador,
   useActualizarSuperadminComprador,
 } from '../hooks/useSuperadminData';
 
@@ -35,7 +33,6 @@ export default function ComprasPage() {
 
   const compradoresQuery = useSuperadminCompradores();
   const compradores = compradoresQuery.data ?? [];
-  const crearCompradorMutation = useCrearSuperadminComprador();
   const actualizarCompradorMutation = useActualizarSuperadminComprador();
 
 
@@ -50,25 +47,9 @@ export default function ComprasPage() {
   const [modalDetallePedido, setModalDetallePedido] = useState(false);
   const [pedidoSeleccionado, setPedidoSeleccionado] = useState(null);
 
-  const [modalRegistrarComprador, setModalRegistrarComprador] = useState(false);
   const [modalEditarComprador, setModalEditarComprador] = useState(false);
   const [modalDetalleComprador, setModalDetalleComprador] = useState(false);
   const [compradorSeleccionado, setCompradorSeleccionado] = useState(null);
-
-  // Formulario nuevo comprador
-  const [nuevoComprador, setNuevoComprador] = useState({
-    numero_identificacion: '',
-    tipo_documento: 'PAS',
-    primer_nombre: '',
-    segundo_nombre: '',
-    primer_apellido: '',
-    segundo_apellido: '',
-    telefono: '',
-    correo: '',
-    empresa: '',
-    pais: 'Estados Unidos',
-    ciudad: '',
-  });
 
   // Filtrado de pedidos
   const pedidosFiltrados = pedidos.filter((p) => {
@@ -108,51 +89,6 @@ export default function ComprasPage() {
 
   useTableEntranceAnimation(tableComprasRef, [pedidosFiltrados.length, pestanaActiva]);
   useTableEntranceAnimation(tableCompradoresRef, [compradoresFiltrados.length, pestanaActiva]);
-
-  // Guardar nuevo comprador
-  const handleGuardarComprador = async (e) => {
-    e.preventDefault();
-    if (!nuevoComprador.numero_identificacion || !nuevoComprador.primer_nombre || !nuevoComprador.primer_apellido) {
-      toast.error('Complete los campos obligatorios (*)');
-      return;
-    }
-
-    const nuevo = {
-      ...nuevoComprador,
-      numeroIdentificacion: nuevoComprador.numero_identificacion,
-      primerNombre: nuevoComprador.primer_nombre.toUpperCase(),
-      segundoNombre: nuevoComprador.segundo_nombre.toUpperCase(),
-      primerApellido: nuevoComprador.primer_apellido.toUpperCase(),
-      segundoApellido: nuevoComprador.segundo_apellido.toUpperCase(),
-      empresaCompradora: nuevoComprador.empresa,
-      primer_nombre: nuevoComprador.primer_nombre.toUpperCase(),
-      segundo_nombre: nuevoComprador.segundo_nombre.toUpperCase(),
-      primer_apellido: nuevoComprador.primer_apellido.toUpperCase(),
-      segundo_apellido: nuevoComprador.segundo_apellido.toUpperCase(),
-      pedidos_totales: 0,
-      pedidosCount: 0,
-      volumen_kg: 0,
-      volumenSacos: 0,
-      estado: 'Activo',
-    };
-
-    crearCompradorMutation.mutate(nuevo);
-    toast.success('Comprador internacional registrado correctamente');
-    setModalRegistrarComprador(false);
-    setNuevoComprador({
-      numero_identificacion: '',
-      tipo_documento: 'PAS',
-      primer_nombre: '',
-      segundo_nombre: '',
-      primer_apellido: '',
-      segundo_apellido: '',
-      telefono: '',
-      correo: '',
-      empresa: '',
-      pais: 'Estados Unidos',
-      ciudad: '',
-    });
-  };
 
   // Guardar edición comprador
   const handleGuardarEdicionComprador = (e) => {
@@ -218,8 +154,6 @@ export default function ComprasPage() {
         imagenPortada="/images/portadas/comprador.jpg"
         mensaje="En este módulo podrás visualizar tus pedidos y gestionar la información detallada de cada uno de tus compradores."
         totalRegistros={pestanaActiva === 'compras' ? pedidos.length : compradores.length}
-        textoBotonRegistrar="Registrar Comprador"
-        onRegistrar={() => setModalRegistrarComprador(true)}
       />
 
       <QueryState query={pedidosQuery} />
@@ -543,147 +477,6 @@ export default function ComprasPage() {
                 Cerrar
               </button>
             </div>
-          </div>
-        </div>
-      )}
-
-      {/* ========================================================================= */}
-      {/* MODAL: REGISTRAR COMPRADOR                                                */}
-      {/* ========================================================================= */}
-      {modalRegistrarComprador && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-xs">
-          <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl border border-stone-200">
-            <div className="p-6 border-b border-stone-200 flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-amber-100 text-amber-800 flex items-center justify-center">
-                  <Plus className="w-5 h-5" />
-                </div>
-                <div>
-                  <h3 className="text-lg font-bold text-stone-900">Registrar Comprador Internacional</h3>
-                  <p className="text-xs text-stone-500">Ingrese datos corporativos y de contacto para subastas</p>
-                </div>
-              </div>
-              <button onClick={() => setModalRegistrarComprador(false)} className="text-stone-400 hover:text-stone-600 p-1">
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            <form onSubmit={handleGuardarComprador} className="p-6 space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-semibold text-stone-700 mb-1">Tipo de Documento *</label>
-                  <select
-                    value={nuevoComprador.tipo_documento}
-                    onChange={(e) => setNuevoComprador({ ...nuevoComprador, tipo_documento: e.target.value })}
-                    className="w-full border border-stone-300 rounded-xl px-3 py-2 text-sm"
-                  >
-                    <option value="PAS">Pasaporte</option>
-                    <option value="TAX_ID">Tax ID / Registro Fiscal</option>
-                    <option value="CE">Cédula de Extranjería</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-xs font-semibold text-stone-700 mb-1">Identificación / Tax ID *</label>
-                  <input
-                    type="text"
-                    required
-                    value={nuevoComprador.numero_identificacion}
-                    onChange={(e) => setNuevoComprador({ ...nuevoComprador, numero_identificacion: e.target.value })}
-                    placeholder="Ej. US-9823412"
-                    className="w-full border border-stone-300 rounded-xl px-3 py-2 text-sm"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-semibold text-stone-700 mb-1">Primer Nombre *</label>
-                  <input
-                    type="text"
-                    required
-                    value={nuevoComprador.primer_nombre}
-                    onChange={(e) => setNuevoComprador({ ...nuevoComprador, primer_nombre: e.target.value })}
-                    placeholder="Ej. John"
-                    className="w-full border border-stone-300 rounded-xl px-3 py-2 text-sm"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-semibold text-stone-700 mb-1">Primer Apellido *</label>
-                  <input
-                    type="text"
-                    required
-                    value={nuevoComprador.primer_apellido}
-                    onChange={(e) => setNuevoComprador({ ...nuevoComprador, primer_apellido: e.target.value })}
-                    placeholder="Ej. Smith"
-                    className="w-full border border-stone-300 rounded-xl px-3 py-2 text-sm"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-semibold text-stone-700 mb-1">Empresa / Tostaduría *</label>
-                  <input
-                    type="text"
-                    required
-                    value={nuevoComprador.empresa}
-                    onChange={(e) => setNuevoComprador({ ...nuevoComprador, empresa: e.target.value })}
-                    placeholder="Ej. Blue Coffee Roasters Inc."
-                    className="w-full border border-stone-300 rounded-xl px-3 py-2 text-sm"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-semibold text-stone-700 mb-1">País *</label>
-                  <input
-                    type="text"
-                    required
-                    value={nuevoComprador.pais}
-                    onChange={(e) => setNuevoComprador({ ...nuevoComprador, pais: e.target.value })}
-                    placeholder="Ej. Estados Unidos"
-                    className="w-full border border-stone-300 rounded-xl px-3 py-2 text-sm"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-semibold text-stone-700 mb-1">Teléfono Internacional</label>
-                  <input
-                    type="tel"
-                    value={nuevoComprador.telefono}
-                    onChange={(e) => setNuevoComprador({ ...nuevoComprador, telefono: e.target.value })}
-                    placeholder="Ej. +1 415 892 3411"
-                    className="w-full border border-stone-300 rounded-xl px-3 py-2 text-sm"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-semibold text-stone-700 mb-1">Correo Electrónico</label>
-                  <input
-                    type="email"
-                    value={nuevoComprador.correo}
-                    onChange={(e) => setNuevoComprador({ ...nuevoComprador, correo: e.target.value })}
-                    placeholder="Ej. buyer@roasters.com"
-                    className="w-full border border-stone-300 rounded-xl px-3 py-2 text-sm"
-                  />
-                </div>
-              </div>
-
-              <div className="flex items-center justify-end gap-3 pt-4 border-t border-stone-100">
-                <button
-                  type="button"
-                  onClick={() => setModalRegistrarComprador(false)}
-                  className="px-4 py-2 text-sm text-stone-600 hover:bg-stone-100 rounded-xl"
-                >
-                  Cancelar
-                </button>
-                <button
-                  type="submit"
-                  className="px-5 py-2 text-sm bg-amber-800 text-white font-semibold rounded-xl hover:bg-amber-900 transition-colors"
-                >
-                  Guardar Comprador
-                </button>
-              </div>
-            </form>
           </div>
         </div>
       )}

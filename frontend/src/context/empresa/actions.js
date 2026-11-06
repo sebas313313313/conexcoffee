@@ -9,8 +9,8 @@ export function createEmpresaActions(state, setters) {
   // ── BROKERS ────────────────────────────────────────────────────────────────
   const createBroker = async (payload) => {
     try {
-      const { data } = await axiosClient.post('/brokers', payload);
-      const mapped = mapBroker({ ...payload, ...data });
+      const { data } = await axiosClient.post('/brokers', payload, { strictResponse: true });
+      const mapped = mapBroker({ ...data, correo: payload.correo });
       setBrokers((prev) => [mapped, ...prev]);
       toast.success('Broker registrado correctamente');
       return mapped;
@@ -22,7 +22,7 @@ export function createEmpresaActions(state, setters) {
 
   const updateBroker = async (id, payload) => {
     try {
-      const { data } = await axiosClient.put(`/brokers/${id}`, payload);
+      const { data } = await axiosClient.put(`/brokers/${id}`, payload, { strictResponse: true });
       setBrokers((prev) => prev.map((b) => (b.id === id ? mapBroker({ ...b, ...payload, ...data }) : b)));
       toast.success('Broker actualizado correctamente');
     } catch (err) {
@@ -34,8 +34,8 @@ export function createEmpresaActions(state, setters) {
   // ── CAFICULTORES ───────────────────────────────────────────────────────────
   const createCaficultor = async (payload) => {
     try {
-      const { data } = await axiosClient.post('/caficultores', payload);
-      const mapped = mapCaficultor({ ...payload, ...data }, { fincas });
+      const { data } = await axiosClient.post('/caficultores', payload, { strictResponse: true });
+      const mapped = mapCaficultor({ ...data, correo: payload.correo }, { fincas });
       setCaficultores((prev) => [mapped, ...prev]);
       toast.success('Caficultor registrado correctamente');
       return mapped;

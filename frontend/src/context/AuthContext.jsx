@@ -2,6 +2,9 @@ import { createContext, useCallback, useEffect } from 'react';
 import api, { getErrorMessage } from '@/lib/axios';
 import useAuthStore from '@/store/useAuthStore';
 import { ROLE_DASHBOARD_ROUTES } from '@/lib/constants';
+import { createPushActions } from './auth/push';
+
+const { getPushSubscription, enablePush, disablePush } = createPushActions(api);
 
 export const AuthContext = createContext(null);
 
@@ -78,6 +81,11 @@ export const AuthProvider = ({ children }) => {
 
   const logout = useCallback(async () => {
     try {
+      await disablePush();
+    } catch {
+      // El cierre de sesión debe continuar si falla la baja de la suscripción.
+    }
+    try {
       await api.post('/usuarios-sistema/logout');
     } catch {
       // Continuar limpieza local aunque falle la red
@@ -102,6 +110,9 @@ export const AuthProvider = ({ children }) => {
         checkSession,
         login,
         register,
+        getPushSubscription,
+        enablePush,
+        disablePush,
         logout,
         getDashboardRoute,
       }}

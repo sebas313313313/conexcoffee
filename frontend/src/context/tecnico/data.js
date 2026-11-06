@@ -22,6 +22,8 @@ export function selectTecnicoData({ rawInspecciones, rawPreofertas, rawCaficulto
 
 export const tecnicoData = {
   createInitialState: () => ({
+    precintos: [],
+    precintosMeta: null,
     visitas: [],
     preofertas: [],
     caficultores: [],
@@ -37,7 +39,7 @@ export const tecnicoData = {
     rawLotes: '/lotes-cultivo',
     rawTecnicos: '/asistentes-tecnicos',
   },
-  routes: {},
+  routes: { '/tecnico/precintos': ['rawPreofertas'] },
   allSources: ["rawInspecciones", "rawPreofertas", "rawCaficultores", "rawFincas", "rawLotes", "rawTecnicos"],
   select: selectTecnicoData,
 };

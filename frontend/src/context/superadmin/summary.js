@@ -1,4 +1,4 @@
-import { Users, Sprout, PackageCheck, TrendingUp, ShieldAlert, Building2, FlaskConical, Briefcase, Newspaper } from 'lucide-react';
+import { Users, Sprout, PackageCheck, TrendingUp, Building2, FlaskConical, Briefcase, Newspaper } from 'lucide-react';
 
 export function selectSuperAdminSummary(state) {
   const { usuarios, caficultores, catadores, empresas, laboratorios, brokers, compradores, fincas, lotes, preofertas, ofertas, muestras, contenedores, compras, alertas } = state;
@@ -96,20 +96,6 @@ export function selectSuperAdminSummary(state) {
   ];
 
   const modules = [
-    {
-      id: 'mod-usuarios',
-      title: 'Gestión de Usuarios y Roles',
-      name: 'Gestión de Usuarios y Roles',
-      description: `${usuarios.length} cuentas activas con RBAC y cookies HttpOnly`,
-      desc: `${usuarios.length} cuentas activas con RBAC y cookies HttpOnly`,
-      path: '/superadmin/usuarios',
-      icon: ShieldAlert,
-      iconName: 'ShieldAlert',
-      stats: [
-        { label: 'Total', value: usuarios.length },
-        { label: 'Activos', value: usuarios.filter((u) => u.estado === 'Activo').length },
-      ],
-    },
     {
       id: 'mod-empresas',
       title: 'Empresas Exportadoras',

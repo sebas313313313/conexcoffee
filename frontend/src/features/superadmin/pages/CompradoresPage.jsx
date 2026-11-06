@@ -13,21 +13,18 @@ import ActionButton from '../components/ActionButton';
 import { useTableEntranceAnimation } from '../hooks/useSuperadminAnimations';
 import {
   useSuperadminCompradores,
-  useCrearSuperadminComprador,
   useActualizarSuperadminComprador,
 } from '../hooks/useSuperadminData';
 
 export default function CompradoresPage() {
   const query = useSuperadminCompradores();
   const compradores = query.data ?? [];
-  const crearComprador = useCrearSuperadminComprador();
   const actualizarComprador = useActualizarSuperadminComprador();
 
   const [searchTerm, setSearchTerm] = useState('');
   const [filtroPais, setFiltroPais] = useState('todos');
   const tableRef = useRef(null);
 
-  const [modalRegistroAbierto, setModalRegistroAbierto] = useState(false);
   const [modalEditarAbierto, setModalEditarAbierto] = useState(false);
   const [modalDetalleAbierto, setModalDetalleAbierto] = useState(false);
 
@@ -45,22 +42,6 @@ export default function CompradoresPage() {
     pais: '',
     ciudad: '',
   });
-
-  const abrirModalCrear = () => {
-    setFormData({
-      numeroIdentificacion: '',
-      primerNombre: '',
-      segundoNombre: '',
-      primerApellido: '',
-      segundoApellido: '',
-      telefono: '',
-      correo: '',
-      empresaCompradora: '',
-      pais: '',
-      ciudad: '',
-    });
-    setModalRegistroAbierto(true);
-  };
 
   const abrirModalEditar = (c) => {
     setCompradorActual(c);
@@ -82,19 +63,6 @@ export default function CompradoresPage() {
   const abrirModalDetalles = (c) => {
     setCompradorActual(c);
     setModalDetalleAbierto(true);
-  };
-
-  const guardarCreacion = (e) => {
-    e.preventDefault();
-    const nuevo = {
-      ...formData,
-      pedidosCount: 0,
-      volumenSacos: 0,
-      activo: true,
-      avatar: '/images/users/user-dummy-img.jpg',
-    };
-    crearComprador.mutate(nuevo);
-    setModalRegistroAbierto(false);
   };
 
   const guardarEdicion = (e) => {
@@ -130,11 +98,9 @@ export default function CompradoresPage() {
         titulo="Compradores"
         subtitulo="Clientes e importadores internacionales de café de especialidad"
         imagenPortada="/images/portadas/comprador.jpg"
-        mensaje="En este módulo podrás registrar la información detallada de cada uno de tus compradores."
+        mensaje="Consulta y supervisión de los compradores registrados."
         icono={ShoppingCart}
         totalRegistros={filtrados.length}
-        onRegistrar={abrirModalCrear}
-        textoBotonRegistrar="Registrar Comprador"
       />
 
       <QueryState query={query} />
@@ -250,137 +216,6 @@ export default function CompradoresPage() {
           </table>
         </div>
       </div>
-
-      {/* MODAL REGISTRAR COMPRADOR */}
-      {modalRegistroAbierto && (
-        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
-          <div className="bg-white rounded-2xl max-w-2xl w-full p-6 shadow-2xl border border-surface-200 my-8">
-            <div className="flex items-center justify-between pb-4 border-b border-surface-200">
-              <div className="flex items-center gap-2.5">
-                <div className="h-9 w-9 rounded-xl bg-brand-tint text-brand-terracota flex items-center justify-center">
-                  <ShoppingCart className="h-5 w-5" />
-                </div>
-                <div>
-                  <h3 className="text-lg font-bold text-surface-900">Registrar Comprador</h3>
-                  <p className="text-xs text-surface-500">Datos del cliente o casa importadora</p>
-                </div>
-              </div>
-              <button
-                onClick={() => setModalRegistroAbierto(false)}
-                className="p-1.5 rounded-lg text-surface-400 hover:bg-surface-100 cursor-pointer"
-              >
-                <X className="h-5 w-5" />
-              </button>
-            </div>
-
-            <form onSubmit={guardarCreacion} className="mt-4 space-y-4">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-bold text-surface-700 mb-1">
-                    Tax ID / Identificación *
-                  </label>
-                  <input
-                    required
-                    type="text"
-                    value={formData.numeroIdentificacion}
-                    onChange={(e) => setFormData({ ...formData, numeroIdentificacion: e.target.value })}
-                    className="w-full px-3 py-2 text-sm rounded-xl border border-surface-200"
-                    placeholder="Ej. US-9823412"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-bold text-surface-700 mb-1">Empresa Compradora *</label>
-                  <input
-                    required
-                    type="text"
-                    value={formData.empresaCompradora}
-                    onChange={(e) => setFormData({ ...formData, empresaCompradora: e.target.value })}
-                    className="w-full px-3 py-2 text-sm rounded-xl border border-surface-200"
-                    placeholder="Ej. Blue Coffee Roasters Inc."
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-bold text-surface-700 mb-1">Primer Nombre *</label>
-                  <input
-                    required
-                    type="text"
-                    value={formData.primerNombre}
-                    onChange={(e) => setFormData({ ...formData, primerNombre: e.target.value.toUpperCase() })}
-                    className="w-full px-3 py-2 text-sm rounded-xl border border-surface-200"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-bold text-surface-700 mb-1">Primer Apellido *</label>
-                  <input
-                    required
-                    type="text"
-                    value={formData.primerApellido}
-                    onChange={(e) => setFormData({ ...formData, primerApellido: e.target.value.toUpperCase() })}
-                    className="w-full px-3 py-2 text-sm rounded-xl border border-surface-200"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-bold text-surface-700 mb-1">Teléfono Internacional *</label>
-                  <input
-                    required
-                    type="text"
-                    value={formData.telefono}
-                    onChange={(e) => setFormData({ ...formData, telefono: e.target.value })}
-                    className="w-full px-3 py-2 text-sm rounded-xl border border-surface-200"
-                    placeholder="+1 415 892 3411"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-bold text-surface-700 mb-1">Correo Electrónico *</label>
-                  <input
-                    required
-                    type="email"
-                    value={formData.correo}
-                    onChange={(e) => setFormData({ ...formData, correo: e.target.value })}
-                    className="w-full px-3 py-2 text-sm rounded-xl border border-surface-200"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-bold text-surface-700 mb-1">País *</label>
-                  <input
-                    required
-                    type="text"
-                    value={formData.pais}
-                    onChange={(e) => setFormData({ ...formData, pais: e.target.value })}
-                    className="w-full px-3 py-2 text-sm rounded-xl border border-surface-200"
-                    placeholder="Ej. Estados Unidos, Alemania, Japón"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-bold text-surface-700 mb-1">Ciudad Destino</label>
-                  <input
-                    type="text"
-                    value={formData.ciudad}
-                    onChange={(e) => setFormData({ ...formData, ciudad: e.target.value })}
-                    className="w-full px-3 py-2 text-sm rounded-xl border border-surface-200"
-                  />
-                </div>
-              </div>
-
-              <div className="flex justify-end gap-3 pt-3 border-t border-surface-200">
-                <button
-                  type="button"
-                  onClick={() => setModalRegistroAbierto(false)}
-                  className="px-4 py-2 rounded-xl border border-surface-200 text-sm font-semibold text-surface-600 hover:bg-surface-50 cursor-pointer"
-                >
-                  Cancelar
-                </button>
-                <button
-                  type="submit"
-                  className="px-5 py-2 rounded-xl bg-brand-terracota hover:bg-brand-terracota-dark text-white text-sm font-semibold shadow-md cursor-pointer"
-                >
-                  Guardar Comprador
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
 
       {/* MODAL DETALLES */}
       {modalDetalleAbierto && compradorActual && (

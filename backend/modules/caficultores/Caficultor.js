@@ -16,9 +16,17 @@ Caficultor.init(
       allowNull: false,
       unique: true
     },
+    empresa_exportadora_id: {
+      type: DataTypes.UUID,
+      allowNull: false,
+      references: { model: { tableName: 'empresas_exportadoras', schema: 'personas' }, key: 'id' },
+      onUpdate: 'NO ACTION',
+      onDelete: 'RESTRICT'
+    },
     tipo_documento: {
       type: DataTypes.STRING(10),
-      allowNull: false
+      allowNull: false,
+      validate: { isIn: [['CC', 'CE', 'NIT', 'PASAPORTE']] }
     },
     numero_documento: {
       type: DataTypes.STRING(25),
@@ -33,6 +41,16 @@ Caficultor.init(
       type: DataTypes.STRING(100),
       allowNull: false
     },
+    fecha_nacimiento: {
+      type: DataTypes.DATEONLY,
+      allowNull: true
+    },
+    genero: {
+      type: DataTypes.STRING(50),
+      allowNull: false,
+      defaultValue: 'Masculino',
+      validate: { len: [0, 50] }
+    },
     telefono_movil: {
       type: DataTypes.STRING(20),
       allowNull: false
@@ -45,6 +63,16 @@ Caficultor.init(
     municipio: {
       type: DataTypes.STRING(50),
       allowNull: false
+    },
+    direccion: {
+      type: DataTypes.STRING(80),
+      allowNull: true,
+      validate: { len: [0, 80] }
+    },
+    historia: {
+      type: DataTypes.STRING(800),
+      allowNull: true,
+      validate: { len: [0, 800] }
     },
     url_documento_identidad: {
       type: DataTypes.TEXT,

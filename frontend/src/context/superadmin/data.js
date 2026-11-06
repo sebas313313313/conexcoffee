@@ -148,7 +148,7 @@ export const superAdminData = {
     rawUsuarios: '/usuarios-sistema',
     rawCaficultores: '/caficultores',
     rawCatadores: '/catadores',
-    rawEmpresas: '/empresas-exportadoras',
+    rawEmpresas: { url: '/empresas-exportadoras', allPages: true, strictResponse: true },
     rawTecnicos: '/asistentes-tecnicos',
     rawLaboratorios: '/laboratorios',
     rawBrokers: '/brokers',
@@ -165,7 +165,6 @@ export const superAdminData = {
     rawAlertas: '/alertas-seguridad',
   },
   routes: {
-    '/superadmin/users': ['rawUsuarios'],
     '/superadmin/caficultores': ['rawCaficultores', 'rawEmpresas', 'rawFincas', 'rawLotes', 'rawPreofertas', 'rawUsuarios'],
     '/superadmin/catadores': ['rawCatadores', 'rawLaboratorios', 'rawSesionesCatacion', 'rawUsuarios'],
     '/superadmin/empresas': ['rawCaficultores', 'rawEmpresas', 'rawPreofertas', 'rawUsuarios'],

@@ -7,7 +7,6 @@ import {
   Eye,
   Building2,
   X,
-  Check,
   Phone,
   Mail,
   MapPin,
@@ -30,16 +29,6 @@ export default function CaficultoresPage() {
   const crearCaficultor = useCrearSuperadminCaficultor();
   const actualizarCaficultor = useActualizarSuperadminCaficultor();
   const { empresas = [] } = useSuperAdmin();
-  const EMPRESAS_DISPONIBLES =
-    empresas.length > 0
-      ? empresas.map((e) => e.nombre)
-      : [
-          'Café Especial Huila SAS',
-          'Exportadora Andina de Café',
-          'Origen Café Colombia',
-          'Alianza Cafetera del Sur',
-          'BioCafé Santander',
-        ];
 
   const [searchTerm, setSearchTerm] = useState('');
   const [filtroEmpresa, setFiltroEmpresa] = useState('todos');
@@ -47,105 +36,36 @@ export default function CaficultoresPage() {
   const tableRef = useRef(null);
 
   // Modales
-  const [modalRegistroAbierto, setModalRegistroAbierto] = useState(false);
-  const [modalEditarAbierto, setModalEditarAbierto] = useState(false);
+  const [formularioAbierto, setFormularioAbierto] = useState(false);
+  const [caficultorEdicion, setCaficultorEdicion] = useState(null);
   const [modalDetalleAbierto, setModalDetalleAbierto] = useState(false);
-  const [modalAsignarAbierto, setModalAsignarAbierto] = useState(false);
 
   // Registro seleccionado
   const [caficultorActual, setCaficultorActual] = useState(null);
 
-  // Formulario creación / edición
-  const [formData, setFormData] = useState({
-    numeroIdentificacion: '',
-    primerNombre: '',
-    segundoNombre: '',
-    primerApellido: '',
-    segundoApellido: '',
-    telefono: '',
-    correo: '',
-    fechaNacimiento: '',
-    genero: 'M',
-    direccion: '',
-    municipio: '',
-    departamento: '',
-    historia: '',
-    empresa: '',
-  });
-
   const abrirModalCrear = () => {
-    setFormData({
-      numeroIdentificacion: '',
-      primerNombre: '',
-      segundoNombre: '',
-      primerApellido: '',
-      segundoApellido: '',
-      telefono: '',
-      correo: '',
-      fechaNacimiento: '',
-      genero: 'M',
-      direccion: '',
-      municipio: '',
-      departamento: '',
-      historia: '',
-      empresa: '',
-    });
-    setModalRegistroAbierto(true);
+    setCaficultorEdicion(null);
+    setFormularioAbierto(true);
   };
 
-  const abrirModalEditar = (c) => {
-    setCaficultorActual(c);
-    setFormData({
-      numeroIdentificacion: c.numeroIdentificacion || '',
-      primerNombre: c.primerNombre || '',
-      segundoNombre: c.segundoNombre || '',
-      primerApellido: c.primerApellido || '',
-      segundoApellido: c.segundoApellido || '',
-      telefono: c.telefono || '',
-      correo: c.correo || '',
-      fechaNacimiento: c.fechaNacimiento || '',
-      genero: c.genero || 'M',
-      direccion: c.direccion || '',
-      municipio: c.municipio || '',
-      departamento: c.departamento || '',
-      historia: c.historia || '',
-      empresa: c.empresa || '',
-    });
-    setModalEditarAbierto(true);
+  const abrirModalEditar = (caficultor) => {
+    setCaficultorEdicion(caficultor);
+    setFormularioAbierto(true);
   };
 
-  const abrirModalDetalles = (c) => {
-    setCaficultorActual(c);
+  const abrirModalDetalles = (caficultor) => {
+    setCaficultorActual(caficultor);
     setModalDetalleAbierto(true);
   };
 
-  const abrirModalAsignar = (c) => {
-    setCaficultorActual(c);
-    setModalAsignarAbierto(true);
+  const guardarCaficultor = async (payload) => {
+    if (caficultorEdicion) {
+      await actualizarCaficultor.mutateAsync({ id: caficultorEdicion.id, payload });
+    } else {
+      await crearCaficultor.mutateAsync(payload);
+    }
+    setFormularioAbierto(false);
   };
-
-  const guardarCreacion = (data) => {
-    const nuevo = {
-      ...data,
-      fincasCount: 0,
-      lotesCount: 0,
-      avatar: '/images/users/user-dummy-img.jpg',
-    };
-    crearCaficultor.mutate(nuevo);
-    setModalRegistroAbierto(false);
-  };
-
-  const guardarEdicion = (e) => {
-    e.preventDefault();
-    actualizarCaficultor.mutate({ ...caficultorActual, ...formData });
-    setModalEditarAbierto(false);
-  };
-
-  const asignarEmpresa = (nombreEmpresa) => {
-    actualizarCaficultor.mutate({ ...caficultorActual, empresa: nombreEmpresa });
-    setModalAsignarAbierto(false);
-  };
-
 
   // Filtrado
   const filtrados = caficultores.filter((c) => {
@@ -157,8 +77,8 @@ export default function CaficultoresPage() {
       c.telefono.toLowerCase().includes(term) ||
       (c.municipio && c.municipio.toLowerCase().includes(term));
 
-    if (filtroEmpresa === 'asignada') return coincideTexto && c.empresa;
-    if (filtroEmpresa === 'sin_empresa') return coincideTexto && !c.empresa;
+    if (filtroEmpresa === 'asignada') return coincideTexto && c.empresa_exportadora_id;
+    if (filtroEmpresa === 'sin_empresa') return coincideTexto && !c.empresa_exportadora_id;
     return coincideTexto;
   });
 
@@ -279,14 +199,6 @@ export default function CaficultoresPage() {
                           variant="primary"
                           onClick={() => abrirModalEditar(c)}
                         />
-                        {!c.empresa && (
-                          <ActionButton
-                            icon={Building2}
-                            title="Asignar Empresa"
-                            variant="success"
-                            onClick={() => abrirModalAsignar(c)}
-                          />
-                        )}
                         <ActionButton
                           icon={Eye}
                           title="Ver Detalles"
@@ -303,164 +215,16 @@ export default function CaficultoresPage() {
         </div>
       </div>
 
-      {/* MODAL REGISTRAR CAFICULTOR */}
-      <CrearCaficultorModal
-        isOpen={modalRegistroAbierto}
-        onClose={() => setModalRegistroAbierto(false)}
-        onSubmit={guardarCreacion}
-        loading={crearCaficultor.isPending}
-        empresasDisponibles={EMPRESAS_DISPONIBLES}
-      />
-
-      {/* MODAL EDITAR CAFICULTOR */}
-      {modalEditarAbierto && (
-        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
-          <div className="bg-white rounded-2xl max-w-2xl w-full p-6 shadow-2xl border border-surface-200 animate-in fade-in duration-200 my-8">
-            <div className="flex items-center justify-between pb-4 border-b border-surface-200">
-              <div className="flex items-center gap-2.5">
-                <div className="h-9 w-9 rounded-xl bg-amber-50 text-amber-700 flex items-center justify-center">
-                  <Pencil className="h-5 w-5" />
-                </div>
-                <div>
-                  <h3 className="text-lg font-bold text-surface-900">Editar Caficultor</h3>
-                  <p className="text-xs text-surface-500">Actualizar datos de {caficultorActual?.primerNombre}</p>
-                </div>
-              </div>
-              <button
-                onClick={() => setModalEditarAbierto(false)}
-                className="p-1.5 rounded-lg text-surface-400 hover:bg-surface-100 cursor-pointer"
-              >
-                <X className="h-5 w-5" />
-              </button>
-            </div>
-
-            <form onSubmit={guardarEdicion} className="mt-4 space-y-4">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-bold text-surface-700 mb-1">
-                    Número de Identificación
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.numeroIdentificacion}
-                    onChange={(e) => setFormData({ ...formData, numeroIdentificacion: e.target.value })}
-                    className="w-full px-3 py-2 text-sm rounded-xl border border-surface-200"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold text-surface-700 mb-1">Teléfono</label>
-                  <input
-                    type="text"
-                    value={formData.telefono}
-                    onChange={(e) => setFormData({ ...formData, telefono: e.target.value })}
-                    className="w-full px-3 py-2 text-sm rounded-xl border border-surface-200"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold text-surface-700 mb-1">Primer Nombre</label>
-                  <input
-                    type="text"
-                    value={formData.primerNombre}
-                    onChange={(e) => setFormData({ ...formData, primerNombre: e.target.value.toUpperCase() })}
-                    className="w-full px-3 py-2 text-sm rounded-xl border border-surface-200"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold text-surface-700 mb-1">Primer Apellido</label>
-                  <input
-                    type="text"
-                    value={formData.primerApellido}
-                    onChange={(e) => setFormData({ ...formData, primerApellido: e.target.value.toUpperCase() })}
-                    className="w-full px-3 py-2 text-sm rounded-xl border border-surface-200"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold text-surface-700 mb-1">Empresa</label>
-                  <select
-                    value={formData.empresa}
-                    onChange={(e) => setFormData({ ...formData, empresa: e.target.value })}
-                    className="w-full px-3 py-2 text-sm rounded-xl border border-surface-200"
-                  >
-                    <option value="">Sin Asignar</option>
-                    {EMPRESAS_DISPONIBLES.map((emp) => (
-                      <option key={emp} value={emp}>{emp}</option>
-                    ))}
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold text-surface-700 mb-1">Dirección</label>
-                  <input
-                    type="text"
-                    value={formData.direccion}
-                    onChange={(e) => setFormData({ ...formData, direccion: e.target.value })}
-                    className="w-full px-3 py-2 text-sm rounded-xl border border-surface-200"
-                  />
-                </div>
-              </div>
-
-              <div className="flex justify-end gap-3 pt-3 border-t border-surface-200">
-                <button
-                  type="button"
-                  onClick={() => setModalEditarAbierto(false)}
-                  className="px-4 py-2 rounded-xl border border-surface-200 text-sm font-semibold text-surface-600 hover:bg-surface-50 cursor-pointer"
-                >
-                  Cancelar
-                </button>
-                <button
-                  type="submit"
-                  className="px-5 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-sm font-semibold shadow-md cursor-pointer"
-                >
-                  Actualizar Cambios
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* MODAL ASIGNAR EMPRESA */}
-      {modalAsignarAbierto && caficultorActual && (
-        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-surface-200">
-            <div className="flex items-center justify-between pb-3 border-b border-surface-200">
-              <div className="flex items-center gap-2">
-                <Building2 className="h-5 w-5 text-emerald-600" />
-                <h3 className="text-base font-bold text-surface-900">Asignar Empresa</h3>
-              </div>
-              <button
-                onClick={() => setModalAsignarAbierto(false)}
-                className="p-1 rounded-lg text-surface-400 hover:bg-surface-100"
-              >
-                <X className="h-5 w-5" />
-              </button>
-            </div>
-
-            <p className="text-xs text-surface-600 my-3">
-              Seleccione la empresa regional para asignar al caficultor{' '}
-              <strong className="text-surface-900">{caficultorActual.primerNombre} {caficultorActual.primerApellido}</strong>.
-            </p>
-
-            <div className="space-y-2 mt-4 max-h-60 overflow-y-auto">
-              {EMPRESAS_DISPONIBLES.map((emp) => (
-                <button
-                  key={emp}
-                  onClick={() => asignarEmpresa(emp)}
-                  className="w-full text-left p-3 rounded-xl border border-surface-200 hover:border-emerald-500 hover:bg-emerald-50/50 flex items-center justify-between transition-colors cursor-pointer group"
-                >
-                  <span className="text-sm font-semibold text-surface-800 group-hover:text-emerald-700">
-                    {emp}
-                  </span>
-                  <Check className="h-4 w-4 text-emerald-600 opacity-0 group-hover:opacity-100 transition-opacity" />
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
+      {formularioAbierto && (
+        <CrearCaficultorModal
+          key={caficultorEdicion?.id || 'nuevo'}
+          isOpen
+          onClose={() => setFormularioAbierto(false)}
+          onSubmit={guardarCaficultor}
+          empresasDisponibles={empresas}
+          initialData={caficultorEdicion}
+          titulo={caficultorEdicion ? 'Editar Caficultor' : 'Registrar Caficultor'}
+        />
       )}
 
       {/* MODAL DETALLE CAFICULTOR */}
@@ -481,7 +245,7 @@ export default function CaficultoresPage() {
                   <h3 className="text-lg font-bold text-surface-900">
                     {caficultorActual.primerNombre} {caficultorActual.segundoNombre} {caficultorActual.primerApellido} {caficultorActual.segundoApellido}
                   </h3>
-                  <span className="text-xs text-surface-500">CC {caficultorActual.numeroIdentificacion}</span>
+                  <span className="text-xs text-surface-500">{caficultorActual.tipo_documento} {caficultorActual.numeroIdentificacion}</span>
                 </div>
               </div>
               <button
@@ -529,7 +293,7 @@ export default function CaficultoresPage() {
                   Dirección / Finca
                 </h4>
                 <p className="text-surface-600 bg-surface-50 px-3 py-2 rounded-lg border border-surface-100">
-                  {caficultorActual.direccion}
+                  {caficultorActual.direccion || 'No registrada'}
                 </p>
               </div>
 
@@ -538,7 +302,7 @@ export default function CaficultoresPage() {
                   Historia del Caficultor
                 </h4>
                 <p className="text-surface-600 text-xs leading-relaxed italic bg-surface-50 p-3 rounded-lg border border-surface-100">
-                  "{caficultorActual.historia}"
+                  {caficultorActual.historia || 'No registrada'}
                 </p>
               </div>
 

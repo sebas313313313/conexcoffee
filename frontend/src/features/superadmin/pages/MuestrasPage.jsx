@@ -15,7 +15,6 @@ import ActionButton from '../components/ActionButton';
 import { useTableEntranceAnimation } from '../hooks/useSuperadminAnimations';
 import {
   useSuperadminMuestras,
-  useCrearSuperadminMuestra,
   useActualizarSuperadminMuestra,
 } from '../hooks/useSuperadminData';
 import { useSuperAdmin } from '@/hooks/useSuperAdmin';
@@ -23,7 +22,6 @@ import { useSuperAdmin } from '@/hooks/useSuperAdmin';
 export default function MuestrasPage() {
   const query = useSuperadminMuestras();
   const muestras = query.data ?? [];
-  const crearMuestra = useCrearSuperadminMuestra();
   const actualizarMuestra = useActualizarSuperadminMuestra();
   const { laboratorios = [] } = useSuperAdmin();
   const LABORATORIOS_DISPONIBLES =
@@ -39,38 +37,10 @@ export default function MuestrasPage() {
   const [filtroLaboratorio, setFiltroLaboratorio] = useState('todos');
   const tableRef = useRef(null);
 
-  const [modalRegistroAbierto, setModalRegistroAbierto] = useState(false);
   const [modalAsignarAbierto, setModalAsignarAbierto] = useState(false);
   const [modalDetalleAbierto, setModalDetalleAbierto] = useState(false);
 
   const [muestraActual, setMuestraActual] = useState(null);
-
-  const [formData, setFormData] = useState({
-    codigoPreoferta: '',
-    fecha: new Date().toISOString().split('T')[0],
-    peso: '',
-    humedad: '',
-    factorRendimiento: '',
-    caficultor: '',
-    finca: '',
-    variedad: '',
-    laboratorio: '',
-  });
-
-  const abrirModalCrear = () => {
-    setFormData({
-      codigoPreoferta: `PRE-${Math.floor(1000 + Math.random() * 9000)}`,
-      fecha: new Date().toISOString().split('T')[0],
-      peso: '',
-      humedad: '',
-      factorRendimiento: '',
-      caficultor: '',
-      finca: '',
-      variedad: 'Castillo',
-      laboratorio: '',
-    });
-    setModalRegistroAbierto(true);
-  };
 
   const abrirModalAsignar = (m) => {
     setMuestraActual(m);
@@ -80,20 +50,6 @@ export default function MuestrasPage() {
   const abrirModalDetalles = (m) => {
     setMuestraActual(m);
     setModalDetalleAbierto(true);
-  };
-
-  const guardarCreacion = (e) => {
-    e.preventDefault();
-
-    const nueva = {
-      ...formData,
-      peso: Number(formData.peso),
-      humedad: Number(formData.humedad),
-      factorRendimiento: Number(formData.factorRendimiento || 88),
-      estado: formData.laboratorio ? 'En Análisis' : 'Pendiente Laboratorio',
-    };
-    crearMuestra.mutate(nueva);
-    setModalRegistroAbierto(false);
   };
 
   const asignarLaboratorio = (nombreLab) => {
@@ -126,13 +82,11 @@ export default function MuestrasPage() {
       {/* Cabecera idéntica a components.cabecera-modulo */}
       <ModuloCabecera
         titulo="Muestras de Café"
-        subtitulo="Recepción, registro gravimétrico y trazabilidad de muestras para análisis físico y sensorial"
+        subtitulo="Consulta y trazabilidad de muestras para análisis físico y sensorial"
         imagenPortada="/images/portadas/analisis-sensorial.jpg"
-        mensaje="Gestión de la información de las muestras recibidas y evaluadas."
+        mensaje="Supervisión de las muestras registradas por las empresas y sus evaluaciones."
         icono={Archive}
         totalRegistros={filtradas.length}
-        onRegistrar={abrirModalCrear}
-        textoBotonRegistrar="Registrar Muestra"
       />
 
       <QueryState query={query} />
@@ -249,131 +203,6 @@ export default function MuestrasPage() {
           </table>
         </div>
       </div>
-
-      {/* MODAL REGISTRAR MUESTRA */}
-      {modalRegistroAbierto && (
-        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
-          <div className="bg-white rounded-2xl max-w-xl w-full p-6 shadow-2xl border border-surface-200 my-8">
-            <div className="flex items-center justify-between pb-4 border-b border-surface-200">
-              <div className="flex items-center gap-2.5">
-                <div className="h-9 w-9 rounded-xl bg-brand-tint text-brand-terracota flex items-center justify-center">
-                  <Archive className="h-5 w-5" />
-                </div>
-                <div>
-                  <h3 className="text-lg font-bold text-surface-900">Registrar Muestra</h3>
-                  <p className="text-xs text-surface-500">Recepción y pesaje de lote muestra</p>
-                </div>
-              </div>
-              <button
-                onClick={() => setModalRegistroAbierto(false)}
-                className="p-1.5 rounded-lg text-surface-400 hover:bg-surface-100 cursor-pointer"
-              >
-                <X className="h-5 w-5" />
-              </button>
-            </div>
-
-            <form onSubmit={guardarCreacion} className="mt-4 space-y-4">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-bold text-surface-700 mb-1">Código Lote/Preoferta *</label>
-                  <input
-                    required
-                    type="text"
-                    value={formData.codigoPreoferta}
-                    onChange={(e) => setFormData({ ...formData, codigoPreoferta: e.target.value })}
-                    className="w-full px-3 py-2 text-sm rounded-xl border border-surface-200"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-bold text-surface-700 mb-1">Fecha de Recepción *</label>
-                  <input
-                    required
-                    type="date"
-                    value={formData.fecha}
-                    onChange={(e) => setFormData({ ...formData, fecha: e.target.value })}
-                    className="w-full px-3 py-2 text-sm rounded-xl border border-surface-200"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-bold text-surface-700 mb-1">Peso Muestra (gramos) *</label>
-                  <input
-                    required
-                    type="number"
-                    step="0.1"
-                    value={formData.peso}
-                    onChange={(e) => setFormData({ ...formData, peso: e.target.value })}
-                    className="w-full px-3 py-2 text-sm rounded-xl border border-surface-200"
-                    placeholder="Ej. 350"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-bold text-surface-700 mb-1">Humedad (%) *</label>
-                  <input
-                    required
-                    type="number"
-                    step="0.1"
-                    value={formData.humedad}
-                    onChange={(e) => setFormData({ ...formData, humedad: e.target.value })}
-                    className="w-full px-3 py-2 text-sm rounded-xl border border-surface-200"
-                    placeholder="Ej. 10.8"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-bold text-surface-700 mb-1">Caficultor *</label>
-                  <input
-                    required
-                    type="text"
-                    value={formData.caficultor}
-                    onChange={(e) => setFormData({ ...formData, caficultor: e.target.value })}
-                    className="w-full px-3 py-2 text-sm rounded-xl border border-surface-200"
-                    placeholder="Nombre del productor"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-bold text-surface-700 mb-1">Variedad de Café</label>
-                  <input
-                    type="text"
-                    value={formData.variedad}
-                    onChange={(e) => setFormData({ ...formData, variedad: e.target.value })}
-                    className="w-full px-3 py-2 text-sm rounded-xl border border-surface-200"
-                    placeholder="Ej. Pink Bourbon, Geisha"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold text-surface-700 mb-1">Laboratorio Asignado</label>
-                <select
-                  value={formData.laboratorio}
-                  onChange={(e) => setFormData({ ...formData, laboratorio: e.target.value })}
-                  className="w-full px-3 py-2 text-sm rounded-xl border border-surface-200"
-                >
-                  <option value="">Dejar pendiente para asignación</option>
-                  {LABORATORIOS_DISPONIBLES.map((lab) => (
-                    <option key={lab} value={lab}>{lab}</option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="flex justify-end gap-3 pt-3 border-t border-surface-200">
-                <button
-                  type="button"
-                  onClick={() => setModalRegistroAbierto(false)}
-                  className="px-4 py-2 rounded-xl border border-surface-200 text-sm font-semibold text-surface-600 hover:bg-surface-50 cursor-pointer"
-                >
-                  Cancelar
-                </button>
-                <button
-                  type="submit"
-                  className="px-5 py-2 rounded-xl bg-brand-terracota hover:bg-brand-terracota-dark text-white text-sm font-semibold shadow-md cursor-pointer"
-                >
-                  Guardar Muestra
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
 
       {/* MODAL ASIGNAR LABORATORIO */}
       {modalAsignarAbierto && muestraActual && (

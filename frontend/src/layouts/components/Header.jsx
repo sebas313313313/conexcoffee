@@ -1,10 +1,12 @@
-import { useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { animate } from 'animejs';
 import useAuth from '@/hooks/useAuth';
 import useUIStore from '@/store/useUIStore';
 import { ROLES } from '@/lib/constants';
 import { Menu, LogOut, User, Bell } from 'lucide-react';
+import toast from 'react-hot-toast';
+import { getErrorMessage } from '@/lib/axios';
 
 // ============================================
 // Header — Barra superior del dashboard
@@ -13,7 +15,40 @@ import { Menu, LogOut, User, Bell } from 'lucide-react';
 // ============================================
 
 export default function Header() {
-  const { user, role, logout } = useAuth();
+  const { user, role, logout, getPushSubscription, enablePush, disablePush } = useAuth();
+  const [pushEnabled, setPushEnabled] = useState(false);
+  const [pushBusy, setPushBusy] = useState(false);
+  const pushSupported = typeof window !== 'undefined' && window.isSecureContext &&
+    'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window;
+
+  useEffect(() => {
+    if (!pushSupported) return;
+    let active = true;
+    getPushSubscription().then((subscription) => {
+      if (active) setPushEnabled(Boolean(subscription));
+    }).catch(() => {});
+    return () => { active = false; };
+  }, [getPushSubscription, pushSupported]);
+
+  const togglePush = async () => {
+    if (pushBusy) return;
+    setPushBusy(true);
+    try {
+      if (pushEnabled) {
+        await disablePush();
+        setPushEnabled(false);
+        toast.success('Notificaciones desactivadas');
+      } else {
+        await enablePush();
+        setPushEnabled(true);
+        toast.success('Notificaciones activadas');
+      }
+    } catch (error) {
+      toast.error(getErrorMessage(error));
+    } finally {
+      setPushBusy(false);
+    }
+  };
   const sidebarOpen = useUIStore((s) => s.sidebarOpen);
   const toggleSidebar = useUIStore((s) => s.toggleSidebar);
 
@@ -92,10 +127,13 @@ export default function Header() {
         {/* Right: Actions */}
         <div className="flex items-center gap-3">
           {/* Notifications */}
-          <button className="p-2 rounded-lg text-surface-500 hover:bg-surface-100 hover:text-surface-700 transition-colors relative cursor-pointer">
+          <button type="button" onClick={togglePush} disabled={!pushSupported || pushBusy}
+            title={pushSupported ? (pushEnabled ? 'Desactivar notificaciones' : 'Activar notificaciones') : 'Notificaciones no disponibles en este navegador'}
+            aria-label={pushEnabled ? 'Desactivar notificaciones' : 'Activar notificaciones'}
+            aria-pressed={pushEnabled}
+            className="p-2 rounded-lg text-surface-500 hover:bg-surface-100 hover:text-surface-700 transition-colors relative cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed">
             <Bell className="h-5 w-5" />
-            {/* Badge de notificación */}
-            <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-danger-500 rounded-full" />
+            {pushEnabled && <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-brand-terracota rounded-full" />}
           </button>
 
           {/* Profile */}

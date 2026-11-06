@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createRoleDataController } from '../src/context/shared/roleDataController.js';
+import { readRoleCollection } from '../src/context/shared/readRoleCollection.js';
 import { superAdminData } from '../src/context/superadmin/data.js';
 import { empresaData } from '../src/context/empresa/data.js';
 import { laboratorioData } from '../src/context/laboratorio/data.js';
@@ -60,14 +61,16 @@ test('cada pantalla carga únicamente sus endpoints declarados y permite calcula
   }
 });
 
-test('usuarios no carga los otros 17 recursos y blog/configuración no consultan colecciones', async () => {
+test('brokers carga tres recursos en vez de quince y blog/configuración no consultan colecciones', async () => {
   const requested = [];
-  const controller = createRoleDataController(superAdminData, async (url) => { requested.push(url); return []; });
-  await controller.load('usuarios', superAdminData.routes['/superadmin/users']);
-  assert.deepEqual(requested, ['/usuarios-sistema']);
-  await controller.load('blog', superAdminData.routes['/superadmin/blog']);
-  await controller.load('settings', superAdminData.routes['/superadmin/settings']);
-  assert.equal(requested.length, 1);
+  const request = async (url) => { requested.push(url); return []; };
+  const empresa = createRoleDataController(empresaData, request);
+  await empresa.load('brokers', empresaData.routes['/empresa/brokers']);
+  assert.deepEqual(requested.sort(), ['/brokers', '/pedidos-internacionales', '/usuarios-sistema']);
+  const admin = createRoleDataController(superAdminData, request);
+  await admin.load('blog', superAdminData.routes['/superadmin/blog']);
+  await admin.load('settings', superAdminData.routes['/superadmin/settings']);
+  assert.equal(requested.length, 3);
 });
 
 test('dos recargas simultáneas de la misma pantalla comparten la petición', async () => {
@@ -167,7 +170,6 @@ test('las cargas parciales conservan los datos y relaciones que consume cada pan
     correo_electronico: 'prueba@example.test', fecha_creacion: '2026-01-01',
   };
   const cases = [
-    [superAdminData, '/superadmin/users', ['usuarios']],
     [superAdminData, '/superadmin/caficultores', ['caficultores', 'empresas']],
     [superAdminData, '/superadmin/catadores', ['catadores']],
     [superAdminData, '/superadmin/empresas', ['empresas']],
@@ -189,6 +191,8 @@ test('las cargas parciales conservan los datos y relaciones que consume cada pan
     [empresaData, '/empresa/ofertas', ['preofertas', 'ofertas', 'tecnicos', 'contenedores']],
     [empresaData, '/empresa/muestras', ['muestras', 'laboratorios']],
     [empresaData, '/empresa/contenedores', ['contenedores', 'ofertas', 'brokers']],
+    [empresaData, '/empresa/precintos', ['tecnicos']],
+    [tecnicoData, '/tecnico/precintos', ['preofertas']],
     [caficultorData, '/caficultor/fincas', ['fincas']],
     [caficultorData, '/caficultor/lotes', ['lotes', 'fincas', 'variedades']],
     [caficultorData, '/caficultor/pre-ofertas', ['preofertas', 'fincas', 'lotes', 'variedades']],
@@ -211,4 +215,38 @@ test('las cargas parciales conservan los datos y relaciones que consume cada pan
     const partial = config.select(partialRaw, initial);
     for (const field of fields) assert.deepEqual(partial[field], full[field], `${route}: ${field}`);
   }
+});
+
+test('el catálogo requerido de empresas recorre todas sus páginas con la misma señal', async () => {
+  const signal = new AbortController().signal;
+  const pages = [];
+  const client = { get: async (url, options) => {
+    assert.equal(url, '/empresas-exportadoras');
+    assert.equal(options.strictResponse, true);
+    assert.equal(options.signal, signal);
+    pages.push(options.params.page);
+    return { data: [{ id: options.params.page }], meta: { totalPages: 3 } };
+  } };
+  const records = await readRoleCollection(client, superAdminData.endpoints.rawEmpresas, signal);
+  assert.deepEqual(pages, [1, 2, 3]);
+  assert.deepEqual(records, [{ id: 1 }, { id: 2 }, { id: 3 }]);
+});
+
+test('el lector propaga errores de catálogos requeridos y conserva el fallback opcional', async () => {
+  const signal = new AbortController().signal;
+  const client = { get: async () => { throw new Error('Sin acceso'); } };
+  await assert.rejects(readRoleCollection(client, superAdminData.endpoints.rawEmpresas, signal), /Sin acceso/);
+  assert.deepEqual(await readRoleCollection(client, '/opcional', signal), []);
+});
+
+test('cancelar un catálogo paginado evita solicitar las siguientes páginas', async () => {
+  const controller = new AbortController();
+  let calls = 0;
+  const client = { get: async () => {
+    calls += 1;
+    controller.abort();
+    return { data: [{ id: 1 }], meta: { totalPages: 4 } };
+  } };
+  await assert.rejects(readRoleCollection(client, superAdminData.endpoints.rawEmpresas, controller.signal), { name: 'AbortError' });
+  assert.equal(calls, 1);
 });

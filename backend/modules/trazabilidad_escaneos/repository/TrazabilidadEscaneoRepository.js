@@ -8,23 +8,30 @@ class TrazabilidadEscaneoRepository extends BaseRepository {
   }
 
   async consultarVistaPublica(tokenQrExterno) {
-    const [results] = await sequelize.query(
-      'SELECT * FROM logistica.vista_trazabilidad_publica WHERE token_qr_externo = :token LIMIT 1',
-      {
-        replacements: { token: tokenQrExterno }
-      }
-    );
-    return results?.[0] || null;
+    return this.consultarFichaPublica(tokenQrExterno);
   }
 
-  async consultarVistaTecnica(tokenQrExterno) {
-    const [results] = await sequelize.query(
-      'SELECT * FROM logistica.vista_trazabilidad_tecnica WHERE token_qr_externo = :token LIMIT 1',
-      {
-        replacements: { token: tokenQrExterno }
-      }
+  async consultarFichaPublica(token) {
+    const [rows] = await sequelize.query(
+      `SELECT q.codigo_suncho_precinto AS serial, s.numero_saco_consecutivo,
+              s.peso_neto_kg, s.estado_saco, p.codigo_preoferta,
+              p.proceso, p.secado, p.precio_esperado_cop,
+              v.nombre AS variedad, v.especie,
+              f.nombre_finca, f.departamento, f.municipio, f.vereda, f.altitud_msnm,
+              concat_ws(' ', c.nombres, c.apellidos) AS productor_nombre,
+              u.correo_electronico AS productor_correo
+       FROM logistica.inventario_precintos_qr q
+       JOIN logistica.sacos_cafe s ON s.precinto_id = q.id
+       JOIN cosechas.preofertas p ON p.id = s.preoferta_id
+       JOIN agronomia.fincas f ON f.id = p.finca_id
+       JOIN personas.caficultores c ON c.id = p.caficultor_id
+       JOIN acceso.usuarios_sistema u ON u.id = c.usuario_id
+       JOIN agronomia.variedades_cafe v ON v.id = p.variedad_id
+       WHERE q.token_qr_externo = :token AND q.estado = 'VINCULADO_A_SACO'
+       LIMIT 1`,
+      { replacements: { token } }
     );
-    return results?.[0] || null;
+    return rows[0] || null;
   }
 
   async findSacoByTokenQrExterno(tokenQrExterno) {

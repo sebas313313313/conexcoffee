@@ -84,6 +84,8 @@ export function selectEmpresaData({ rawUsuarios, rawCaficultores, rawEmpresas, r
 
 export const empresaData = {
   createInitialState: () => ({
+    precintos: [],
+    precintosMeta: null,
     brokers: [],
     caficultores: [],
     contenedores: [],
@@ -115,6 +117,7 @@ export const empresaData = {
     rawInspecciones: '/inspecciones-campo',
   },
   routes: {
+    '/empresa/precintos': ['rawTecnicos', 'rawUsuarios', 'rawInspecciones'],
     '/empresa/brokers': ['rawBrokers', 'rawPedidos', 'rawUsuarios'],
     '/empresa/caficultores': ['rawCaficultores', 'rawEmpresas', 'rawFincas', 'rawLotes', 'rawUsuarios'],
     '/empresa/laboratorios': ['rawEvaluacionesFisicas', 'rawLaboratorios', 'rawSesionesCatacion', 'rawUsuarios'],
