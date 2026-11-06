@@ -16,6 +16,7 @@ import {
   UserCheck,
   Users,
   Search,
+  Newspaper,
 } from 'lucide-react';
 import useAuth from '@/hooks/useAuth';
 

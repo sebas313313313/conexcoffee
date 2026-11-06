@@ -28,6 +28,9 @@ import {
   MapPin,
   ClipboardCheck,
   Store,
+  Newspaper,
+  PackageCheck,
+  Calendar,
 } from 'lucide-react';
 
 // ============================================
@@ -56,6 +59,7 @@ const NAV_BY_ROLE = {
     { label: 'Ofertas', path: '/superadmin/ofertas', icon: Gift },
     { label: 'Técnicos', path: '/superadmin/tecnicos', icon: UserCheck },
     { label: 'Usuarios', path: '/superadmin/users', icon: Users },
+    { label: 'Blog', path: '/superadmin/blog', icon: Newspaper },
     { label: 'Página Web', path: '/', icon: Globe },
     { label: 'Configuración', path: '/superadmin/settings', icon: Settings },
   ],
@@ -74,6 +78,12 @@ const NAV_BY_ROLE = {
   ],
   [ROLES.BROKER]: [
     { label: 'Dashboard', path: '/broker/dashboard', icon: LayoutDashboard },
+    { label: 'Contenedores & Tracker', path: '/broker/contenedores', icon: PackageCheck },
+    { label: 'Ofertas Libres', path: '/broker/ofertas', icon: Tag },
+    { label: 'Muestras Pre-Compra', path: '/broker/muestras', icon: FlaskConical },
+    { label: 'Lotes Vendidos', path: '/broker/ventas', icon: Award },
+    { label: 'Compradores', path: '/broker/compradores', icon: Users },
+    { label: 'Cataciones & Eventos', path: '/broker/eventos', icon: Calendar },
     { label: 'Página Web', path: '/', icon: Globe },
   ],
   [ROLES.CAFICULTOR]: [

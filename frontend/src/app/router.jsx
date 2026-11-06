@@ -78,6 +78,7 @@ const MuestrasPage = lazyPage(superadmin, 'MuestrasPage');
 const OfertasPage = lazyPage(superadmin, 'OfertasPage');
 const TecnicosPage = lazyPage(superadmin, 'TecnicosPage');
 const UsuariosPage = lazyPage(superadmin, 'UsuariosPage');
+const BlogAdminPage = lazyPage(superadmin, 'BlogAdminPage');
 const ConfiguracionPage = lazyPage(superadmin, 'ConfiguracionPage');
 
 // ---------- Empresa ----------
@@ -96,6 +97,12 @@ const EmpresaTecnicosPage = lazyPage(empresa, 'EmpresaTecnicosPage');
 // ---------- Broker ----------
 const broker = () => import('@/features/broker');
 const BrokerDashboardPage = lazyPage(broker, 'BrokerDashboardPage');
+const BrokerContenedoresPage = lazyPage(broker, 'BrokerContenedoresPage');
+const BrokerOfertasPage = lazyPage(broker, 'BrokerOfertasPage');
+const BrokerMuestrasPage = lazyPage(broker, 'BrokerMuestrasPage');
+const BrokerTrazabilidadPage = lazyPage(broker, 'BrokerTrazabilidadPage');
+const BrokerCompradoresPage = lazyPage(broker, 'BrokerCompradoresPage');
+const BrokerEventosPage = lazyPage(broker, 'BrokerEventosPage');
 
 // ---------- Caficultor ----------
 const caficultor = () => import('@/features/caficultor');
@@ -217,6 +224,7 @@ const router = createBrowserRouter([
         { path: '/superadmin/tecnicos',     element: page(TecnicosPage) },
         { path: '/superadmin/users',        element: page(UsuariosPage) },
         { path: '/superadmin/usuarios',     element: <Navigate to="/superadmin/users" replace /> },
+        { path: '/superadmin/blog',         element: page(BlogAdminPage) },
         { path: '/superadmin/settings',     element: page(ConfiguracionPage) },
         { path: '/superadmin/configuracion', element: <Navigate to="/superadmin/settings" replace /> },
       ]),
@@ -236,8 +244,15 @@ const router = createBrowserRouter([
       ]),
 
       roleRoutes(ROLES.BROKER, BrokerProvider, [
-        { path: '/broker',           element: <Navigate to="/broker/dashboard" replace /> },
-        { path: '/broker/dashboard', element: page(BrokerDashboardPage) },
+        { path: '/broker',              element: <Navigate to="/broker/dashboard" replace /> },
+        { path: '/broker/dashboard',    element: page(BrokerDashboardPage) },
+        { path: '/broker/contenedores', element: page(BrokerContenedoresPage) },
+        { path: '/broker/ofertas',      element: page(BrokerOfertasPage) },
+        { path: '/broker/muestras',     element: page(BrokerMuestrasPage) },
+        { path: '/broker/ventas',       element: page(BrokerTrazabilidadPage) },
+        { path: '/broker/trazabilidad', element: <Navigate to="/broker/ventas" replace /> },
+        { path: '/broker/compradores',  element: page(BrokerCompradoresPage) },
+        { path: '/broker/eventos',      element: page(BrokerEventosPage) },
       ]),
 
       roleRoutes(ROLES.CAFICULTOR, CaficultorProvider, [

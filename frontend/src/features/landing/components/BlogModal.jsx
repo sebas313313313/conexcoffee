@@ -1,9 +1,15 @@
-import { Calendar, BookOpen, User, CheckCircle2 } from 'lucide-react';
+import { Calendar, BookOpen, User, CheckCircle2, ExternalLink } from 'lucide-react';
 import ModalBase from '@/components/modals/ModalBase';
 import { Button } from '@/components/ui';
 
 export default function BlogModal({ post, isOpen, onClose }) {
   if (!post) return null;
+
+  const eventLink = post.urlEvento
+    ? post.urlEvento.startsWith('http')
+      ? post.urlEvento
+      : `https://${post.urlEvento}`
+    : null;
 
   return (
     <ModalBase
@@ -46,6 +52,41 @@ export default function BlogModal({ post, isOpen, onClose }) {
           </div>
         </div>
 
+        {/* Enlace del Evento / Ver en: enlace */}
+        {eventLink && (
+          <div className="p-4 rounded-xl bg-amber-50/90 border border-brand-orange/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-2xs">
+            <div className="flex items-center gap-2.5 min-w-0">
+              <div className="h-8 w-8 rounded-lg bg-brand-terracota/10 flex items-center justify-center text-brand-terracota shrink-0">
+                <ExternalLink className="h-4 w-4" />
+              </div>
+              <div className="min-w-0">
+                <p className="text-xs font-bold text-surface-900 flex items-baseline gap-1.5 flex-wrap">
+                  <span>Ver en:</span>
+                  <a
+                    href={eventLink}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-brand-terracota hover:underline font-semibold break-all"
+                  >
+                    {post.urlEvento}
+                  </a>
+                </p>
+                <p className="text-[11px] text-surface-500">Enlace oficial del evento / publicación cargado por administración</p>
+              </div>
+            </div>
+
+            <a
+              href={eventLink}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center justify-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-brand-terracota hover:bg-brand-orange text-white font-bold text-xs shadow-xs transition-all shrink-0 cursor-pointer"
+            >
+              <span>Abrir Enlace</span>
+              <ExternalLink className="h-3.5 w-3.5" />
+            </a>
+          </div>
+        )}
+
         {/* Cuerpo del Artículo */}
         <div className="space-y-4 text-sm text-surface-700 leading-relaxed">
           <p className="font-semibold text-surface-900 text-base leading-snug">
@@ -72,7 +113,7 @@ export default function BlogModal({ post, isOpen, onClose }) {
             type="button"
             variant="secondary"
             onClick={onClose}
-            className="px-5 text-xs font-bold uppercase tracking-wider"
+            className="px-5 text-xs font-bold uppercase tracking-wider cursor-pointer"
           >
             Cerrar Lectura
           </Button>

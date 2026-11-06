@@ -10,6 +10,7 @@ export const BLOG_POSTS = [
     autor: 'Equipo de Análisis ConexCoffee',
     image: '/images/pagina-web/cafe2-conexcoffe.png',
     destacado: true,
+    urlEvento: 'https://conexcoffee.com/eventos/mercado-internacional-2026',
     content: `El mercado mundial del café de especialidad experimenta una transformación histórica en 2026. Los compradores internacionales priorizan la trazabilidad absoluta desde la finca y la estabilidad en taza por encima de los volúmenes tradicionales.
 
 Factores Determinantes:
@@ -107,3 +108,77 @@ Ventajas del Modelo ConexCoffee:
 - Garantía de Origen: Código QR en cada saco para verificar la finca y el laboratorio donde fue certificado.`,
   },
 ];
+
+
+export const BLOG_STORAGE_KEY = 'conexcoffee_blog_posts';
+
+export const DEFAULT_BLOG_CATEGORIES = [
+  'Mercado',
+  'Calidad SCA',
+  'Sostenibilidad',
+  'Procesamiento',
+  'Comercio',
+  'Logística',
+  'Innovación',
+  'Eventos',
+];
+
+export const PRESET_BLOG_IMAGES = [
+  { label: 'Café Grano & Taza', url: '/images/pagina-web/cafe2-conexcoffe.png' },
+  { label: 'Cosecha Selección', url: '/images/pagina-web/cafe2-conexcoffe-2.jpg' },
+  { label: 'Catación SCA', url: '/images/pagina-web/cafe2-conexcoffe-3.png' },
+  { label: 'Café Tostado', url: '/images/pagina-web/cafe3-conexcoffe.png' },
+  { label: 'Portada ConexCoffee', url: '/images/pagina-web/portada-conexcoffee.png' },
+  { label: 'Paisaje Cafetero', url: '/images/portadas/caficultor.jpg' },
+  { label: 'Laboratorio Sensorial', url: '/images/portadas/analisis-sensorial.jpg' },
+  { label: 'Finca Cafetera', url: '/images/portadas/finca.jpg' },
+];
+
+/**
+ * Obtiene los artículos del blog almacenados en LocalStorage,
+ * inicializando con BLOG_POSTS si aún no existen.
+ */
+export function getStoredBlogPosts() {
+  if (typeof window === 'undefined') return BLOG_POSTS;
+  try {
+    const raw = localStorage.getItem(BLOG_STORAGE_KEY);
+    if (!raw) {
+      localStorage.setItem(BLOG_STORAGE_KEY, JSON.stringify(BLOG_POSTS));
+      return BLOG_POSTS;
+    }
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) && parsed.length > 0 ? parsed : BLOG_POSTS;
+  } catch (e) {
+    console.error('Error al leer artículos del blog desde localStorage:', e);
+    return BLOG_POSTS;
+  }
+}
+
+/**
+ * Guarda los artículos del blog en LocalStorage y dispara un evento
+ * global para sincronizar en tiempo real cualquier vista activa.
+ */
+export function saveStoredBlogPosts(posts) {
+  if (typeof window === 'undefined') return;
+  try {
+    localStorage.setItem(BLOG_STORAGE_KEY, JSON.stringify(posts));
+    window.dispatchEvent(new CustomEvent('conexcoffee_blog_updated', { detail: posts }));
+  } catch (e) {
+    console.error('Error al guardar artículos del blog en localStorage:', e);
+  }
+}
+
+/**
+ * Restablece los artículos del blog a la configuración inicial por defecto.
+ */
+export function resetStoredBlogPosts() {
+  if (typeof window === 'undefined') return BLOG_POSTS;
+  try {
+    localStorage.setItem(BLOG_STORAGE_KEY, JSON.stringify(BLOG_POSTS));
+    window.dispatchEvent(new CustomEvent('conexcoffee_blog_updated', { detail: BLOG_POSTS }));
+    return BLOG_POSTS;
+  } catch (e) {
+    console.error('Error al restablecer artículos del blog:', e);
+    return BLOG_POSTS;
+  }
+}

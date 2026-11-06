@@ -1,5 +1,5 @@
 import { useRef } from 'react';
-import { Calendar, BookOpen, ArrowRight, User } from 'lucide-react';
+import { Calendar, BookOpen, ArrowRight, User, ExternalLink } from 'lucide-react';
 import { Card } from '@/components/ui';
 import { animate } from 'animejs';
 
@@ -77,11 +77,20 @@ export default function BlogCard({ post, onOpenArticle }) {
               alt={post.title}
               className="w-full h-full object-cover will-change-transform"
               loading="lazy"
+              onError={(e) => {
+                e.currentTarget.src = '/images/pagina-web/cafe2-conexcoffe.png';
+              }}
             />
-            <div className="absolute top-3 left-3">
+            <div className="absolute top-3 left-3 flex items-center gap-2">
               <span className="font-extrabold text-[11px] uppercase tracking-wider text-white bg-brand-terracota px-3 py-1 rounded-full shadow-md">
                 {post.category}
               </span>
+              {post.urlEvento && (
+                <span className="font-extrabold text-[10px] uppercase tracking-wider text-white bg-amber-600/90 backdrop-blur-md px-2.5 py-1 rounded-full shadow-md flex items-center gap-1">
+                  <ExternalLink className="h-3 w-3" />
+                  <span>Evento</span>
+                </span>
+              )}
             </div>
           </div>
 
