@@ -7,7 +7,10 @@ const router = Router();
 const controller = new SesionCatacionController();
 
 router.get('/', checkAuth, controller.getAll);
+router.get('/codigo/:codigo/qr', checkAuth, checkRoles('CATADOR'), controller.getQrPreview);
+router.post('/codigo/:codigo/asignar-qr', checkAuth, checkRoles('CATADOR'), controller.assignFromQr);
 router.get('/codigo/:codigo', checkAuth, controller.getByCodigo);
+router.get('/:id/qr', checkAuth, checkRoles('ADMINISTRADOR', 'EMPRESA_EXPORTADORA', 'LABORATORIO'), controller.getQrPayload);
 router.get('/:id', checkAuth, controller.getById);
 router.get('/:id/detalles', checkAuth, controller.getWithDetails);
 

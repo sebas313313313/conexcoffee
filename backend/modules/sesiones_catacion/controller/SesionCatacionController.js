@@ -13,6 +13,12 @@ class SesionCatacionController extends BaseController {
       return await this.service.getWithDetails(id);
     });
 
+  create = (req, res) =>
+    this.execute(res, async () => this.service.createForUser(req.body, req.user), 201);
+
+  getAll = (req, res) =>
+    this.execute(res, async () => this.service.getAllForUser(req.query, req.user));
+
   getByCodigo = (req, res) =>
     this.execute(res, async () => {
       const { codigo } = req.params;
@@ -22,6 +28,15 @@ class SesionCatacionController extends BaseController {
       }
       return sesion;
     });
+
+  getQrPreview = (req, res) =>
+    this.execute(res, async () => this.service.getQrPreview(req.params.codigo));
+
+  assignFromQr = (req, res) =>
+    this.execute(res, async () => this.service.assignFromQr(req.params.codigo, req.user.id));
+
+  getQrPayload = (req, res) =>
+    this.execute(res, async () => this.service.createQrPayload(req.params.id, req.user));
 }
 
 export default SesionCatacionController;

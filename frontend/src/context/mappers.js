@@ -662,6 +662,11 @@ export function mapSesionSensorial(
     ...raw,
     id: raw.id,
     codigo: raw.codigo_sesion || codigoLote,
+    empresaCreadora:
+      raw.empresa_creadora?.nombre_comercial ||
+      raw.empresa_creadora?.razon_social ||
+      raw.empresaCreadora ||
+      null,
     codigoLote,
     lote: codigoLote,
     nombre: raw.titulo || `Sesión CVA ${codigoLote}`,
@@ -693,10 +698,10 @@ export function mapSesionSensorial(
     cantidadMuestras: Number(raw.total_muestras || 1),
     cantidadParticipantes: Math.max(1, misHojas.length),
     cupoMaximo: 5,
-    unido: true,
+    unido: raw.unido ?? true,
     laboratorio: 'Laboratorio de Calidad Tecnicafé',
     categoria: puntaje >= 85 ? 'Especial Excelente' : puntaje >= 80 ? 'Especial Muy Bueno' : 'Estándar',
-    estado: raw.aprobado_para_exportacion ? 'Certificado SCA' : 'En Revisión',
+    estado: raw.aprobado_para_exportacion ? 'Certificado SCA' : (raw.estado || 'En Proceso'),
     estadoHoja: raw.aprobado_para_exportacion ? 'Completada' : 'En Proceso',
     estadoEvaluacion: misHojas.length > 0 ? 'Completada' : 'Pendiente',
   };

@@ -102,6 +102,7 @@ const broker = () => import('@/features/broker');
 const BrokerDashboardPage = lazyPage(broker, 'BrokerDashboardPage');
 const BrokerContenedoresPage = lazyPage(broker, 'BrokerContenedoresPage');
 const BrokerOfertasPage = lazyPage(broker, 'BrokerOfertasPage');
+const BrokerPreofertasPage = lazyPage(broker, 'BrokerPreofertasPage');
 const BrokerMuestrasPage = lazyPage(broker, 'BrokerMuestrasPage');
 const BrokerTrazabilidadPage = lazyPage(broker, 'BrokerTrazabilidadPage');
 const BrokerCompradoresPage = lazyPage(broker, 'BrokerCompradoresPage');
@@ -253,6 +254,7 @@ const router = createBrowserRouter([
         { path: '/broker/dashboard',    element: page(BrokerDashboardPage) },
         { path: '/broker/contenedores', element: page(BrokerContenedoresPage) },
         { path: '/broker/ofertas',      element: page(BrokerOfertasPage) },
+        { path: '/broker/preofertas',   element: page(BrokerPreofertasPage) },
         { path: '/broker/muestras',     element: page(BrokerMuestrasPage) },
         { path: '/broker/ventas',       element: page(BrokerTrazabilidadPage) },
         { path: '/broker/trazabilidad', element: <Navigate to="/broker/ventas" replace /> },

@@ -19,6 +19,8 @@ export const CatadorProvider = ({ children }) => {
     evaluaciones: state.evaluaciones,
     setEvaluaciones: setters.setEvaluaciones,
     updateEvaluacion: actions.updateEvaluacion,
+    previewEvaluationQr: actions.previewEvaluationQr,
+    assignEvaluationQr: actions.assignEvaluationQr,
   }), [state, setters, actions, loading, error, refetch, summary]);
 
   return <CatadorContext.Provider value={value}>{children}</CatadorContext.Provider>;

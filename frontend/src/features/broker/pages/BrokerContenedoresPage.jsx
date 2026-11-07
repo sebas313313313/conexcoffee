@@ -16,9 +16,6 @@ import {
   ChevronDown,
   ChevronUp,
   Layers,
-  Thermometer,
-  Droplets,
-  ExternalLink,
 } from 'lucide-react';
 import { ModuloCabecera } from '@/components/data-display';
 import ModalBase from '@/components/modals/ModalBase';
@@ -146,50 +143,24 @@ export default function BrokerContenedoresPage() {
                           <Globe className="h-3 w-3" />
                           {cnt.pais_destino} ({cnt.ciudad_destino})
                         </span>
-                        <span className="text-xs font-semibold text-surface-600 bg-white px-2 py-0.5 rounded-md border border-surface-200">
-                          Naviera: {cnt.naviera}
-                        </span>
                       </div>
 
-                      <div className="flex flex-wrap items-center gap-y-1 gap-x-4 text-xs text-surface-500">
-                        <span>
-                          <strong>Buque:</strong> {cnt.buque}
-                        </span>
-                        <span>
-                          <strong>Booking:</strong> {cnt.booking_numero}
-                        </span>
-                        <span>
-                          <strong>Zarpe Est.:</strong> {cnt.fecha_estimada_zarpe}
-                        </span>
-                        <span>
-                          <strong>Arribo Est.:</strong> {cnt.fecha_estimada_arribo}
-                        </span>
+                      <div className="flex flex-wrap items-center gap-3 text-xs text-surface-500">
+                        <span>{cnt.naviera}</span>
+                        <span className="hidden sm:inline">•</span>
+                        <span>Arribo: <strong className="text-surface-700">{cnt.fecha_estimada_arribo}</strong></span>
                       </div>
                     </div>
                   </div>
 
                   {/* Estado IoT & Indicador de Capacidad */}
                   <div className="flex items-center gap-4 self-end lg:self-center">
-                    {/* Sensores IoT */}
-                    <div className="hidden sm:flex items-center gap-3 px-3 py-1.5 rounded-xl bg-white border border-surface-200 text-xs">
-                      <div className="flex items-center gap-1 text-amber-700 font-bold" title="Temperatura interna controlada">
-                        <Thermometer className="h-3.5 w-3.5" />
-                        <span>{cnt.temperatura}</span>
-                      </div>
-                      <div className="flex items-center gap-1 text-cyan-700 font-bold" title="Humedad relativa del contenedor">
-                        <Droplets className="h-3.5 w-3.5" />
-                        <span>{cnt.humedad}</span>
-                      </div>
-                    </div>
-
                     {/* Capacidad ocupada */}
                     <div className="text-right">
                       <p className="text-xs text-surface-500 font-medium">Ocupación</p>
                       <p className="text-sm font-black text-surface-900">
                         {cnt.porcentaje_llenado}%{' '}
-                        <span className="text-xs font-normal text-surface-500">
-                          ({cnt.kilos_ocupados?.toLocaleString()} kg / {cnt.sacos_totales} sacos)
-                        </span>
+                        <span className="text-xs font-normal text-surface-500">consolidado</span>
                       </p>
                     </div>
 
@@ -205,13 +176,13 @@ export default function BrokerContenedoresPage() {
 
                 {/* Contenido Expandible: Tracker Visual + Lotes dentro */}
                 {expandido && (
-                  <div className="p-5 sm:p-6 space-y-8">
+                  <div className="p-5 sm:p-6 space-y-6">
                     {/* 1. Tracker Logístico Interactivo */}
                     <div>
                       <div className="flex items-center justify-between mb-4">
                         <h4 className="text-xs font-bold text-surface-800 uppercase tracking-wider flex items-center gap-1.5">
                           <Truck className="h-4 w-4 text-brand-terracota" />
-                          <span>Línea de Tiempo del Tracker Marítimo</span>
+                          <span>Seguimiento del envío</span>
                         </h4>
                         <span className="text-xs font-bold text-brand-green bg-brand-green/10 px-2.5 py-1 rounded-full border border-brand-green/20">
                           Etapa: {cnt.etapas_tracker[cnt.etapa_actual_indice]?.nombre}
@@ -219,12 +190,9 @@ export default function BrokerContenedoresPage() {
                       </div>
 
                       {/* Timeline horizontal para pantallas grandes, vertical para móviles */}
-                      <div className="relative">
-                        {/* Línea conectora */}
-                        <div className="hidden md:block absolute top-4 left-6 right-6 h-0.5 bg-surface-200 -z-0" />
-
-                        <div className="grid grid-cols-1 md:grid-cols-6 gap-4 relative z-10">
-                          {cnt.etapas_tracker.map((etapa, idx) => {
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                          {cnt.etapas_tracker.filter((_, idx) => idx >= Math.max(0, cnt.etapa_actual_indice - 1) && idx <= Math.min(cnt.etapas_tracker.length - 1, cnt.etapa_actual_indice + 1)).map((etapa) => {
+                            const idx = cnt.etapas_tracker.indexOf(etapa);
                             const completado = idx < cnt.etapa_actual_indice;
                             const enCurso = idx === cnt.etapa_actual_indice;
                             return (
@@ -254,19 +222,13 @@ export default function BrokerContenedoresPage() {
                                     {etapa.nombre}
                                   </span>
                                 </div>
-                                <p className="text-[10px] text-surface-500 font-medium mb-1 truncate">
-                                  {etapa.ubicacion}
-                                </p>
-                                <p className="text-[11px] font-semibold">{etapa.fecha}</p>
-                                <p className="text-[10px] text-surface-600 mt-1 line-clamp-2">
-                                  {etapa.detalle}
-                                </p>
+                                <p className="text-[10px] text-surface-500 font-medium truncate">{etapa.ubicacion}</p>
+                                <p className="mt-1 text-[11px] font-semibold">{etapa.fecha}</p>
                               </div>
                             );
                           })}
                         </div>
                       </div>
-                    </div>
 
                     {/* 2. Lotes de Café dentro de este contenedor */}
                     <div>
@@ -284,13 +246,10 @@ export default function BrokerContenedoresPage() {
                         <table className="w-full text-left text-xs sm:text-sm">
                           <thead className="bg-surface-100 text-[11px] font-bold text-surface-600 uppercase tracking-wider border-b border-surface-200">
                             <tr>
-                              <th className="py-2.5 px-3">Código & Variedad</th>
-                              <th className="py-2.5 px-3">Finca & Caficultor</th>
-                              <th className="py-2.5 px-3">Proceso & Calidad</th>
-                              <th className="py-2.5 px-3">Sacos / Peso</th>
-                              <th className="py-2.5 px-3">Precio USD/kg</th>
-                              <th className="py-2.5 px-3">Comprador Asignado</th>
-                              <th className="py-2.5 px-3 text-right">Ficha</th>
+                              <th className="py-2.5 px-3">Lote</th>
+                              <th className="py-2.5 px-3">Origen</th>
+                              <th className="py-2.5 px-3">Calidad / volumen</th>
+                              <th className="py-2.5 px-3 text-right">Ver</th>
                             </tr>
                           </thead>
                           <tbody className="divide-y divide-surface-100 bg-white">
@@ -301,34 +260,14 @@ export default function BrokerContenedoresPage() {
                                 onClick={() => setLoteDetalleModal({ ...lote, contenedor_codigo: cnt.codigo })}
                               >
                                 <td className="py-2.5 px-3">
-                                  <p className="font-mono font-bold text-surface-900">{lote.codigo_lote}</p>
-                                  <p className="text-xs text-brand-terracota font-semibold">{lote.variedad}</p>
+                                  <p className="font-mono font-bold text-surface-900">{lote.codigo_lote}</p><p className="text-xs text-brand-terracota font-semibold">{lote.variedad}</p>
                                 </td>
                                 <td className="py-2.5 px-3">
                                   <p className="font-semibold text-surface-900">{lote.finca}</p>
-                                  <p className="text-xs text-surface-500">
-                                    {lote.caficultor} ({lote.municipio}, {lote.departamento})
-                                  </p>
+                                  <p className="text-xs text-surface-500">{lote.municipio}, {lote.departamento}</p>
                                 </td>
                                 <td className="py-2.5 px-3">
-                                  <span className="inline-block text-xs font-bold text-surface-700 bg-surface-100 px-2 py-0.5 rounded-md mb-0.5">
-                                    {lote.proceso}
-                                  </span>
-                                  <p className="text-xs font-black text-amber-600">
-                                    {lote.puntaje_sca} SCA
-                                  </p>
-                                </td>
-                                <td className="py-2.5 px-3">
-                                  <p className="font-bold text-surface-900">{lote.sacos} sacos</p>
-                                  <p className="text-xs text-surface-500">{lote.peso_kg?.toLocaleString()} kg</p>
-                                </td>
-                                <td className="py-2.5 px-3">
-                                  <p className="font-bold text-surface-900">${lote.precio_usd_kg} USD</p>
-                                  <p className="text-xs text-surface-500 font-medium">${lote.total_usd?.toLocaleString()} total</p>
-                                </td>
-                                <td className="py-2.5 px-3">
-                                  <p className="font-bold text-surface-900">{lote.comprador}</p>
-                                  <p className="text-xs text-surface-500">{lote.comprador_ciudad}</p>
+                                  <p className="text-xs font-black text-amber-600">{lote.puntaje_sca} SCA</p><p className="text-xs text-surface-500">{lote.sacos} sacos · {lote.peso_kg?.toLocaleString()} kg</p>
                                 </td>
                                 <td className="py-2.5 px-3 text-right">
                                   <button

@@ -17,6 +17,7 @@ import {
 import { Button } from '@/components/ui';
 import HeroLiquidGlassBanner from '../components/HeroLiquidGlassBanner';
 import SeccionNosotros from '../components/SeccionNosotros';
+import { FincaMapa } from '@/components/data-display';
 import { animate, stagger } from 'animejs';
 
 // ============================================
@@ -74,12 +75,12 @@ const HERO_SLIDES = [
 ];
 
 const FINCAS_MAPA = [
-  { id: 1, nombre: 'Finca La Esperanza', region: 'Huila', x: '46%', y: '68%', altitud: '1,820 msnm', variedad: 'Geisha' },
-  { id: 2, nombre: 'Hacienda El Paraíso', region: 'Nariño', x: '35%', y: '82%', altitud: '2,050 msnm', variedad: 'Bourbon Rosado' },
-  { id: 3, nombre: 'Finca San Alberto', region: 'Quindío (Eje Cafetero)', x: '42%', y: '52%', altitud: '1,650 msnm', variedad: 'Castillo' },
-  { id: 4, nombre: 'Finca Los Pinos', region: 'Antioquia', x: '44%', y: '38%', altitud: '1,780 msnm', variedad: 'Caturra' },
-  { id: 5, nombre: 'Finca Cumbre Nevada', region: 'Sierra Nevada', x: '58%', y: '16%', altitud: '1,550 msnm', variedad: 'Típica Orgánica' },
-  { id: 6, nombre: 'Finca Vista Hermosa', region: 'Tolima', x: '48%', y: '58%', altitud: '1,900 msnm', variedad: 'Tabi' },
+  { id: 1, nombre: 'Finca La Esperanza', region: 'Huila', lat: 1.8537, lng: -76.0507, altitud: '1,820 msnm', variedad: 'Geisha' },
+  { id: 2, nombre: 'Hacienda El Paraíso', region: 'Nariño', lat: 1.2136, lng: -77.2811, altitud: '2,050 msnm', variedad: 'Bourbon Rosado' },
+  { id: 3, nombre: 'Finca San Alberto', region: 'Quindío (Eje Cafetero)', lat: 4.535, lng: -75.675, altitud: '1,650 msnm', variedad: 'Castillo' },
+  { id: 4, nombre: 'Finca Los Pinos', region: 'Antioquia', lat: 6.2442, lng: -75.5812, altitud: '1,780 msnm', variedad: 'Caturra' },
+  { id: 5, nombre: 'Finca Cumbre Nevada', region: 'Sierra Nevada', lat: 10.865, lng: -73.93, altitud: '1,550 msnm', variedad: 'Típica Orgánica' },
+  { id: 6, nombre: 'Finca Vista Hermosa', region: 'Tolima', lat: 4.4389, lng: -75.2322, altitud: '1,900 msnm', variedad: 'Tabi' },
 ];
 
 const ALIADOS = [
@@ -778,37 +779,15 @@ export default function LandingPage() {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-center">
             <div className="anime-map-container opacity-0 lg:col-span-2 bg-black rounded-xl p-6 sm:p-10 text-white relative overflow-hidden shadow-xl min-h-[440px] flex items-center justify-center border border-surface-800 will-change-transform">
 
-              <div className="relative w-full max-w-md h-80 border-2 border-brand-terracota rounded-xl bg-surface-900 p-4">
-                <div className="text-[11px] font-mono text-primary-400 uppercase tracking-wider mb-2 flex justify-between">
-                  <span>Cartografía Cafetera Colombia</span>
-                  <span className="text-surface-400">GPS Coords Activas</span>
-                </div>
-
-                {FINCAS_MAPA.map((finca) => {
-                  const isSelected = activeFinca.id === finca.id;
-                  return (
-                    <button
-                      key={finca.id}
-                      onClick={() => setActiveFinca(finca)}
-                      style={{ left: finca.x, top: finca.y }}
-                      className="anime-map-pin opacity-0 absolute -translate-x-1/2 -translate-y-1/2 cursor-pointer transition-transform duration-300 will-change-transform"
-                      title={`${finca.nombre} (${finca.region})`}
-                    >
-                      <span
-                        className={`absolute -inset-2 rounded-full animate-ping opacity-75 ${isSelected ? 'bg-accent-400' : 'bg-primary-500'
-                          }`}
-                      />
-                      <span
-                        className={`relative flex items-center justify-center w-5 h-5 rounded-full text-[10px] font-bold shadow-lg ${isSelected
-                          ? 'bg-accent-400 text-surface-950 scale-125 ring-4 ring-accent-400/30'
-                          : 'bg-primary-600 text-white hover:scale-110'
-                          }`}
-                      >
-                        <Coffee className="h-3 w-3" />
-                      </span>
+              <div className="w-full max-w-2xl space-y-4">
+                <FincaMapa lat={activeFinca.lat} lng={activeFinca.lng} nombre={activeFinca.nombre} zoom={11} className="h-72 sm:h-80 border-2 border-brand-terracota" />
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  {FINCAS_MAPA.map((finca) => (
+                    <button key={finca.id} type="button" onClick={() => setActiveFinca(finca)} className={`anime-map-pin text-left rounded-lg px-3 py-2 text-xs transition-colors ${activeFinca.id === finca.id ? 'bg-primary-600 text-white' : 'bg-surface-800 text-surface-100 hover:bg-surface-700'}`}>
+                      <span className="font-bold block">{finca.nombre}</span><span className="opacity-80">{finca.region}</span>
                     </button>
-                  );
-                })}
+                  ))}
+                </div>
               </div>
             </div>
 

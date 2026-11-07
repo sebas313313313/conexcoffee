@@ -32,3 +32,29 @@ export function selectBrokerSummary(state) {
 
   return { stats };
 }
+const normalizeCountry = (country) => String(country ?? '').trim().toLowerCase();
+
+export function selectCarteraBroker(state, pais) {
+  if (!normalizeCountry(pais)) return { pais: null, clientes: [] };
+
+  const porComprador = Map.groupBy(state.pedidosPagados, (pedido) => pedido.comprador_id);
+  const clientes = state.compradoresRegistrados.flatMap((cliente) => {
+    const compras = porComprador.get(cliente.id);
+    if (normalizeCountry(cliente.pais_destino) !== normalizeCountry(pais) || !compras?.length) return [];
+    const historial = compras.map((compra) => {
+      const pagoCompleto = compra.estado === 'PAGADO_TOTAL_AUTORIZADO';
+      return {
+        ...compra,
+        pagoCompleto,
+        montoPagado: Number((pagoCompleto ? compra.monto_total_usd : compra.monto_anticipo_usd) ?? 0),
+      };
+    }).sort((a, b) => new Date(b.fecha_pedido) - new Date(a.fecha_pedido));
+    return [{
+      ...cliente,
+      historial,
+      totalUsd: historial.reduce((sum, compra) => sum + compra.montoPagado, 0),
+    }];
+  });
+  clientes.sort((a, b) => new Date(b.historial[0].fecha_pedido) - new Date(a.historial[0].fecha_pedido));
+  return { pais, clientes };
+}

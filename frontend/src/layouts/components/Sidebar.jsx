@@ -79,6 +79,7 @@ const NAV_BY_ROLE = {
     { label: 'Dashboard', path: '/broker/dashboard', icon: LayoutDashboard },
     { label: 'Contenedores & Tracker', path: '/broker/contenedores', icon: PackageCheck },
     { label: 'Ofertas Libres', path: '/broker/ofertas', icon: Tag },
+    { label: 'Preofertas', path: '/broker/preofertas', icon: Layers },
     { label: 'Muestras Pre-Compra', path: '/broker/muestras', icon: FlaskConical },
     { label: 'Lotes Vendidos', path: '/broker/ventas', icon: Award },
     { label: 'Compradores', path: '/broker/compradores', icon: Users },

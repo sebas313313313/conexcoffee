@@ -261,6 +261,7 @@ export default function BrokersPage() {
 
       {/* MODAL REGISTRAR BROKER */}
       <CrearBrokerModal
+        seleccionarPais
         isOpen={modalRegistroAbierto}
         onClose={() => setModalRegistroAbierto(false)}
         onSubmit={guardarCreacion}

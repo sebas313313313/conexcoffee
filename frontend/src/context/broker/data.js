@@ -1,4 +1,4 @@
-import { mapContenedor, mapPedido } from '../mappers.js';
+import { mapContenedor, mapPedido, mapPreoferta } from '../mappers.js';
 import { getStored, setStored } from './storage.js';
 import {
   BROKER_CONTENEDORES_SEED,
@@ -9,7 +9,20 @@ import {
   BROKER_EVENTOS_SEED,
 } from '../../features/broker/data/brokerData.js';
 
-export function selectBrokerData({ rawContenedores, rawPedidos, rawPreofertas, rawFincas, rawLotes, rawVariedades, rawCaficultores, rawSesionesCatacion, rawCompradores, rawBrokers }, previous) {
+const ESTADOS_CON_PAGO = new Set([
+  'ANTICIPO_PAGADO_RESERVADO',
+  'PENDIENTE_SALDO_70',
+  'PAGADO_TOTAL_AUTORIZADO',
+]);
+
+export function selectBrokerData({ rawContenedores, rawPedidos, rawPreofertas, rawFincas, rawLotes, rawVariedades, rawCaficultores, rawSesionesCatacion, rawCompradores, rawBrokers, rawCarteraCompradores = [], rawCarteraPedidos = [] }, previous) {
+  const preofertas = rawPreofertas.map((preoferta) => mapPreoferta(preoferta, {
+    caficultores: rawCaficultores,
+    fincas: rawFincas,
+    lotes: rawLotes,
+    variedades: rawVariedades,
+    sesiones: rawSesionesCatacion,
+  }));
   const mappedContenedores = rawContenedores.map((cnt) =>
     mapContenedor(cnt, {
       preofertas: rawPreofertas,
@@ -37,12 +50,21 @@ export function selectBrokerData({ rawContenedores, rawPedidos, rawPreofertas, r
         ),
       ]
     : previous.contenedores;
-  return { negociaciones: mappedPedidos, contenedores };
+  return {
+    negociaciones: mappedPedidos,
+    contenedores,
+    preofertas,
+    compradoresRegistrados: rawCarteraCompradores,
+    pedidosPagados: rawCarteraPedidos.filter((pedido) => ESTADOS_CON_PAGO.has(pedido.estado)),
+  };
 }
 
 export const brokerData = {
   createInitialState: () => ({
     negociaciones: [],
+    compradoresRegistrados: [],
+    pedidosPagados: [],
+    preofertas: [],
     contenedores: getStored('conexcoffee_broker_contenedores', BROKER_CONTENEDORES_SEED),
     ofertasLibres: getStored('conexcoffee_broker_ofertas', BROKER_OFERTAS_LIBRES_SEED),
     muestras: getStored('conexcoffee_broker_muestras', BROKER_MUESTRAS_SEED),
@@ -61,12 +83,14 @@ export const brokerData = {
     rawSesionesCatacion: '/sesiones-catacion',
     rawCompradores: '/compradores-internacionales',
     rawBrokers: '/brokers',
+    rawCarteraCompradores: { url: '/compradores-internacionales', allPages: true, strictResponse: true },
+    rawCarteraPedidos: { url: '/pedidos-internacionales', allPages: true, strictResponse: true },
   },
   routes: {
     '/broker/ofertas': [],
     '/broker/muestras': [],
     '/broker/ventas': [],
-    '/broker/compradores': [],
+    '/broker/compradores': ['rawCarteraCompradores', 'rawCarteraPedidos'],
     '/broker/eventos': [],
     '/broker/contenedores': ['rawContenedores', 'rawPreofertas', 'rawFincas', 'rawLotes', 'rawVariedades', 'rawCaficultores', 'rawSesionesCatacion'],
   },

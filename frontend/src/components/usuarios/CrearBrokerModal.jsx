@@ -3,6 +3,7 @@ import { Dialog, DialogPanel, DialogTitle } from '@headlessui/react';
 import { Handshake, X } from 'lucide-react';
 import toast from 'react-hot-toast';
 import Captcha from '@/components/ui/Captcha';
+import { PAISES } from '@/lib/paises';
 
 const EMPTY = {
   nombre_empresa: '', identificacion_fiscal_pais: '', pais_operacion: '', ciudad: '',
@@ -18,7 +19,7 @@ const FIELDS = [
 ];
 const inputClass = 'w-full px-3 py-2 text-sm rounded-xl border border-surface-200 bg-white focus:outline-none focus:ring-2 focus:ring-brand-terracota/20 focus:border-brand-terracota';
 
-function BrokerForm({ onClose, onSubmit, loading, initialData }) {
+function BrokerForm({ onClose, onSubmit, loading, initialData, seleccionarPais }) {
   const [form, setForm] = useState(() => ({
     ...EMPTY, ...initialData,
     datos_bancarios_internacionales: initialData?.datos_bancarios_internacionales == null ? '' : JSON.stringify(initialData.datos_bancarios_internacionales, null, 2),
@@ -72,7 +73,14 @@ function BrokerForm({ onClose, onSubmit, loading, initialData }) {
           {FIELDS.map(([name, label, maxLength, type = 'text']) => (
             <label key={name} className="block text-xs font-semibold text-surface-700 space-y-1">
               <span>{label} *</span>
-              <input required name={name} type={type} maxLength={maxLength} value={form[name]} onChange={change} className={inputClass} />
+              {seleccionarPais && name === 'pais_operacion' ? (
+                <select required name={name} value={form[name]} onChange={change} className={inputClass}>
+                  <option value="">Selecciona un país</option>
+                  {PAISES.map((pais) => <option key={pais} value={pais}>{pais}</option>)}
+                </select>
+              ) : (
+                <input required name={name} type={type} maxLength={maxLength} value={form[name]} onChange={change} className={inputClass} />
+              )}
             </label>
           ))}
           <label className="block text-xs font-semibold text-surface-700 space-y-1">
@@ -119,7 +127,7 @@ function BrokerForm({ onClose, onSubmit, loading, initialData }) {
   );
 }
 
-export default function CrearBrokerModal({ isOpen, onClose, onSubmit, loading = false, initialData = null, titulo = 'Registrar Broker' }) {
+export default function CrearBrokerModal({ isOpen, onClose, onSubmit, loading = false, initialData = null, titulo = 'Registrar Broker', seleccionarPais = false }) {
   return (
     <Dialog open={isOpen} onClose={() => { if (!loading) onClose(); }} className="relative z-50">
       <div className="fixed inset-0 bg-black/50 backdrop-blur-xs" aria-hidden="true" />
@@ -136,7 +144,7 @@ export default function CrearBrokerModal({ isOpen, onClose, onSubmit, loading = 
               </div>
               <button type="button" disabled={loading} onClick={onClose} aria-label="Cerrar formulario de broker" className="p-2 rounded-lg hover:bg-surface-100 disabled:opacity-50"><X className="h-5 w-5" /></button>
             </div>
-            {isOpen && <BrokerForm onClose={onClose} onSubmit={onSubmit} loading={loading} initialData={initialData} />}
+            {isOpen && <BrokerForm onClose={onClose} onSubmit={onSubmit} loading={loading} initialData={initialData} seleccionarPais={seleccionarPais} />}
           </DialogPanel>
         </div>
       </div>

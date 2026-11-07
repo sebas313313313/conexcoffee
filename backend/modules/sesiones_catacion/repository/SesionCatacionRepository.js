@@ -12,6 +12,13 @@ class SesionCatacionRepository extends BaseRepository {
     });
   }
 
+  async findByCodigoWithQrDetails(codigo) {
+    return await this.model.findOne({
+      where: { codigo_sesion: codigo },
+      include: [{ association: 'empresa_creadora' }, { association: 'evaluacion_fisica' }]
+    });
+  }
+
   async findByEvaluacionFisicaId(evaluacionFisicaId) {
     return await this.model.findAll({
       where: { evaluacion_fisica_id: evaluacionFisicaId }

@@ -1,5 +1,7 @@
 export { default as CatacionesList } from './CatacionesList';
 export { default as EvaluacionModal } from './EvaluacionModal';
+export { default as QrEvaluationScannerModal } from './QrEvaluationScannerModal';
+export { default as ConfirmarEvaluacionQrModal } from './ConfirmarEvaluacionQrModal';
 export { default as IntensityBar } from './IntensityBar';
 export { default as RatingScale1to9 } from './RatingScale1to9';
 export { default as TazasSelector } from './TazasSelector';

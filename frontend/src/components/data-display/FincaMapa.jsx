@@ -4,10 +4,16 @@
 // Extraído de comprador/DetalleVariedadPage para reutilizarse en la landing.
 // ============================================
 
-const MAPS_EMBED_KEY = 'AIzaSyD-9tSrke72PouQMnMX-a7eZSW0jkFMBWY';
-
 export default function FincaMapa({ lat, lng, nombre = 'Finca', zoom = 12, className = 'h-52' }) {
-  if (lat === undefined || lng === undefined) return null;
+  const latitude = Number(lat);
+  const longitude = Number(lng);
+  if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) return null;
+
+  const spread = zoom >= 14 ? 0.025 : zoom >= 12 ? 0.07 : 0.18;
+  const bbox = [longitude - spread, latitude - spread, longitude + spread, latitude + spread]
+    .map((coordinate) => coordinate.toFixed(6))
+    .join('%2C');
+  const src = `https://www.openstreetmap.org/export/embed.html?bbox=${bbox}&layer=mapnik&marker=${latitude.toFixed(6)}%2C${longitude.toFixed(6)}`;
 
   return (
     <div className={`rounded-xl overflow-hidden border border-surface-200 ${className}`}>
@@ -16,9 +22,8 @@ export default function FincaMapa({ lat, lng, nombre = 'Finca', zoom = 12, class
         width="100%"
         height="100%"
         loading="lazy"
-        sandbox="allow-scripts allow-popups"
-        referrerPolicy="no-referrer-when-downgrade"
-        src={`https://www.google.com/maps/embed/v1/place?key=${MAPS_EMBED_KEY}&q=${lat},${lng}&zoom=${zoom}`}
+        referrerPolicy="strict-origin-when-cross-origin"
+        src={src}
         style={{ border: 0 }}
         allowFullScreen
       />

@@ -14,6 +14,7 @@ import Preoferta from './preofertas/Preoferta.js';
 import InspeccionFinca from './inspecciones_finca/InspeccionFinca.js';
 import EvaluacionFisica from './evaluaciones_fisicas/EvaluacionFisica.js';
 import SesionCatacion from './sesiones_catacion/SesionCatacion.js';
+import AsignacionSesionCatacion from './sesiones_catacion/AsignacionSesionCatacion.js';
 import HojaCatacionCva from './hojas_catacion_cva/HojaCatacionCva.js';
 import CvaFase1Descriptiva from './hojas_catacion_cva/models/CvaFase1Descriptiva.js';
 import CvaFase2Afectiva from './hojas_catacion_cva/models/CvaFase2Afectiva.js';
@@ -103,6 +104,8 @@ EvaluacionFisica.belongsTo(Preoferta, { foreignKey: 'preoferta_id', as: 'preofer
 // Evaluación Física <-> Sesión de Catación
 EvaluacionFisica.hasOne(SesionCatacion, { foreignKey: 'evaluacion_fisica_id', as: 'sesion_catacion' });
 SesionCatacion.belongsTo(EvaluacionFisica, { foreignKey: 'evaluacion_fisica_id', as: 'evaluacion_fisica' });
+EmpresaExportadora.hasMany(SesionCatacion, { foreignKey: 'empresa_creadora_id', as: 'sesiones_catacion_creadas' });
+SesionCatacion.belongsTo(EmpresaExportadora, { foreignKey: 'empresa_creadora_id', as: 'empresa_creadora' });
 
 // Sesión de Catación <-> Hojas de Catación CVA (1:N)
 SesionCatacion.hasMany(HojaCatacionCva, { foreignKey: 'sesion_id', as: 'hojas' });
@@ -111,6 +114,11 @@ HojaCatacionCva.belongsTo(SesionCatacion, { foreignKey: 'sesion_id', as: 'sesion
 // Catador <-> Hojas de Catación CVA (1:N)
 Catador.hasMany(HojaCatacionCva, { foreignKey: 'catador_id', as: 'hojas_catacion' });
 HojaCatacionCva.belongsTo(Catador, { foreignKey: 'catador_id', as: 'catador' });
+
+SesionCatacion.hasMany(AsignacionSesionCatacion, { foreignKey: 'sesion_id', as: 'asignaciones' });
+AsignacionSesionCatacion.belongsTo(SesionCatacion, { foreignKey: 'sesion_id', as: 'sesion' });
+Catador.hasMany(AsignacionSesionCatacion, { foreignKey: 'catador_id', as: 'asignaciones_sesion' });
+AsignacionSesionCatacion.belongsTo(Catador, { foreignKey: 'catador_id', as: 'catador' });
 
 // Hoja de Catación <-> 8 Fases CVA y Defectos Normalizados
 HojaCatacionCva.hasOne(CvaFase1Descriptiva, { foreignKey: 'hoja_catacion_id', as: 'fase_1_descriptiva' });

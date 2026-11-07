@@ -10,19 +10,52 @@ import {
   UserPlus,
   Award,
   Sliders,
+  ScanLine,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { QueryState } from '@/components/feedback';
-import { useEvaluaciones, useActualizarEvaluacion } from '../hooks/useCatadorData';
-import { EvaluacionModal } from '../components';
+import { useEvaluaciones, useActualizarEvaluacion, useAsignarEvaluacionQr, usePrevisualizarEvaluacionQr } from '../hooks/useCatadorData';
+import { ConfirmarEvaluacionQrModal, EvaluacionModal, QrEvaluationScannerModal } from '../components';
 
 export default function EvaluacionPage() {
   const query = useEvaluaciones();
   const evaluaciones = query.data ?? [];
   const actualizar = useActualizarEvaluacion();
+  const previsualizarQr = usePrevisualizarEvaluacionQr();
+  const asignarQr = useAsignarEvaluacionQr();
   const [searchTerm, setSearchTerm] = useState('');
   const [evaluacionActiva, setEvaluacionActiva] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isScannerOpen, setIsScannerOpen] = useState(false);
+  const [evaluacionQr, setEvaluacionQr] = useState(null);
+  const [isConfirmQrOpen, setIsConfirmQrOpen] = useState(false);
+  const [isQrLoading, setIsQrLoading] = useState(false);
+
+  const handleQrDetected = async (codigo) => {
+    setIsQrLoading(true);
+    try {
+      const evaluacion = await previsualizarQr.mutateAsync(codigo);
+      setEvaluacionQr(evaluacion);
+      setIsScannerOpen(false);
+      setIsConfirmQrOpen(true);
+    } finally {
+      setIsQrLoading(false);
+    }
+  };
+
+  const handleConfirmQr = async () => {
+    if (!evaluacionQr?.codigo) return;
+    setIsQrLoading(true);
+    try {
+      const evaluacion = await asignarQr.mutateAsync(evaluacionQr.codigo);
+      setIsConfirmQrOpen(false);
+      setEvaluacionQr(null);
+      setEvaluacionActiva(evaluacion);
+      setIsModalOpen(true);
+    } finally {
+      setIsQrLoading(false);
+    }
+  };
 
   // Al hacer clic en "Unirse"
   const handleUnirse = (item) => {
@@ -89,11 +122,14 @@ export default function EvaluacionPage() {
   return (
     <div className="space-y-6">
       {/* Encabezado */}
-      <div>
-        <h1 className="text-2xl font-bold text-surface-900">Evaluaciones Pendientes</h1>
-        <p className="text-surface-500 mt-1">
-          Sesiones y mesas de catación pendientes disponibles para unirse y calificar muestras bajo protocolo SCA
-        </p>
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-surface-900">Evaluaciones Pendientes</h1>
+          <p className="text-surface-500 mt-1">Tus sesiones asignadas para calificar muestras bajo protocolo SCA.</p>
+        </div>
+        <Button type="button" variant="outline" onClick={() => setIsScannerOpen(true)} className="shrink-0">
+          <ScanLine className="h-4 w-4" /> Escanear QR
+        </Button>
       </div>
 
       {/* Buscador rápido */}
@@ -256,6 +292,22 @@ export default function EvaluacionPage() {
         }}
         evaluacion={evaluacionActiva}
         onFinalizar={handleFinalizarEvaluacion}
+      />
+      <QrEvaluationScannerModal
+        isOpen={isScannerOpen}
+        onClose={() => setIsScannerOpen(false)}
+        onCodeScanned={handleQrDetected}
+      />
+      <ConfirmarEvaluacionQrModal
+        isOpen={isConfirmQrOpen}
+        evaluacion={evaluacionQr}
+        loading={isQrLoading}
+        onConfirm={handleConfirmQr}
+        onClose={() => {
+          if (isQrLoading) return;
+          setIsConfirmQrOpen(false);
+          setEvaluacionQr(null);
+        }}
       />
     </div>
   );

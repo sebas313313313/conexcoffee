@@ -1,5 +1,7 @@
 import { Link } from 'react-router-dom';
+import { useState } from 'react';
 import { Card } from '@/components/ui';
+import { ModalBase } from '@/components/modals';
 import {
   Handshake,
   DollarSign,
@@ -12,15 +14,14 @@ import {
   Calendar,
   Ship,
   ArrowRight,
-  Globe,
-  Sparkles,
-  MessageCircle,
-  ExternalLink,
+  BarChart3,
+  ClipboardList,
 } from 'lucide-react';
 import { useBroker } from '@/hooks/useBroker';
-import { NegociacionesTable } from '../components';
+import { NegociacionesTable, VentasPorCafeChart } from '../components';
 
 export default function BrokerDashboardPage() {
+  const [isPreofertasOpen, setIsPreofertasOpen] = useState(false);
   const {
     contenedores,
     ofertasLibres,
@@ -28,36 +29,59 @@ export default function BrokerDashboardPage() {
     ventas,
     compradores,
     eventos,
+    preofertas,
   } = useBroker();
 
   const totalUsdVendidos = ventas.reduce((acc, v) => acc + (v.total_venta_usd || 0), 0);
   const totalComisiones = ventas.reduce((acc, v) => acc + (v.comision_broker_usd || 0), 0);
   const muestrasPendientes = muestras.filter((m) => !m.estado.includes('Aprobada'));
+  const cafesVendidos = Object.values(
+    contenedores.flatMap((contenedor) => contenedor.lotes_dentro || []).reduce((acc, lote) => {
+      const nombre = lote.variedad || 'Café de especialidad';
+      acc[nombre] = acc[nombre] || { nombre, valor: 0 };
+      acc[nombre].valor += Number(lote.peso_kg || 0);
+      return acc;
+    }, {})
+  ).sort((a, b) => b.valor - a.valor).slice(0, 5);
+  const preofertasPriorizadas = [...preofertas]
+    .sort((a, b) => Number(b.puntajeSca || b.puntaje_sca || 0) - Number(a.puntajeSca || a.puntaje_sca || 0))
+    .slice(0, 4);
 
   return (
-    <div className="space-y-6">
+    <div className="max-w-7xl mx-auto space-y-6 pb-8">
       {/* Encabezado */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 rounded-2xl bg-surface-900 px-6 py-7 text-white shadow-sm">
         <div>
           <div className="flex items-center gap-2 mb-1">
-            <Handshake className="h-5 w-5 text-brand-terracota" />
-            <span className="text-xs font-semibold text-brand-terracota uppercase tracking-wider">
+            <Handshake className="h-5 w-5 text-brand-orange" />
+            <span className="text-xs font-semibold text-brand-orange uppercase tracking-wider">
               Portal del Broker Internacional
             </span>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-surface-900">
-            Panel de Operaciones Comerciales
+          <h1 className="text-2xl sm:text-3xl font-extrabold">
+            Centro de control comercial
           </h1>
-          <p className="text-surface-500 mt-1 text-sm">
-            Monitorea contenedores en ruta hacia tu país, lotes de café, ofertas libres, muestras solicitadas e invitaciones a cataciones
+          <p className="text-surface-300 mt-1 text-sm max-w-2xl">
+            Prioriza oportunidades, monitorea exportaciones y activa compradores con información clara de cada lote.
           </p>
         </div>
-        <div className="flex items-center gap-2 px-4 py-2 bg-brand-tint rounded-xl border border-brand-terracota/20 shrink-0">
-          <div className="h-2 w-2 rounded-full bg-brand-terracota animate-pulse" />
-          <span className="text-xs font-bold text-brand-terracota uppercase tracking-wider">
-            Broker Global Activo
+        <div className="flex items-center gap-2 px-4 py-2 bg-white/10 rounded-xl border border-white/15 shrink-0">
+          <div className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
+          <span className="text-xs font-bold text-white uppercase tracking-wider">
+            Operación activa
           </span>
         </div>
+      </div>
+
+      <div className="grid grid-cols-1 xl:grid-cols-5 gap-6">
+        <Card className="xl:col-span-2 p-6 shadow-sm">
+          <div className="flex items-start gap-3 mb-4"><div className="h-9 w-9 rounded-lg bg-brand-tint text-brand-terracota flex items-center justify-center"><BarChart3 className="h-5 w-5" /></div><div><h2 className="font-extrabold text-surface-900">Café más vendido</h2><p className="text-xs text-surface-500">Distribución por kg de los lotes consolidados.</p></div></div>
+          {cafesVendidos.length ? <VentasPorCafeChart items={cafesVendidos} /> : <p className="text-sm text-surface-500 py-8 text-center">Aún no hay ventas consolidadas para graficar.</p>}
+        </Card>
+        <Card className="xl:col-span-3 p-6 shadow-sm">
+          <div className="flex items-center justify-between gap-3 mb-4"><div className="flex items-center gap-3"><div className="h-9 w-9 rounded-lg bg-emerald-50 text-emerald-700 flex items-center justify-center"><ClipboardList className="h-5 w-5" /></div><div><h2 className="font-extrabold text-surface-900">Preofertas de la empresa</h2><p className="text-xs text-surface-500">Prioriza lotes por puntaje SCA y volumen disponible.</p></div></div><button type="button" onClick={() => setIsPreofertasOpen(true)} className="text-xs font-bold text-brand-terracota hover:underline cursor-pointer">Ver todas</button></div>
+          <div className="space-y-2">{preofertasPriorizadas.length ? preofertasPriorizadas.map((oferta) => <div key={oferta.id} className="grid grid-cols-[1fr_auto] gap-3 rounded-lg border border-surface-100 bg-surface-50 px-3 py-2.5"><div className="min-w-0"><p className="truncate text-sm font-bold text-surface-900">{oferta.codigo || oferta.codigo_preoferta || oferta.nombre}</p><p className="truncate text-xs text-surface-500">{oferta.finca_nombre || oferta.finca?.nombre || oferta.ubicacion}</p></div><div className="text-right"><b className="text-sm text-emerald-700">{Number(oferta.puntajeSca || oferta.puntaje_sca || 0).toFixed(1)} SCA</b><p className="text-[11px] text-surface-500">{oferta.cantidad_kg || oferta.kilos_disponibles || '—'} kg</p></div></div>) : <p className="text-sm text-surface-500 py-8 text-center">No hay preofertas disponibles para tu empresa.</p>}</div>
+        </Card>
       </div>
 
       {/* Grid de KPIs Rápidos */}
@@ -242,6 +266,9 @@ export default function BrokerDashboardPage() {
         </div>
         <NegociacionesTable />
       </Card>
+      <ModalBase isOpen={isPreofertasOpen} onClose={() => setIsPreofertasOpen(false)} title="Todas las preofertas de la empresa" size="xl">
+        <div className="space-y-3"><p className="text-sm text-surface-500">Ordenadas por puntaje SCA para facilitar tu recomendación comercial.</p><div className="max-h-[55vh] space-y-2 overflow-y-auto pr-1">{[...preofertas].sort((a, b) => Number(b.puntajeSca || b.puntaje_sca || 0) - Number(a.puntajeSca || a.puntaje_sca || 0)).map((oferta) => <div key={oferta.id} className="grid grid-cols-[1fr_auto] gap-4 rounded-xl border border-surface-200 bg-surface-50 px-4 py-3"><div className="min-w-0"><p className="font-mono text-[11px] text-surface-400">{oferta.codigo || oferta.codigo_preoferta || 'SIN-CÓDIGO'}</p><p className="mt-1 truncate text-sm font-bold text-surface-900">{oferta.variedad || oferta.nombre || 'Café de especialidad'}</p><p className="mt-1 truncate text-xs text-surface-500">{oferta.finca_nombre || oferta.finca?.nombre || oferta.ubicacion || 'Origen por confirmar'}</p></div><div className="text-right"><p className="font-bold text-emerald-700">{Number(oferta.puntajeSca || oferta.puntaje_sca || 0).toFixed(1)} SCA</p><p className="mt-1 text-xs text-surface-500">{oferta.cantidad_kg || oferta.kilos_disponibles || '—'} kg</p></div></div>)}{!preofertas.length && <p className="py-10 text-center text-sm text-surface-500">No hay preofertas disponibles.</p>}</div><div className="flex justify-end pt-2"><Link to="/broker/preofertas" onClick={() => setIsPreofertasOpen(false)} className="inline-flex items-center gap-2 rounded-lg bg-brand-terracota px-4 py-2 text-sm font-bold text-white hover:bg-brand-orange">Abrir catálogo completo <ArrowRight className="h-4 w-4" /></Link></div></div>
+      </ModalBase>
     </div>
   );
 }

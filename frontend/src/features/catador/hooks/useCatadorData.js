@@ -1,5 +1,5 @@
 import { useCatador } from '@/hooks/useCatador';
-import { toQueryResult, toUpdateMutation } from '@/hooks/contextAdapter';
+import { toCreateMutation, toQueryResult, toUpdateMutation } from '@/hooks/contextAdapter';
 
 export const useCataciones = () => {
   const { cataciones, loading, error, refetch } = useCatador();
@@ -14,4 +14,14 @@ export const useEvaluaciones = () => {
 export const useActualizarEvaluacion = () => {
   const { updateEvaluacion } = useCatador();
   return toUpdateMutation(updateEvaluacion);
+};
+
+export const usePrevisualizarEvaluacionQr = () => {
+  const { previewEvaluationQr } = useCatador();
+  return toCreateMutation(previewEvaluationQr);
+};
+
+export const useAsignarEvaluacionQr = () => {
+  const { assignEvaluationQr } = useCatador();
+  return toCreateMutation(assignEvaluationQr);
 };

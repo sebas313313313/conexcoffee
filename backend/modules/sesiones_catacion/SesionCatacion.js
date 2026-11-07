@@ -28,6 +28,10 @@ SesionCatacion.init(
       type: DataTypes.UUID,
       allowNull: false
     },
+    empresa_creadora_id: {
+      type: DataTypes.UUID,
+      allowNull: true
+    },
     total_muestras: {
       type: DataTypes.INTEGER,
       defaultValue: 1
