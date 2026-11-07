@@ -45,3 +45,4 @@ router.get('/transaccion/:referencia', controller.obtenerComprobante);
 router.get('/', checkAuth, checkRoles('ADMINISTRADOR', 'EMPRESA_EXPORTADORA'), controller.getAll);
 
 export default router;
+

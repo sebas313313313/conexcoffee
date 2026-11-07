@@ -21,3 +21,4 @@ class TransaccionPagoRepository extends BaseRepository {
 }
 
 export default TransaccionPagoRepository;
+

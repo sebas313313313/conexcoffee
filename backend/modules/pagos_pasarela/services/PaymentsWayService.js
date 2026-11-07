@@ -517,3 +517,4 @@ class PaymentsWayService extends BaseService {
 }
 
 export default PaymentsWayService;
+

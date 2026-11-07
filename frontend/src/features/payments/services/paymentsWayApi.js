@@ -220,3 +220,4 @@ export async function processPaymentsWayCard({ session, cardForm }) {
     paidAt: new Date().toISOString(),
   };
 }
+

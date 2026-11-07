@@ -1,5 +1,6 @@
 import { createContext, useState, useEffect, useCallback } from 'react';
 import axiosClient from '../lib/axios';
+import { getStoredBlogPosts, mergeApiAndLocalPosts } from '@/features/landing/data/blogData';
 
 const LandingContext = createContext();
 
@@ -103,10 +104,31 @@ export const LandingProvider = ({ children, cargarContenedores = true }) => {
   const [contenedores, setContenedores] = useState([]);
   const [loading, setLoading] = useState(true);
   const listarBlogPublico = useCallback(async (page = 1, signal) => {
-    const response = await axiosClient.get('/publicaciones-blog/publicas', {
-      params: { page, limit: 12 }, signal, strictResponse: true, skipAuthRedirect: true,
-    });
-    return { publicaciones: response.data, meta: response.meta };
+    const limit = 12;
+    try {
+      const response = await axiosClient.get('/publicaciones-blog/publicas', {
+        params: { page, limit },
+        signal,
+        skipAuthRedirect: true,
+      });
+      const apiRows = Array.isArray(response?.data) ? response.data : [];
+      const merged = mergeApiAndLocalPosts(apiRows).filter((p) => p.publicado !== false);
+      const totalRecords = merged.length;
+      const totalPages = Math.max(1, Math.ceil(totalRecords / limit));
+      const slice = merged.slice((page - 1) * limit, page * limit);
+      return {
+        publicaciones: slice,
+        meta: { page, limit, totalRecords, totalPages },
+      };
+    } catch {
+      const fallback = getStoredBlogPosts().filter((p) => p.publicado !== false);
+      const totalRecords = fallback.length;
+      const totalPages = Math.max(1, Math.ceil(totalRecords / limit));
+      return {
+        publicaciones: fallback.slice((page - 1) * limit, page * limit),
+        meta: { page, limit, totalRecords, totalPages },
+      };
+    }
   }, []);
 
   const cargarContenedoresPublicos = useCallback(async () => {

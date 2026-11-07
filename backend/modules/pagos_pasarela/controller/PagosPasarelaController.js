@@ -58,3 +58,4 @@ class PagosPasarelaController extends BaseController {
 }
 
 export default PagosPasarelaController;
+
