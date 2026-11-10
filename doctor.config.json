@@ -1,0 +1,11 @@
+{
+  "adoptExistingLintConfig": false,
+  "rules": {
+    "react-doctor/no-transition-all": "off",
+    "react-doctor/only-export-components": "off",
+    "react-doctor/no-array-index-as-key": "off",
+    "react-doctor/label-has-associated-control": "off",
+    "react-doctor/control-has-associated-label": "off",
+    "react-doctor/no-placeholder-only-field": "off"
+  }
+}
