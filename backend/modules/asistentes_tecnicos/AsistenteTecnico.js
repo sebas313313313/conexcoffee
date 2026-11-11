@@ -19,7 +19,7 @@ AsistenteTecnico.init(
     nombres: { type: DataTypes.STRING(100), allowNull: false },
     apellidos: { type: DataTypes.STRING(100), allowNull: false },
     tarjeta_profesional: { type: DataTypes.STRING(50), allowNull: true },
-    profesion: { type: DataTypes.STRING(80), defaultValue: 'Ingeniero Agrónomo' },
+    profesion: { type: DataTypes.STRING(100), defaultValue: 'Ingeniero Agrónomo / Técnico Agropecuario' },
     telefono_movil: { type: DataTypes.STRING(25), allowNull: false },
     activo: { type: DataTypes.BOOLEAN, defaultValue: true },
     fecha_vinculacion: { type: DataTypes.DATE, defaultValue: DataTypes.NOW },
@@ -68,18 +68,21 @@ class AsistenteTecnicoService extends BaseService {
       data.numeroIdentificacion ||
       data.numero_identificacion ||
       (isCreate ? `CC-${Date.now()}` : undefined);
+    const tipo_documento = data.tipo_documento || (isCreate ? 'CC' : undefined);
     const telefono_movil = data.telefono_movil || data.telefono || (isCreate ? '3150000000' : undefined);
-    const profesion = data.profesion || data.especialidad || (isCreate ? 'Ingeniero Agrónomo' : undefined);
+    const profesion =
+      data.profesion || data.especialidad || (isCreate ? 'Ingeniero Agrónomo / Técnico Agropecuario' : undefined);
     const tarjeta_profesional =
-      data.tarjeta_profesional || data.zonaAsignada || data.zona_asignada || (isCreate ? `TP-${Date.now()}` : undefined);
+      data.tarjeta_profesional || (isCreate ? null : undefined);
 
     const payload = { ...data };
+    if (tipo_documento) payload.tipo_documento = String(tipo_documento);
     if (nombres) payload.nombres = nombres;
     if (apellidos) payload.apellidos = apellidos;
     if (numero_documento) payload.numero_documento = String(numero_documento);
     if (telefono_movil) payload.telefono_movil = String(telefono_movil);
     if (profesion) payload.profesion = profesion;
-    if (tarjeta_profesional) payload.tarjeta_profesional = tarjeta_profesional;
+    if (tarjeta_profesional !== undefined) payload.tarjeta_profesional = tarjeta_profesional;
     delete payload.id;
     return payload;
   }

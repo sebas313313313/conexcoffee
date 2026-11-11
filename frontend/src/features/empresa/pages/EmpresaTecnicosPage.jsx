@@ -10,6 +10,7 @@ import {
   UserCheck,
 } from 'lucide-react';
 import { QueryState } from '@/components/feedback';
+import { CrearTecnicoModal } from '@/components/usuarios';
 import {
   useEmpresaTecnicos,
   useCrearEmpresaTecnico,
@@ -25,29 +26,13 @@ export default function EmpresaTecnicosPage() {
 
   // Modales
   const [modalRegistrar, setModalRegistrar] = useState(false);
+  const [guardandoRegistro, setGuardandoRegistro] = useState(false);
   const [modalEditar, setModalEditar] = useState(false);
   const [modalDetalle, setModalDetalle] = useState(false);
   const [modalConsultar, setModalConsultar] = useState(false);
 
   const [tecnicoSeleccionado, setTecnicoSeleccionado] = useState(null);
   const [tecnicoEdicion, setTecnicoEdicion] = useState(null);
-
-  // Formulario nuevo técnico
-  const [nuevoTecnico, setNuevoTecnico] = useState({
-    numero_identificacion: '',
-    primer_nombre: '',
-    segundo_nombre: '',
-    primer_apellido: '',
-    segundo_apellido: '',
-    telefono: '',
-    correo: '',
-    contrasena: '',
-    confirmarContrasena: '',
-    zona_asignada: 'Huila Sur (Pitalito, San Agustín)',
-    fincas_a_cargo: 10,
-    especialidad: 'Agrónomo Especialista en Suelos y Q-Grader',
-    estado: 'Activo',
-  });
 
   const [criterioConsulta, setCriterioConsulta] = useState('');
   const [resultadoConsulta, setResultadoConsulta] = useState(null);
@@ -63,35 +48,16 @@ export default function EmpresaTecnicosPage() {
     );
   });
 
-  const handleGuardarNuevo = (e) => {
-    e.preventDefault();
-    if (!nuevoTecnico.numero_identificacion || !nuevoTecnico.primer_nombre || !nuevoTecnico.primer_apellido) {
-      toast.error('Complete los campos obligatorios (*)');
-      return;
+  const handleGuardarNuevo = async (datos) => {
+    setGuardandoRegistro(true);
+    try {
+      await crearMutation.mutateAsync(datos);
+      setModalRegistrar(false);
+    } catch {
+      // Manejado por toast en actions
+    } finally {
+      setGuardandoRegistro(false);
     }
-
-    if (!nuevoTecnico.correo?.trim()) {
-      toast.error('El correo electrónico es un campo obligatorio (*)');
-      return;
-    }
-
-    if (!nuevoTecnico.contrasena) {
-      toast.error('La contraseña es un campo obligatorio (*)');
-      return;
-    }
-
-    if (nuevoTecnico.contrasena.length < 6) {
-      toast.error('La contraseña debe tener al menos 6 caracteres');
-      return;
-    }
-
-    if (nuevoTecnico.contrasena !== nuevoTecnico.confirmarContrasena) {
-      toast.error('Las contraseñas no coinciden');
-      return;
-    }
-
-    // Aún no conectado al backend
-    toast.error('Error de conexión con el backend: El servicio de registro con credenciales aún no está conectado al servidor.');
   };
 
   const handleGuardarEdicion = (e) => {
@@ -262,179 +228,14 @@ export default function EmpresaTecnicosPage() {
       </div>
 
       {/* MODAL 1: REGISTRAR TÉCNICO */}
-      {modalRegistrar && (
-        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
-          <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-stone-200 space-y-4 my-8 animate-in fade-in zoom-in-95">
-            <div className="flex items-center justify-between border-b border-stone-100 pb-3">
-              <h3 className="font-bold text-stone-900 text-base flex items-center gap-2">
-                <UserCheck className="w-5 h-5 text-amber-700" />
-                Registrar Técnico de Campo
-              </h3>
-              <button
-                type="button"
-                onClick={() => setModalRegistrar(false)}
-                className="text-stone-400 hover:text-stone-600 p-1"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            <form onSubmit={handleGuardarNuevo} className="space-y-3 text-xs">
-              <div>
-                <label className="block font-semibold text-stone-700 mb-1">
-                  Número de Cédula *
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={nuevoTecnico.numero_identificacion}
-                  onChange={(e) =>
-                    setNuevoTecnico({ ...nuevoTecnico, numero_identificacion: e.target.value })
-                  }
-                  className="w-full px-3 py-2 border border-stone-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-700/20 font-mono"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block font-semibold text-stone-700 mb-1">Primer Nombre *</label>
-                  <input
-                    type="text"
-                    required
-                    value={nuevoTecnico.primer_nombre}
-                    onChange={(e) =>
-                      setNuevoTecnico({ ...nuevoTecnico, primer_nombre: e.target.value })
-                    }
-                    className="w-full px-3 py-2 border border-stone-200 rounded-xl uppercase"
-                  />
-                </div>
-                <div>
-                  <label className="block font-semibold text-stone-700 mb-1">Primer Apellido *</label>
-                  <input
-                    type="text"
-                    required
-                    value={nuevoTecnico.primer_apellido}
-                    onChange={(e) =>
-                      setNuevoTecnico({ ...nuevoTecnico, primer_apellido: e.target.value })
-                    }
-                    className="w-full px-3 py-2 border border-stone-200 rounded-xl uppercase"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block font-semibold text-stone-700 mb-1">Teléfono *</label>
-                  <input
-                    type="text"
-                    required
-                    value={nuevoTecnico.telefono}
-                    onChange={(e) =>
-                      setNuevoTecnico({ ...nuevoTecnico, telefono: e.target.value })
-                    }
-                    className="w-full px-3 py-2 border border-stone-200 rounded-xl"
-                  />
-                </div>
-                <div>
-                  <label className="block font-semibold text-stone-700 mb-1">Correo Electrónico *</label>
-                  <input
-                    type="email"
-                    required
-                    value={nuevoTecnico.correo}
-                    onChange={(e) =>
-                      setNuevoTecnico({ ...nuevoTecnico, correo: e.target.value })
-                    }
-                    className="w-full px-3 py-2 border border-stone-200 rounded-xl"
-                  />
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block font-semibold text-stone-700 mb-1">Inserta Contraseña *</label>
-                  <input
-                    type="password"
-                    required
-                    placeholder="Mínimo 6 caracteres"
-                    value={nuevoTecnico.contrasena}
-                    onChange={(e) =>
-                      setNuevoTecnico({ ...nuevoTecnico, contrasena: e.target.value })
-                    }
-                    className="w-full px-3 py-2 border border-stone-200 rounded-xl"
-                  />
-                </div>
-                <div>
-                  <label className="block font-semibold text-stone-700 mb-1">Confirma Contraseña *</label>
-                  <input
-                    type="password"
-                    required
-                    placeholder="Repite la contraseña"
-                    value={nuevoTecnico.confirmarContrasena}
-                    onChange={(e) =>
-                      setNuevoTecnico({ ...nuevoTecnico, confirmarContrasena: e.target.value })
-                    }
-                    className="w-full px-3 py-2 border border-stone-200 rounded-xl"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block font-semibold text-stone-700 mb-1">Zona Asignada *</label>
-                  <input
-                    type="text"
-                    required
-                    value={nuevoTecnico.zona_asignada}
-                    onChange={(e) =>
-                      setNuevoTecnico({ ...nuevoTecnico, zona_asignada: e.target.value })
-                    }
-                    className="w-full px-3 py-2 border border-stone-200 rounded-xl"
-                  />
-                </div>
-                <div>
-                  <label className="block font-semibold text-stone-700 mb-1">Fincas a Cargo *</label>
-                  <input
-                    type="number"
-                    required
-                    value={nuevoTecnico.fincas_a_cargo}
-                    onChange={(e) =>
-                      setNuevoTecnico({ ...nuevoTecnico, fincas_a_cargo: e.target.value })
-                    }
-                    className="w-full px-3 py-2 border border-stone-200 rounded-xl"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block font-semibold text-stone-700 mb-1">Especialidad Agronómica</label>
-                <input
-                  type="text"
-                  value={nuevoTecnico.especialidad}
-                  onChange={(e) =>
-                    setNuevoTecnico({ ...nuevoTecnico, especialidad: e.target.value })
-                  }
-                  className="w-full px-3 py-2 border border-stone-200 rounded-xl"
-                />
-              </div>
-
-              <div className="flex items-center justify-end gap-3 pt-3 border-t border-stone-100">
-                <button
-                  type="button"
-                  onClick={() => setModalRegistrar(false)}
-                  className="px-4 py-2 border border-stone-200 text-stone-600 rounded-xl hover:bg-stone-50 font-medium"
-                >
-                  Cancelar
-                </button>
-                <button
-                  type="submit"
-                  className="px-4 py-2 bg-amber-800 text-white font-semibold rounded-xl hover:bg-amber-900 shadow-sm"
-                >
-                  Guardar
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+      <CrearTecnicoModal
+        isOpen={modalRegistrar}
+        onClose={() => setModalRegistrar(false)}
+        onSubmit={handleGuardarNuevo}
+        loading={guardandoRegistro || crearMutation.isPending}
+        empresaFija
+        titulo="Registrar Técnico de Campo"
+      />
 
       {/* MODAL 2: CONSULTAR TÉCNICO */}
       {modalConsultar && (
