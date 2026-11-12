@@ -30,6 +30,7 @@ export function selectEmpresaData({ rawCaficultores, rawEmpresas, rawTecnicos, r
       lotes: rawLotes,
       variedades: rawVariedades,
       sesiones: rawSesionesCatacion,
+      evalFisicas: rawEvaluacionesFisicas,
     });
     return {
       ...mapped,
@@ -124,6 +125,7 @@ export const empresaData = {
     rawHojasMuestras: { url: '/hojas-catacion-cva', allPages: true },
   },
   routes: {
+    '/empresa/configurar-oferta': ['rawCaficultores', 'rawContenedores', 'rawEvaluacionesFisicas', 'rawFincas', 'rawPreofertas', 'rawSesionesCatacion', 'rawVariedades'],
     '/empresa/ventas': [],
     '/empresa/precintos': ['rawTecnicos', 'rawInspecciones'],
     '/empresa/brokers': ['rawBrokers'],

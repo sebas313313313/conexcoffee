@@ -5,6 +5,8 @@
 // camelCase y snake_case consumidas por todas las vistas del Frontend.
 // ============================================
 
+import { resumirGranulometria } from './muestras/detalle.js';
+
 export function splitFullName(full = '') {
   const parts = String(full || '').trim().split(/\s+/).filter(Boolean);
   return {
@@ -160,6 +162,8 @@ export function mapPreoferta(
   const loteMatch = lotes.find((l) => (l.finca_id || l.fincaId) === finca.id) || lotes[0] || {};
   const efMatch = evalFisicas.find((ef) => ef.preoferta_id === raw.id);
   const sesionMatch = efMatch ? sesiones.find((s) => s.evaluacion_fisica_id === efMatch.id) : sesiones[0];
+  const granulometria = efMatch ? resumirGranulometria(efMatch) : resumirGranulometria(raw);
+  const malla = raw.malla ?? raw.malla_ofertada ?? raw.malla_seleccionada ?? granulometria?.malla ?? 16;
 
   const codigo = raw.codigo_preoferta || raw.codigo || 'PRE-2026-0001';
   const variedad = variedadObj?.nombre || raw.variedad || raw.variedadCafe || 'Geisha';
@@ -228,6 +232,8 @@ export function mapPreoferta(
     cantidad: cantidadKg,
     cantidadEstimada: cantidadKg,
     sacos,
+    malla,
+    granulometria,
     fechaProduccion: fechaProd,
     fecha_produccion: fechaProd,
     fecha_creacion: raw.fecha_creacion ? String(raw.fecha_creacion).slice(0, 10) : fechaProd,
@@ -820,6 +826,7 @@ export function mapContenedor(
     kgDisponibles: Math.max(0, totalKg - reservadosKg),
     temperatura_controlada: raw.temperatura_controlada || '18°C / 60% HR',
     estado: raw.estado === 'LLENO_CERRADO' ? 'Creado' : 'Publicado',
+    estadoLogistico: raw.estadoLogistico ?? raw.estado,
     estadoComprador: 'Disponible',
     ofertas_asignadas: ofertasAsignadas,
     brokers_asignados: [brk.nombre_empresa || 'Green Horizon Specialty Coffee LLC'],

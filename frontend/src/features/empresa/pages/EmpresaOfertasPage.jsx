@@ -18,7 +18,6 @@ import {
   Mail,
   Home,
   ShieldCheck,
-  Ship,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { QueryState } from '@/components/feedback';
@@ -27,9 +26,7 @@ import {
   useActualizarEmpresaPreoferta,
   useEmpresaOfertas,
   useCrearEmpresaOferta,
-  useActualizarEmpresaOferta,
   useEmpresaTecnicos,
-  useEmpresaContenedores,
 } from '../hooks/useEmpresaData';
 
 export default function EmpresaOfertasPage({ vistaInicial = 'ofertas' }) {
@@ -44,13 +41,9 @@ export default function EmpresaOfertasPage({ vistaInicial = 'ofertas' }) {
   const ofertasQuery = useEmpresaOfertas();
   const ofertas = ofertasQuery.data || [];
   const crearOferta = useCrearEmpresaOferta();
-  const actualizarOferta = useActualizarEmpresaOferta();
 
   const tecnicosQuery = useEmpresaTecnicos();
   const tecnicos = tecnicosQuery.data || [];
-
-  const contenedoresQuery = useEmpresaContenedores();
-  const contenedores = contenedoresQuery.data || [];
 
   // Filtros de búsqueda
   const [searchTerm, setSearchTerm] = useState('');
@@ -81,9 +74,6 @@ export default function EmpresaOfertasPage({ vistaInicial = 'ofertas' }) {
 
   const [modalHojaCatacion, setModalHojaCatacion] = useState(false);
   const [ofertaCatacion, setOfertaCatacion] = useState(null);
-
-  const [modalAsignarContenedor, setModalAsignarContenedor] = useState(false);
-  const [contenedorDestino, setContenedorDestino] = useState('');
 
   // ----------------------------------------------------
   // Filtrado de Preofertas
@@ -249,26 +239,6 @@ export default function EmpresaOfertasPage({ vistaInicial = 'ofertas' }) {
   const handleGenerarPdf = (item) => {
     setOfertaCatacion(item);
     setModalHojaCatacion(true);
-  };
-
-  const handleAbrirAsignarContenedor = (item) => {
-    setOfertaSeleccionada(item);
-    setContenedorDestino(contenedores[0] ? contenedores[0].codigo : '');
-    setModalAsignarContenedor(true);
-  };
-
-  const handleGuardarAsignarContenedor = (e) => {
-    e.preventDefault();
-    if (!ofertaSeleccionada || !contenedorDestino) return;
-
-    actualizarOferta.mutate(
-      { ...ofertaSeleccionada, contenedor_asignado: contenedorDestino },
-      {
-        onSuccess: () => {
-          setModalAsignarContenedor(false);
-        },
-      }
-    );
   };
 
   return (
@@ -448,15 +418,6 @@ export default function EmpresaOfertasPage({ vistaInicial = 'ofertas' }) {
                             <FileText className="w-4 h-4" />
                           </button>
 
-                          {/* Botón Asignar a Contenedor */}
-                          <button
-                            type="button"
-                            onClick={() => handleAbrirAsignarContenedor(item)}
-                            title="Asignar a Contenedor Marítimo"
-                            className="p-1.5 text-sky-700 hover:text-sky-900 hover:bg-sky-50 rounded-lg transition-colors"
-                          >
-                            <Ship className="w-4 h-4" />
-                          </button>
                         </div>
                       </td>
                     </tr>
@@ -1468,73 +1429,6 @@ export default function EmpresaOfertasPage({ vistaInicial = 'ofertas' }) {
         </div>
       )}
 
-      {/* ========================================================================= */}
-      {/* MODAL 7: ASIGNAR OFERTA A CONTENEDOR MARÍTIMO                             */}
-      {/* ========================================================================= */}
-      {modalAsignarContenedor && ofertaSeleccionada && (
-        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-stone-200 space-y-4 animate-in fade-in zoom-in-95">
-            <div className="flex items-center justify-between border-b border-stone-100 pb-3">
-              <div>
-                <h3 className="font-bold text-stone-900 text-base flex items-center gap-2">
-                  <Ship className="w-5 h-5 text-sky-700" />
-                  Asignar a Contenedor
-                </h3>
-                <p className="text-xs text-stone-500 font-mono">
-                  Oferta {ofertaSeleccionada.codigo} ({ofertaSeleccionada.cantidad_kg.toLocaleString()} kg)
-                </p>
-              </div>
-              <button
-                onClick={() => setModalAsignarContenedor(false)}
-                className="text-stone-400 hover:text-stone-600 p-1"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            <form onSubmit={handleGuardarAsignarContenedor} className="space-y-4 text-xs">
-              <div>
-                <label className="block font-semibold text-stone-700 mb-1.5">
-                  Seleccionar Contenedor de Exportación *
-                </label>
-                <select
-                  required
-                  value={contenedorDestino}
-                  onChange={(e) => setContenedorDestino(e.target.value)}
-                  className="w-full px-3 py-2.5 border border-stone-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-700/20 bg-white font-medium text-stone-800"
-                >
-                  <option value="">-- Seleccionar Contenedor --</option>
-                  {contenedores.map((c) => (
-                    <option key={c.id} value={`${c.codigo} (${c.pais_destino.split('(')[0].trim()})`}>
-                      {c.codigo} — {c.pais_destino} (Capacidad: {c.capacidad_total_kg.toLocaleString()} kg)
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="p-3 bg-sky-50 rounded-xl border border-sky-100 text-sky-900 text-[11px] leading-relaxed">
-                Al asignar la oferta al contenedor, se reserva el espacio volumétrico y los sacos quedan comprometidos para el despacho marítimo de exportación.
-              </div>
-
-              <div className="flex items-center justify-end gap-3 pt-3 border-t border-stone-100">
-                <button
-                  type="button"
-                  onClick={() => setModalAsignarContenedor(false)}
-                  className="px-4 py-2 border border-stone-200 text-stone-600 rounded-xl hover:bg-stone-50 font-medium"
-                >
-                  Cancelar
-                </button>
-                <button
-                  type="submit"
-                  className="px-4 py-2 bg-sky-700 text-white font-semibold rounded-xl hover:bg-sky-800 shadow-sm"
-                >
-                  Confirmar Asignación
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

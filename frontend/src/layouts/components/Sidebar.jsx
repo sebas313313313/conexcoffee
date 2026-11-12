@@ -66,6 +66,7 @@ const NAV_BY_ROLE = {
     { label: 'Ofertas Libres', path: '/empresa/ofertas-libres', icon: Store },
     { label: 'Preofertas', path: '/empresa/pre-ofertas', icon: Layers },
     { label: 'Ofertas', path: '/empresa/ofertas', icon: Tag },
+    { label: 'Configurar oferta', path: '/empresa/configurar-oferta', icon: Settings },
     { label: 'Brokers', path: '/empresa/brokers', icon: Handshake },
     { label: 'Caficultores', path: '/empresa/caficultores', icon: Leaf },
     { label: 'Contenedores', path: '/empresa/contenedores', icon: Package },

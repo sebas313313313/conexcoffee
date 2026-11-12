@@ -12,6 +12,8 @@ import {
   Ship,
   Plus,
   Users,
+  PackageCheck,
+  Wrench,
 } from 'lucide-react';
 import { QueryState } from '@/components/feedback';
 import {
@@ -33,12 +35,14 @@ export default function EmpresaContenedoresPage() {
   const actualizarMutation = useActualizarEmpresaContenedor();
   const [searchTerm, setSearchTerm] = useState('');
   const [filtroEstado, setFiltroEstado] = useState('todos');
+  const [tabActiva, setTabActiva] = useState('contenedores'); // 'contenedores' | 'preparacion_lote'
 
   // Modales
   const [modalRegistrar, setModalRegistrar] = useState(false);
   const [modalEditar, setModalEditar] = useState(false);
   const [modalDetalle, setModalDetalle] = useState(false);
   const [modalAsignar, setModalAsignar] = useState(false);
+  const [modalPreparacionLote, setModalPreparacionLote] = useState(false);
 
   const [contenedorSeleccionado, setContenedorSeleccionado] = useState(null);
   const [contenedorEdicion, setContenedorEdicion] = useState(null);
@@ -176,6 +180,65 @@ export default function EmpresaContenedoresPage() {
         totalRegistros={contenedores.length}
       />
 
+      {/* Selector de sub-módulos dentro de Contenedores */}
+      <div className="flex flex-wrap items-center gap-2 border-b border-stone-200 pb-3">
+        <button
+          type="button"
+          onClick={() => setTabActiva('contenedores')}
+          className={`inline-flex items-center gap-2 rounded-xl px-4 py-2 text-xs font-semibold transition-colors ${
+            tabActiva === 'contenedores'
+              ? 'bg-amber-800 text-white shadow-xs'
+              : 'bg-white text-stone-600 border border-stone-200 hover:bg-stone-50'
+          }`}
+        >
+          <Ship className="w-4 h-4" />
+          Gestión de Contenedores
+        </button>
+        <button
+          type="button"
+          onClick={() => setTabActiva('preparacion_lote')}
+          className={`inline-flex items-center gap-2 rounded-xl px-4 py-2 text-xs font-semibold transition-colors ${
+            tabActiva === 'preparacion_lote'
+              ? 'bg-amber-800 text-white shadow-xs'
+              : 'bg-white text-stone-600 border border-stone-200 hover:bg-stone-50'
+          }`}
+        >
+          <PackageCheck className="w-4 h-4" />
+          Preparación del Lote
+          <span
+            className={`rounded-full px-2 py-0.5 text-[10px] font-bold uppercase ${
+              tabActiva === 'preparacion_lote'
+                ? 'bg-white/20 text-white'
+                : 'bg-amber-100 text-amber-800'
+            }`}
+          >
+            En desarrollo
+          </span>
+        </button>
+      </div>
+
+      {tabActiva === 'preparacion_lote' ? (
+        <section
+          aria-label="Módulo de preparación del lote"
+          className="bg-white rounded-2xl border border-stone-200 shadow-sm p-10 text-center space-y-4"
+        >
+          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-amber-50 border border-amber-200 text-amber-800">
+            <Wrench className="h-7 w-7" aria-hidden="true" />
+          </div>
+          <div className="space-y-1.5 max-w-md mx-auto">
+            <span className="inline-flex items-center rounded-full bg-amber-100 px-3 py-0.5 text-[11px] font-bold uppercase tracking-wider text-amber-900">
+              En desarrollo
+            </span>
+            <h2 className="text-lg font-bold text-stone-900">
+              Módulo de Preparación del Lote
+            </h2>
+            <p className="text-xs text-stone-500 leading-relaxed">
+              Este módulo para la preparación y alistamiento de lotes del contenedor se encuentra actualmente en desarrollo.
+            </p>
+          </div>
+        </section>
+      ) : (
+        <>
       {/* Barra de Filtros y Búsqueda */}
       <div className="bg-white rounded-2xl p-4 border border-stone-200 shadow-sm flex flex-col md:flex-row gap-4 items-center justify-between">
         <div className="relative w-full md:w-96">
@@ -322,7 +385,20 @@ export default function EmpresaContenedoresPage() {
                             <ShoppingBag className="w-4 h-4" />
                           </button>
 
-                          {/* 4. Ocultar / Publicar */}
+                          {/* 4. Preparación del lote */}
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setContenedorSeleccionado(c);
+                              setModalPreparacionLote(true);
+                            }}
+                            className="p-1.5 text-stone-500 hover:text-amber-800 hover:bg-amber-100 rounded-lg"
+                            title="Preparación del lote"
+                          >
+                            <PackageCheck className="w-4 h-4" />
+                          </button>
+
+                          {/* 5. Ocultar / Publicar */}
                           <button
                             type="button"
                             onClick={() => handleTogglePublicacion(c)}
@@ -349,6 +425,8 @@ export default function EmpresaContenedoresPage() {
           </table>
         </div>
       </div>
+        </>
+      )}
 
       {/* MODAL 1: REGISTRAR CONTENEDOR (Campos exactos del sistema original) */}
       {modalRegistrar && (
@@ -644,6 +722,24 @@ export default function EmpresaContenedoresPage() {
                   </span>
                 </div>
               </div>
+
+              {/* Sección 4: Preparación del Lote */}
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <h4 className="font-bold text-stone-900 uppercase tracking-wider text-[11px] text-amber-900">
+                    Preparación del Lote
+                  </h4>
+                  <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-bold uppercase text-amber-800">
+                    En desarrollo
+                  </span>
+                </div>
+                <div className="p-3.5 bg-stone-50 rounded-xl border border-dashed border-stone-200 flex items-center gap-2.5 text-stone-500">
+                  <Wrench className="w-4 h-4 text-amber-700 shrink-0" />
+                  <span className="italic">
+                    Módulo de preparación del lote en desarrollo.
+                  </span>
+                </div>
+              </div>
             </div>
 
             <div className="flex justify-end pt-3 border-t border-stone-100">
@@ -848,6 +944,57 @@ export default function EmpresaContenedoresPage() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL 5: PREPARACIÓN DEL LOTE (En desarrollo) */}
+      {modalPreparacionLote && contenedorSeleccionado && (
+        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-stone-200 space-y-4 animate-in fade-in zoom-in-95">
+            <div className="flex items-center justify-between border-b border-stone-100 pb-3">
+              <div>
+                <h3 className="font-bold text-stone-900 text-base flex items-center gap-2">
+                  <PackageCheck className="w-5 h-5 text-amber-700" />
+                  Preparación del Lote
+                </h3>
+                <p className="text-xs text-stone-500 font-mono">
+                  {contenedorSeleccionado.codigo} • {contenedorSeleccionado.pais_destino}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setModalPreparacionLote(false)}
+                className="text-stone-400 hover:text-stone-600 p-1"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="rounded-xl border border-dashed border-stone-200 bg-stone-50 p-8 text-center space-y-3">
+              <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-xl bg-amber-100 text-amber-800">
+                <Wrench className="h-6 w-6" aria-hidden="true" />
+              </div>
+              <span className="inline-flex items-center rounded-full bg-amber-100 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-amber-900">
+                En desarrollo
+              </span>
+              <p className="text-sm font-bold text-stone-900">
+                Módulo de preparación del lote en desarrollo
+              </p>
+              <p className="text-xs text-stone-500 leading-relaxed">
+                Próximamente podrás gestionar aquí el alistamiento y preparación de los lotes asignados a este contenedor.
+              </p>
+            </div>
+
+            <div className="flex justify-end pt-2 border-t border-stone-100">
+              <button
+                type="button"
+                onClick={() => setModalPreparacionLote(false)}
+                className="px-4 py-2 bg-stone-900 text-white rounded-xl text-xs font-medium hover:bg-black"
+              >
+                Cerrar
+              </button>
+            </div>
           </div>
         </div>
       )}

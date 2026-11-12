@@ -95,6 +95,7 @@ const EmpresaLaboratoriosPage = lazyPage(empresa, 'EmpresaLaboratoriosPage');
 const EmpresaMuestrasPage = lazyPage(empresa, 'EmpresaMuestrasPage');
 const EmpresaPreOfertasPage = lazyPage(empresa, 'EmpresaPreOfertasPage');
 const EmpresaOfertasPage = lazyPage(empresa, 'EmpresaOfertasPage');
+const EmpresaConfigurarOfertaPage = lazyPage(empresa, 'EmpresaConfigurarOfertaPage');
 const EmpresaOfertasLibresPage = lazyPage(empresa, 'EmpresaOfertasLibresPage');
 const EmpresaTecnicosPage = lazyPage(empresa, 'EmpresaTecnicosPage');
 const EmpresaPrecintosPage = lazyPage(empresa, 'EmpresaPrecintosPage');
@@ -250,6 +251,7 @@ const router = createBrowserRouter([
         { path: '/empresa/muestras',       element: page(EmpresaMuestrasPage) },
         { path: '/empresa/pre-ofertas',    element: page(EmpresaPreOfertasPage) },
         { path: '/empresa/ofertas',        element: page(EmpresaOfertasPage) },
+        { path: '/empresa/configurar-oferta', element: page(EmpresaConfigurarOfertaPage) },
         { path: '/empresa/tecnicos',       element: page(EmpresaTecnicosPage) },
         { path: '/empresa/precintos',      element: page(EmpresaPrecintosPage) },
       ]),
