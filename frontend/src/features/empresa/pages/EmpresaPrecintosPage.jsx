@@ -1,15 +1,15 @@
-import { useEffect, useState } from 'react';
-import { PackageCheck, Printer, Search } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
+import { flushSync } from 'react-dom';
+import { Eye, PackageCheck, Printer, Search } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { ModuloCabecera } from '@/components/data-display';
 import { ModalBase } from '@/components/modals';
 import { useEmpresa } from '@/hooks/useEmpresa';
 import useAuth from '@/hooks/useAuth';
-import { API_BASE_URL } from '@/lib/env';
 import { getErrorMessage } from '@/lib/axios';
 
 export default function EmpresaPrecintosPage() {
-  const { precintos, precintosMeta, cargarPrecintos, crearLotePrecintos, entregarPrecintos, anularPrecinto, tecnicos } = useEmpresa();
+  const { precintos, precintosMeta, cargarPrecintos, crearLotePrecintos, entregarPrecintos, anularPrecinto, generarQrPrecintos, tecnicos } = useEmpresa();
   const { user } = useAuth();
   const [page, setPage] = useState(1);
   const [cantidad, setCantidad] = useState(100);
@@ -21,9 +21,44 @@ export default function EmpresaPrecintosPage() {
   const [precintoAnulacion, setPrecintoAnulacion] = useState(null);
   const [motivoAnulacion, setMotivoAnulacion] = useState('');
   const [errorAnulacion, setErrorAnulacion] = useState('');
+  const [precintoVistaPrevia, setPrecintoVistaPrevia] = useState(null);
+  const [vistaPrevia, setVistaPrevia] = useState(null);
+  const [imprimiendo, setImprimiendo] = useState(false);
+  const [impresion, setImpresion] = useState(null);
+  const hojaImpresion = useRef(null);
+
   useEffect(() => {
     cargarPrecintos(page).catch((err) => setError(getErrorMessage(err)));
   }, [page, cargarPrecintos]);
+
+  useEffect(() => {
+    if (!precintoVistaPrevia) return undefined;
+    const controller = new AbortController();
+    generarQrPrecintos([precintoVistaPrevia], controller.signal).then(([qr]) => {
+      if (!controller.signal.aborted) setVistaPrevia({ imagen: qr.dataUrl });
+    }).catch((err) => {
+      if (!controller.signal.aborted) setVistaPrevia({ error: getErrorMessage(err) });
+    });
+    return () => controller.abort();
+  }, [generarQrPrecintos, precintoVistaPrevia]);
+
+  const imprimibles = precintos.filter((p) => p.token_qr_externo);
+  const imprimir = async () => {
+    setImprimiendo(true);
+    try {
+      const codigos = await generarQrPrecintos(imprimibles);
+      flushSync(() => setImpresion({ page, codigos }));
+      const hoja = hojaImpresion.current;
+      if (!hoja) return;
+      const imagenes = hoja.querySelectorAll('img');
+      await Promise.all(Array.from(imagenes, (imagen) => imagen.decode()));
+      if (hoja.isConnected) window.print();
+    } catch (err) {
+      setError(getErrorMessage(err, 'No se pudieron preparar los códigos QR para imprimir.'));
+    } finally {
+      setImprimiendo(false);
+    }
+  };
 
   const disponibles = precintos.filter((p) => p.estado === 'EN_BODEGA_EMPRESA');
   const filtrados = precintos.filter((p) =>
@@ -97,7 +132,10 @@ export default function EmpresaPrecintosPage() {
           </label>
           <button type="button" onClick={entregar} disabled={busy || !seleccion.length || !tecnicoId}
             className="rounded-xl bg-brand-terracota px-4 py-2 font-semibold text-white disabled:opacity-50">Entregar {seleccion.length} precintos</button>
-          <button type="button" onClick={() => window.print()} className="inline-flex items-center gap-2 rounded-xl border border-surface-200 px-4 py-2 text-sm font-semibold"><Printer className="h-4 w-4" />Imprimir QR de esta página</button>
+          <button type="button" onClick={imprimir} disabled={imprimiendo || !imprimibles.length}
+            className="inline-flex items-center gap-2 rounded-xl border border-surface-200 px-4 py-2 text-sm font-semibold disabled:opacity-50">
+            <Printer className="h-4 w-4" />{imprimiendo ? 'Preparando QR…' : 'Imprimir QR de esta página'}
+          </button>
         </div>
         <div className="relative max-w-sm">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-surface-400" />
@@ -114,17 +152,39 @@ export default function EmpresaPrecintosPage() {
               <td className="px-3 py-2"><input type="checkbox" aria-label={`Seleccionar ${p.codigo_suncho_precinto}`} disabled={p.estado !== 'EN_BODEGA_EMPRESA'} checked={seleccion.includes(p.id)} onChange={() => seleccionar(p.id)} /></td>
               <td className="px-3 py-2 font-mono text-xs">{p.codigo_suncho_precinto}</td><td className="px-3 py-2">{p.codigo_oferta || '—'}</td>
               <td className="px-3 py-2">{p.estado}</td><td className="px-3 py-2 text-xs">{p.asistente_tecnico_id || '—'}</td>
-              <td className="px-3 py-2"><button type="button" disabled={busy || p.estado === 'VINCULADO_A_SACO' || p.estado === 'DANADO_ANULADO'} onClick={() => { setPrecintoAnulacion(p); setMotivoAnulacion(''); setErrorAnulacion(''); }} className="text-danger-700 disabled:opacity-40">Anular</button></td>
+              <td className="px-3 py-2">
+                <div className="flex items-center gap-3 whitespace-nowrap">
+                  <button type="button" aria-label={`Ver QR de ${p.codigo_suncho_precinto}`} disabled={!p.token_qr_externo}
+                    onClick={() => { setVistaPrevia(null); setPrecintoVistaPrevia(p); }}
+                    className="inline-flex items-center gap-1.5 font-semibold text-brand-terracota hover:underline disabled:opacity-40">
+                    <Eye className="h-4 w-4" aria-hidden="true" />Ver QR
+                  </button>
+                  <button type="button" disabled={busy || p.estado === 'VINCULADO_A_SACO' || p.estado === 'DANADO_ANULADO'} onClick={() => { setPrecintoAnulacion(p); setMotivoAnulacion(''); setErrorAnulacion(''); }} className="text-danger-700 disabled:opacity-40">Anular</button>
+                </div>
+              </td>
             </tr>
           ))}</tbody></table>
           {filtrados.length === 0 && <p className="p-6 text-center text-surface-500">No hay precintos para mostrar.</p>}
         </div>
         <div className="flex items-center gap-3 text-sm">
-          <button type="button" disabled={page <= 1} onClick={() => { setSeleccion([]); setPage(page - 1); }} className="disabled:opacity-40">Anterior</button>
+          <button type="button" disabled={imprimiendo || page <= 1} onClick={() => { setImpresion(null); setSeleccion([]); setPage(page - 1); }} className="disabled:opacity-40">Anterior</button>
           <span>Página {page} de {precintosMeta?.totalPages || 1}</span>
-          <button type="button" disabled={page >= (precintosMeta?.totalPages || 1)} onClick={() => { setSeleccion([]); setPage(page + 1); }} className="disabled:opacity-40">Siguiente</button>
+          <button type="button" disabled={imprimiendo || page >= (precintosMeta?.totalPages || 1)} onClick={() => { setImpresion(null); setSeleccion([]); setPage(page + 1); }} className="disabled:opacity-40">Siguiente</button>
         </div>
       </div>
+      <ModalBase isOpen={Boolean(precintoVistaPrevia)} onClose={() => setPrecintoVistaPrevia(null)} title="Vista previa del QR" size="sm">
+        <div className="space-y-3 py-2 text-center">
+          <p className="break-all font-mono text-sm font-semibold text-surface-900">{precintoVistaPrevia?.codigo_suncho_precinto}</p>
+          <div className="mx-auto grid aspect-square w-full max-w-64 place-items-center rounded-xl border border-surface-200 bg-white p-3">
+            {vistaPrevia?.imagen ? (
+              <img src={vistaPrevia.imagen} alt={`QR externo del precinto ${precintoVistaPrevia?.codigo_suncho_precinto}`}
+                onError={() => setVistaPrevia({ error: 'No se pudo mostrar el código QR.' })} className="aspect-square w-full" />
+            ) : vistaPrevia?.error ? (
+              <p role="alert" className="text-sm text-danger-700">{vistaPrevia.error}</p>
+            ) : <p role="status" className="text-sm text-surface-500">Cargando código QR…</p>}
+          </div>
+        </div>
+      </ModalBase>
       <ModalBase isOpen={Boolean(precintoAnulacion)} onClose={cerrarAnulacion} title="Anular precinto" size="md">
         <form onSubmit={confirmarAnulacion} className="space-y-4">
           <p className="text-sm text-surface-600">Se anulará el precinto <span className="font-mono font-semibold text-surface-900">{precintoAnulacion?.codigo_suncho_precinto}</span>. Indica por qué ya no puede utilizarse.</p>
@@ -140,15 +200,15 @@ export default function EmpresaPrecintosPage() {
           </div>
         </form>
       </ModalBase>
-      <div className="hidden print:block">
-        <h1 className="mb-4 text-xl font-bold">Precintos QR externos · página {page}</h1>
+      {impresion && <div ref={hojaImpresion} className="hidden print:block">
+        <h1 className="mb-4 text-xl font-bold">Precintos QR externos · página {impresion.page}</h1>
         <div className="grid grid-cols-4 gap-3">
-          {precintos.map((p) => <div key={p.id} className="break-inside-avoid border border-surface-300 p-2 text-center">
-            <img alt="" src={`${API_BASE_URL}/qr/generate?data=${encodeURIComponent(`${window.location.origin}/trazabilidad/${p.token_qr_externo}`)}&size=180`} className="mx-auto h-32 w-32" />
-            <p className="break-all text-[10px] font-bold">{p.codigo_suncho_precinto}</p>
+          {impresion.codigos.map((qr) => <div key={qr.id} className="break-inside-avoid border border-surface-300 p-2 text-center">
+            <img alt="" src={qr.dataUrl} className="mx-auto h-32 w-32" />
+            <p className="break-all text-[10px] font-bold">{qr.label}</p>
           </div>)}
         </div>
-      </div>
+      </div>}
     </div>
   );
 }

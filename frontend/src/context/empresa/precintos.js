@@ -36,5 +36,15 @@ export function createEmpresaPrecintosActions({ setPrecintos, setPrecintosMeta }
     } catch (error) { toast.error(getErrorMessage(error)); throw error; }
   };
 
-  return { cargarPrecintos, crearLotePrecintos, entregarPrecintos, anularPrecinto };
+  const generarQrPrecintos = async (precintos, signal) => {
+    const items = precintos.map((precinto) => ({
+      id: precinto.id,
+      label: precinto.codigo_suncho_precinto,
+      data: `${window.location.origin}/trazabilidad/${encodeURIComponent(precinto.token_qr_externo)}`,
+    }));
+    const { data } = await axiosClient.post('/qr/batch', { items }, { signal, strictResponse: true });
+    return data.items;
+  };
+
+  return { cargarPrecintos, crearLotePrecintos, entregarPrecintos, anularPrecinto, generarQrPrecintos };
 }
