@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import toast from 'react-hot-toast';
 import { ModuloCabecera } from '@/components/data-display';
+import { DetalleMuestraModal } from '@/components/modals';
 
 import {
   Search,
@@ -464,72 +465,14 @@ export default function EmpresaMuestrasPage() {
         </div>
       )}
 
-      {/* MODAL 3: DETALLE DE LA MUESTRA */}
       {modalDetalle && muestraSeleccionada && (
-        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-stone-200 space-y-4 animate-in fade-in zoom-in-95">
-            <div className="flex items-center justify-between border-b border-stone-100 pb-3">
-              <div>
-                <span className="text-xs font-bold text-amber-800 bg-amber-100 px-2 py-0.5 rounded-md font-mono">
-                  {muestraSeleccionada.codigo}
-                </span>
-                <h3 className="font-bold text-stone-900 text-base mt-1">
-                  Ficha de Control Gravimétrico
-                </h3>
-              </div>
-              <button
-                type="button"
-                onClick={() => setModalDetalle(false)}
-                className="text-stone-400 hover:text-stone-600 p-1"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            <div className="bg-stone-50 p-4 rounded-xl border border-stone-100 space-y-2.5 text-xs">
-              <div className="flex justify-between">
-                <span className="text-stone-500">Lote Origen:</span>
-                <span className="font-mono font-bold text-stone-900">{muestraSeleccionada.lote_origen}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-stone-500">Caficultor:</span>
-                <span className="font-semibold text-stone-800">{muestraSeleccionada.caficultor}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-stone-500">Variedad:</span>
-                <span className="font-semibold text-stone-800">{muestraSeleccionada.variedad}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-stone-500">Peso de Muestra:</span>
-                <span className="font-bold text-stone-900">{muestraSeleccionada.peso_g} gramos</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-stone-500">Humedad Medida:</span>
-                <span className="font-bold text-sky-700">{muestraSeleccionada.humedad}%</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-stone-500">Laboratorio:</span>
-                <span className="font-semibold text-amber-900">{muestraSeleccionada.laboratorio}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-stone-500">Puntaje SCA Obtenido:</span>
-                <span className="font-bold text-amber-900">
-                  {muestraSeleccionada.puntaje_sca ? `${muestraSeleccionada.puntaje_sca} SCA` : 'En proceso'}
-                </span>
-              </div>
-            </div>
-
-            <div className="flex justify-end pt-3 border-t border-stone-100">
-              <button
-                type="button"
-                onClick={() => setModalDetalle(false)}
-                className="px-4 py-2 bg-stone-900 text-white rounded-xl text-xs font-medium hover:bg-black"
-              >
-                Cerrar
-              </button>
-            </div>
-          </div>
-        </div>
+        <DetalleMuestraModal
+          key={muestraSeleccionada.id}
+          isOpen
+          onClose={() => setModalDetalle(false)}
+          ficha={muestraSeleccionada.fichaDetalle}
+          sensorial={muestraSeleccionada.detalleSensorial}
+        />
       )}
     </div>
   );

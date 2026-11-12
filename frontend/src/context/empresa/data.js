@@ -1,6 +1,8 @@
 import { mapCaficultor, mapFinca, mapLote, mapPreoferta, mapTecnico, mapLaboratorio, mapBroker, mapMuestraYAnalisisFisico, mapContenedor } from '../mappers.js';
 
-export function selectEmpresaData({ rawCaficultores, rawEmpresas, rawTecnicos, rawLaboratorios, rawBrokers, rawFincas, rawVariedades, rawLotes, rawPreofertas, rawEvaluacionesFisicas, rawSesionesCatacion, rawContenedores, rawInspecciones }) {
+import { crearDetalleSensorial, vincularFichaMuestra } from '../muestras/detalle.js';
+
+export function selectEmpresaData({ rawCaficultores, rawEmpresas, rawTecnicos, rawLaboratorios, rawBrokers, rawFincas, rawVariedades, rawLotes, rawPreofertas, rawEvaluacionesFisicas, rawSesionesCatacion, rawContenedores, rawInspecciones, rawHojasMuestras = [] }) {
   const mappedFincas = rawFincas.map((f) =>
     mapFinca(f, { caficultores: rawCaficultores, lotes: rawLotes })
   );
@@ -42,8 +44,8 @@ export function selectEmpresaData({ rawCaficultores, rawEmpresas, rawTecnicos, r
     ...p,
     estado: p.estadoLibre,
   }));
-  const mappedMuestras = rawEvaluacionesFisicas.map((ev) =>
-    mapMuestraYAnalisisFisico(ev, {
+  const mappedMuestras = rawEvaluacionesFisicas.map((ev) => {
+    const muestra = mapMuestraYAnalisisFisico(ev, {
       preofertas: rawPreofertas,
       caficultores: rawCaficultores,
       fincas: rawFincas,
@@ -51,8 +53,16 @@ export function selectEmpresaData({ rawCaficultores, rawEmpresas, rawTecnicos, r
       variedades: rawVariedades,
       laboratorios: rawLaboratorios,
       sesiones: rawSesionesCatacion,
-    })
-  );
+    });
+    return {
+      ...muestra,
+      fichaDetalle: vincularFichaMuestra({ ...ev, estado: muestra.estadoMuestraLab }, {
+        preofertas: rawPreofertas, fincas: rawFincas, caficultores: rawCaficultores,
+        variedades: rawVariedades, laboratorios: rawLaboratorios, inspecciones: rawInspecciones,
+      }),
+      detalleSensorial: crearDetalleSensorial(ev.id, rawSesionesCatacion, rawHojasMuestras),
+    };
+  });
   const mappedContenedores = rawContenedores.map((cnt) =>
     mapContenedor({ ...cnt, ofertas_asignadas: cnt.ofertas_asignadas ?? [] }, {
       preofertas: rawPreofertas,
@@ -111,6 +121,7 @@ export const empresaData = {
     rawSesionesCatacion: '/sesiones-catacion',
     rawContenedores: '/contenedores-virtuales',
     rawInspecciones: '/inspecciones-campo',
+    rawHojasMuestras: { url: '/hojas-catacion-cva', allPages: true },
   },
   routes: {
     '/empresa/ventas': [],
@@ -122,7 +133,7 @@ export const empresaData = {
     '/empresa/pre-ofertas': ['rawCaficultores', 'rawFincas', 'rawLotes', 'rawPreofertas', 'rawSesionesCatacion', 'rawVariedades'],
     '/empresa/ofertas-libres': ['rawCaficultores', 'rawFincas', 'rawLotes', 'rawPreofertas', 'rawSesionesCatacion', 'rawVariedades'],
     '/empresa/ofertas': ['rawCaficultores', 'rawContenedores', 'rawFincas', 'rawInspecciones', 'rawLotes', 'rawPreofertas', 'rawSesionesCatacion', 'rawTecnicos', 'rawVariedades'],
-    '/empresa/muestras': ['rawCaficultores', 'rawEvaluacionesFisicas', 'rawFincas', 'rawLaboratorios', 'rawLotes', 'rawPreofertas', 'rawSesionesCatacion', 'rawVariedades'],
+    '/empresa/muestras': ['rawCaficultores', 'rawEvaluacionesFisicas', 'rawFincas', 'rawHojasMuestras', 'rawInspecciones', 'rawLaboratorios', 'rawLotes', 'rawPreofertas', 'rawSesionesCatacion', 'rawVariedades'],
     '/empresa/contenedores': ['rawBrokers', 'rawCaficultores', 'rawContenedores', 'rawFincas', 'rawLotes', 'rawPreofertas', 'rawSesionesCatacion', 'rawVariedades'],
   },
   allSources: ['rawCaficultores', 'rawEmpresas', 'rawTecnicos', 'rawLaboratorios', 'rawBrokers', 'rawFincas', 'rawVariedades', 'rawLotes', 'rawPreofertas', 'rawEvaluacionesFisicas', 'rawSesionesCatacion', 'rawContenedores', 'rawInspecciones'],

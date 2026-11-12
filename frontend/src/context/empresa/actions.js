@@ -1,6 +1,7 @@
 import toast from 'react-hot-toast';
 import { axiosClient, getErrorMessage } from '../../lib/axios';
 import { mapCaficultor, mapPreoferta, mapTecnico, mapLaboratorio, mapBroker, mapMuestraYAnalisisFisico, mapContenedor } from '../mappers';
+import { crearDetalleSensorial, vincularFichaMuestra } from '../muestras/detalle.js';
 
 export function createEmpresaActions(state, setters) {
   const { caficultores, laboratorios, preofertas, fincas, lotes, variedades } = state;
@@ -120,10 +121,18 @@ export function createEmpresaActions(state, setters) {
   const createMuestra = async (payload) => {
     try {
       const { data } = await axiosClient.post('/evaluaciones-fisicas', payload);
-      const mapped = mapMuestraYAnalisisFisico(
-        { ...payload, ...data },
+      const registro = { ...payload, ...data };
+      const muestra = mapMuestraYAnalisisFisico(
+        registro,
         { preofertas, caficultores, fincas, lotes, variedades, laboratorios }
       );
+      const mapped = {
+        ...muestra,
+        fichaDetalle: vincularFichaMuestra({ ...registro, estado: muestra.estadoMuestraLab }, {
+          preofertas, caficultores, fincas, variedades, laboratorios, inspecciones: [],
+        }),
+        detalleSensorial: crearDetalleSensorial(registro.id, [], []),
+      };
       setMuestras((prev) => [mapped, ...prev]);
       toast.success('Muestra registrada correctamente');
       return mapped;

@@ -17,10 +17,11 @@ export default defineConfig(({ mode }) => {
       },
     },
     server: {
-      allowedHosts: env.DEV_TUNNEL_HOST ? [env.DEV_TUNNEL_HOST] : [],
+      host: 'localhost',
+      port: 5173,
       proxy: {
         '^/api(?:/|$)': {
-          target: env.API_PROXY_TARGET || 'http://127.0.0.1:3001',
+          target: env.API_PROXY_TARGET || 'http://localhost:5000',
           changeOrigin: true,
         },
       },
