@@ -34,7 +34,7 @@ function slugify(text = '') {
 }
 
 function EditorPublicacion({ publicacion, productores, onClose, onSave }) {
-  const [slugTouched, setSlugTouched] = useState(Boolean(publicacion?.slug));
+  const slugTouched = useRef(Boolean(publicacion?.slug));
   const [form, setForm] = useState(() => ({
     titulo: publicacion?.titulo || '',
     slug: publicacion?.slug || '',
@@ -56,11 +56,11 @@ function EditorPublicacion({ publicacion, productores, onClose, onSave }) {
   const cambiar = (e) => {
     const { name, value } = e.target;
     if (name === 'slug') {
-      setSlugTouched(true);
+      slugTouched.current = true;
       setForm((prev) => ({ ...prev, slug: slugify(value) }));
       return;
     }
-    if (name === 'titulo' && !slugTouched) {
+    if (name === 'titulo' && !slugTouched.current) {
       setForm((prev) => ({
         ...prev,
         titulo: value,

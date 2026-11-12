@@ -22,6 +22,7 @@ export default function FincaMapa({ lat, lng, nombre = 'Finca', zoom = 12, class
         width="100%"
         height="100%"
         loading="lazy"
+        sandbox="allow-scripts allow-popups"
         referrerPolicy="strict-origin-when-cross-origin"
         src={src}
         style={{ border: 0 }}

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { Card, Button } from '@/components/ui';
 import {
   Calendar,
@@ -23,7 +24,8 @@ export default function EvaluacionPage() {
   const actualizar = useActualizarEvaluacion();
   const previsualizarQr = usePrevisualizarEvaluacionQr();
   const asignarQr = useAsignarEvaluacionQr();
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchParams] = useSearchParams();
+  const [searchTerm, setSearchTerm] = useState(() => searchParams.get('buscar') ?? '');
   const [evaluacionActiva, setEvaluacionActiva] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isScannerOpen, setIsScannerOpen] = useState(false);
@@ -93,10 +95,10 @@ export default function EvaluacionPage() {
   };
 
   // Al finalizar y enviar la evaluación desde el modal
-  const handleFinalizarEvaluacion = (resultado) => {
+  const handleFinalizarEvaluacion = async (resultado) => {
     const item = evaluaciones.find((ev) => ev.id === resultado.evaluacionId);
     if (item) {
-      actualizar.mutate({
+      await actualizar.mutateAsync({
         ...item,
         estado: 'Completada',
         puntuacionTotal: resultado.puntuacionTotal,
@@ -115,6 +117,7 @@ export default function EvaluacionPage() {
     const term = searchTerm.toLowerCase();
     return (
       ev.nombre.toLowerCase().includes(term) ||
+      ev.codigo?.toLowerCase().includes(term) ||
       ev.objetivo.toLowerCase().includes(term)
     );
   });
@@ -137,7 +140,7 @@ export default function EvaluacionPage() {
         <Search className="w-4 h-4 text-surface-400 absolute left-3 top-1/2 -translate-y-1/2" />
         <input
           type="text"
-          placeholder="Buscar por nombre u objetivo..."
+          placeholder="Buscar por código, nombre u objetivo..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           className="w-full pl-9 pr-4 py-2 text-sm bg-white border border-surface-200 rounded-lg shadow-2xs focus:outline-none focus:ring-2 focus:ring-primary-500 text-surface-900"
@@ -285,6 +288,7 @@ export default function EvaluacionPage() {
 
       {/* Modal de Criterios de Evaluación Sensorial CVA */}
       <EvaluacionModal
+        key={evaluacionActiva?.id}
         isOpen={isModalOpen}
         onClose={() => {
           setIsModalOpen(false);

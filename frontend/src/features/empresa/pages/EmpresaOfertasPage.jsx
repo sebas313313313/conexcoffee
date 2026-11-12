@@ -56,7 +56,7 @@ export default function EmpresaOfertasPage({ vistaInicial = 'ofertas' }) {
   const [searchTerm, setSearchTerm] = useState('');
   const [filtroEstadoPreoferta, setFiltroEstadoPreoferta] = useState('todos');
 
-  // Modales Pre-ofertas
+  // Modales Preofertas
   const [modalDetallePreoferta, setModalDetallePreoferta] = useState(false);
   const [preofertaSeleccionada, setPreofertaSeleccionada] = useState(null);
   const [tabDetallePreoferta, setTabDetallePreoferta] = useState('preoferta'); // 'preoferta' | 'caficultor' | 'finca'
@@ -75,7 +75,7 @@ export default function EmpresaOfertasPage({ vistaInicial = 'ofertas' }) {
     notas_cata: '',
   });
 
-  // Modales Ofertas en Firme
+  // Modales Ofertas
   const [modalDetalleOferta, setModalDetalleOferta] = useState(false);
   const [ofertaSeleccionada, setOfertaSeleccionada] = useState(null);
 
@@ -86,7 +86,7 @@ export default function EmpresaOfertasPage({ vistaInicial = 'ofertas' }) {
   const [contenedorDestino, setContenedorDestino] = useState('');
 
   // ----------------------------------------------------
-  // Filtrado de Pre-ofertas
+  // Filtrado de Preofertas
   // ----------------------------------------------------
   const preofertasFiltradas = preofertas.filter((p) => {
     const term = searchTerm.toLowerCase();
@@ -103,7 +103,7 @@ export default function EmpresaOfertasPage({ vistaInicial = 'ofertas' }) {
   });
 
   // ----------------------------------------------------
-  // Filtrado de Ofertas en Firme
+  // Filtrado de Ofertas
   // ----------------------------------------------------
   const ofertasFiltradas = ofertas.filter((o) => {
     const term = searchTerm.toLowerCase();
@@ -116,7 +116,7 @@ export default function EmpresaOfertasPage({ vistaInicial = 'ofertas' }) {
   });
 
   // ----------------------------------------------------
-  // Acciones: Pre-ofertas
+  // Acciones: Preofertas
   // ----------------------------------------------------
   const handleAbrirDetallePreoferta = (item) => {
     setPreofertaSeleccionada(item);
@@ -239,7 +239,7 @@ export default function EmpresaOfertasPage({ vistaInicial = 'ofertas' }) {
   };
 
   // ----------------------------------------------------
-  // Acciones: Ofertas en Firme
+  // Acciones: Ofertas
   // ----------------------------------------------------
   const handleAbrirDetalleOferta = (item) => {
     setOfertaSeleccionada(item);
@@ -275,27 +275,27 @@ export default function EmpresaOfertasPage({ vistaInicial = 'ofertas' }) {
     <div className="space-y-6">
       {/* Cabecera Oficial idéntica a ConexCoffee */}
       <ModuloCabecera
-        titulo="Ofertas y Pre-ofertas"
-        subtitulo="Gestión del ciclo comercial: desde la recepción de pre-ofertas hasta lotes exportables aceptados"
+        titulo="Ofertas y Preofertas"
+        subtitulo="Gestión del ciclo comercial: desde la recepción de preofertas hasta lotes exportables aceptados"
         imagenPortada="/images/portadas/oferta.jpg"
         mensaje={
           tabPrincipal === 'ofertas'
             ? 'En este módulo podrás ver la información detallada de cada una de tus ofertas de café listas para comercialización internacional.'
-            : 'En este módulo podrás registrar y gestionar la información detallada de cada una de tus pre-ofertas recibidas de caficultores.'
+            : 'En este módulo podrás registrar y gestionar la información detallada de cada una de tus preofertas recibidas de caficultores.'
         }
         icono={Tag}
         totalRegistros={tabPrincipal === 'ofertas' ? ofertasFiltradas.length : preofertasFiltradas.length}
-        textoBotonRegistrar={tabPrincipal === 'ofertas' ? 'Nueva Oferta' : 'Nueva Pre-Oferta'}
+        textoBotonRegistrar={tabPrincipal === 'ofertas' ? 'Nueva Oferta' : 'Nueva Preoferta'}
         onRegistrar={() => {
           if (tabPrincipal === 'ofertas') {
-            toast.info('Para crear una Oferta en Firme, selecciona y aprueba una Pre-Oferta evaluada o registrada.');
+            toast.info('Para crear una Oferta, selecciona y aprueba una Preoferta evaluada o registrada.');
           } else {
-            toast.info('Las pre-ofertas son enviadas por los caficultores o registradas en campo.');
+            toast.info('Las preofertas son enviadas por los caficultores o registradas en campo.');
           }
         }}
       />
 
-      {/* Selector de Pestañas Principales (Ofertas en Firme vs Pre-Ofertas) */}
+      {/* Selector de Pestañas Principales (Ofertas vs Preofertas) */}
       <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-white p-3 rounded-2xl border border-stone-200 shadow-sm">
         <div className="flex items-center gap-2 bg-stone-100 p-1.5 rounded-xl w-full sm:w-auto">
           <button
@@ -308,7 +308,7 @@ export default function EmpresaOfertasPage({ vistaInicial = 'ofertas' }) {
             }`}
           >
             <Tag className="w-4 h-4 text-amber-700" />
-            Ofertas en Firme ({ofertas.length})
+            Ofertas ({ofertas.length})
           </button>
           <button
             type="button"
@@ -320,7 +320,7 @@ export default function EmpresaOfertasPage({ vistaInicial = 'ofertas' }) {
             }`}
           >
             <Layers className="w-4 h-4 text-amber-300" />
-            Pre-Ofertas en Evaluación ({preofertas.length})
+            Preofertas ({preofertas.length})
           </button>
         </div>
 
@@ -358,7 +358,7 @@ export default function EmpresaOfertasPage({ vistaInicial = 'ofertas' }) {
       </div>
 
       {/* ========================================================================= */}
-      {/* VISTA 1: OFERTAS EN FIRME (Idéntica a conexcoffee.co/ofertas)             */}
+      {/* VISTA 1: OFERTAS (Idéntica a conexcoffee.co/ofertas)             */}
       {/* Columnas: N°, CODIGO, CANTIDAD, VARIEDAD DE CAFE, ESTADO, ACCIONES        */}
       {/* ========================================================================= */}
       <QueryState query={tabPrincipal === 'ofertas' ? ofertasQuery : preofertasQuery} />
@@ -469,7 +469,7 @@ export default function EmpresaOfertasPage({ vistaInicial = 'ofertas' }) {
       )}
 
       {/* ========================================================================= */}
-      {/* VISTA 2: PRE-OFERTAS (Idéntica a conexcoffee.co/pre-ofertas)              */}
+      {/* VISTA 2: PREOFERTAS (Idéntica a conexcoffee.co/pre-ofertas)              */}
       {/* Columnas: N°, Código, Cantidad, Variedad de café, Estado, Acciones        */}
       {/* ========================================================================= */}
       {tabPrincipal === 'preofertas' && (
@@ -490,7 +490,7 @@ export default function EmpresaOfertasPage({ vistaInicial = 'ofertas' }) {
                 {preofertasFiltradas.length === 0 ? (
                   <tr>
                     <td colSpan={6} className="px-6 py-12 text-center text-stone-400">
-                      No se encontraron pre-ofertas con esos criterios.
+                      No se encontraron preofertas con esos criterios.
                     </td>
                   </tr>
                 ) : (
@@ -537,7 +537,7 @@ export default function EmpresaOfertasPage({ vistaInicial = 'ofertas' }) {
                           <button
                             type="button"
                             onClick={() => handleAbrirDetallePreoferta(item)}
-                            title="Ver Detalle Pre-oferta"
+                            title="Ver Detalle Preoferta"
                             className="p-1.5 text-stone-500 hover:text-stone-900 hover:bg-stone-100 rounded-lg transition-colors"
                           >
                             <Eye className="w-4 h-4" />
@@ -560,19 +560,19 @@ export default function EmpresaOfertasPage({ vistaInicial = 'ofertas' }) {
                             <button
                               type="button"
                               onClick={() => handleAbrirRechazar(item)}
-                              title="Rechazar Pre-oferta"
+                              title="Rechazar Preoferta"
                               className="p-1.5 text-rose-500 hover:text-rose-700 hover:bg-rose-50 rounded-lg transition-colors"
                             >
                               <Ban className="w-4 h-4" />
                             </button>
                           )}
 
-                          {/* 4. Botón Promover a Oferta en Firme */}
+                          {/* 4. Botón Promover a Oferta */}
                           {item.estado !== 'Rechazada' && item.estado !== 'Aprobada' && (
                             <button
                               type="button"
                               onClick={() => handleAbrirConversion(item)}
-                              title="Aprobar y Promover a Oferta en Firme"
+                              title="Aprobar y Promover a Oferta"
                               className="p-1.5 text-emerald-700 hover:text-emerald-900 hover:bg-emerald-50 rounded-lg transition-colors"
                             >
                               <Send className="w-4 h-4" />
@@ -590,8 +590,8 @@ export default function EmpresaOfertasPage({ vistaInicial = 'ofertas' }) {
       )}
 
       {/* ========================================================================= */}
-      {/* MODAL 1: DETALLE PRE-OFERTA (CON LAS 3 PESTAÑAS IDÉNTICAS A LA ORIGINAL)    */}
-      {/* Tab 1: Pre-Oferta, Tab 2: Caficultor, Tab 3: Finca                       */}
+      {/* MODAL 1: DETALLE PREOFERTA (CON LAS 3 PESTAÑAS IDÉNTICAS A LA ORIGINAL)    */}
+      {/* Tab 1: Preoferta, Tab 2: Caficultor, Tab 3: Finca                       */}
       {/* ========================================================================= */}
       {modalDetallePreoferta && preofertaSeleccionada && (
         <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
@@ -603,7 +603,7 @@ export default function EmpresaOfertasPage({ vistaInicial = 'ofertas' }) {
                   {preofertaSeleccionada.codigo}
                 </span>
                 <h3 className="font-bold text-stone-900 text-base mt-1">
-                  Detalle de Pre-oferta de Café
+                  Detalle de Preoferta de Café
                 </h3>
               </div>
               <button
@@ -626,7 +626,7 @@ export default function EmpresaOfertasPage({ vistaInicial = 'ofertas' }) {
                 }`}
               >
                 <Coffee className="w-3.5 h-3.5 text-amber-700" />
-                1. Pre-Oferta
+                1. Preoferta
               </button>
               <button
                 type="button"
@@ -656,7 +656,7 @@ export default function EmpresaOfertasPage({ vistaInicial = 'ofertas' }) {
 
             {/* Contenido según pestaña activa */}
             <div className="p-6 text-xs text-stone-700 space-y-4 max-h-[65vh] overflow-y-auto">
-              {/* PESTAÑA 1: PRE-OFERTA */}
+              {/* PESTAÑA 1: PREOFERTA */}
               {tabDetallePreoferta === 'preoferta' && (
                 <div className="space-y-4">
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 bg-stone-50 p-4 rounded-xl border border-stone-100">
@@ -910,7 +910,7 @@ export default function EmpresaOfertasPage({ vistaInicial = 'ofertas' }) {
       )}
 
       {/* ========================================================================= */}
-      {/* MODAL 2: ASIGNAR TÉCNICO A PRE-OFERTA (Idéntico a modal conexcoffee.co)    */}
+      {/* MODAL 2: ASIGNAR TÉCNICO A PREOFERTA (Idéntico a modal conexcoffee.co)    */}
       {/* ========================================================================= */}
       {modalAsignarTecnico && preofertaSeleccionada && (
         <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
@@ -922,7 +922,7 @@ export default function EmpresaOfertasPage({ vistaInicial = 'ofertas' }) {
                   Asignar Técnico Agrónomo
                 </h3>
                 <p className="text-xs text-stone-500 font-mono">
-                  Pre-oferta {preofertaSeleccionada.codigo} • {preofertaSeleccionada.variedad}
+                  Preoferta {preofertaSeleccionada.codigo} • {preofertaSeleccionada.variedad}
                 </p>
               </div>
               <button
@@ -978,7 +978,7 @@ export default function EmpresaOfertasPage({ vistaInicial = 'ofertas' }) {
       )}
 
       {/* ========================================================================= */}
-      {/* MODAL 3: RECHAZAR PRE-OFERTA                                              */}
+      {/* MODAL 3: RECHAZAR PREOFERTA                                              */}
       {/* ========================================================================= */}
       {modalRechazar && preofertaSeleccionada && (
         <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
@@ -986,7 +986,7 @@ export default function EmpresaOfertasPage({ vistaInicial = 'ofertas' }) {
             <div className="flex items-center justify-between border-b border-stone-100 pb-3">
               <h3 className="font-bold text-stone-900 text-base flex items-center gap-2">
                 <Ban className="w-5 h-5 text-rose-600" />
-                Rechazar Pre-oferta
+                Rechazar Preoferta
               </h3>
               <button
                 onClick={() => setModalRechazar(false)}
@@ -998,7 +998,7 @@ export default function EmpresaOfertasPage({ vistaInicial = 'ofertas' }) {
 
             <form onSubmit={handleConfirmarRechazo} className="space-y-4 text-xs">
               <p className="text-stone-600">
-                ¿Está seguro de que desea desestimar la pre-oferta{' '}
+                ¿Está seguro de que desea desestimar la preoferta{' '}
                 <strong>{preofertaSeleccionada.codigo}</strong> enviada por{' '}
                 <strong>{preofertaSeleccionada.caficultor.nombre}</strong>?
               </p>
@@ -1037,7 +1037,7 @@ export default function EmpresaOfertasPage({ vistaInicial = 'ofertas' }) {
       )}
 
       {/* ========================================================================= */}
-      {/* MODAL 4: APROBAR PRE-OFERTA Y PROMOVER A OFERTA EN FIRME                   */}
+      {/* MODAL 4: APROBAR PREOFERTA Y PROMOVER A OFERTA                   */}
       {/* ========================================================================= */}
       {modalConvertirOferta && preofertaSeleccionada && (
         <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
@@ -1046,10 +1046,10 @@ export default function EmpresaOfertasPage({ vistaInicial = 'ofertas' }) {
               <div>
                 <h3 className="font-bold text-stone-900 text-base flex items-center gap-2">
                   <Send className="w-5 h-5 text-emerald-600" />
-                  Aprobar y Crear Oferta en Firme
+                  Aprobar y Crear Oferta
                 </h3>
                 <p className="text-xs text-stone-500">
-                  Promocionar pre-oferta {preofertaSeleccionada.codigo} al catálogo comercial
+                  Promocionar preoferta {preofertaSeleccionada.codigo} al catálogo comercial
                 </p>
               </div>
               <button
@@ -1155,7 +1155,7 @@ export default function EmpresaOfertasPage({ vistaInicial = 'ofertas' }) {
                   type="submit"
                   className="px-4 py-2 bg-emerald-700 text-white font-semibold rounded-xl hover:bg-emerald-800 shadow-sm"
                 >
-                  Publicar Oferta en Firme
+                  Publicar Oferta
                 </button>
               </div>
             </form>
@@ -1164,7 +1164,7 @@ export default function EmpresaOfertasPage({ vistaInicial = 'ofertas' }) {
       )}
 
       {/* ========================================================================= */}
-      {/* MODAL 5: DETALLE DE OFERTA EN FIRME                                       */}
+      {/* MODAL 5: DETALLE DE OFERTA                                       */}
       {/* ========================================================================= */}
       {modalDetalleOferta && ofertaSeleccionada && (
         <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">

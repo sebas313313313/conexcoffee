@@ -7,6 +7,8 @@ import { ROLES } from '@/lib/constants';
 import { Menu, LogOut, User, Bell } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { getErrorMessage } from '@/lib/axios';
+import PanelNotificaciones from '@/components/data-display/PanelNotificaciones';
+import NotificacionesEmpresa from '@/features/empresa/components/NotificacionesEmpresa';
 
 // ============================================
 // Header — Barra superior del dashboard
@@ -127,14 +129,25 @@ export default function Header() {
         {/* Right: Actions */}
         <div className="flex items-center gap-3">
           {/* Notifications */}
-          <button type="button" onClick={togglePush} disabled={!pushSupported || pushBusy}
+          {role === ROLES.EMPRESA ? (
+            <PanelNotificaciones footer={
+              <button type="button" onClick={togglePush} disabled={!pushSupported || pushBusy}
+                className="text-xs font-semibold text-brand-terracota disabled:text-surface-500">
+                {!pushSupported ? 'Notificaciones del navegador no disponibles'
+                  : pushBusy ? 'Actualizando…'
+                  : pushEnabled ? 'Desactivar avisos del navegador' : 'Activar avisos del navegador'}
+              </button>
+            }>
+              <NotificacionesEmpresa key={user?.empresa_id} empresaId={user?.empresa_id} />
+            </PanelNotificaciones>
+          ) : <button type="button" onClick={togglePush} disabled={!pushSupported || pushBusy}
             title={pushSupported ? (pushEnabled ? 'Desactivar notificaciones' : 'Activar notificaciones') : 'Notificaciones no disponibles en este navegador'}
             aria-label={pushEnabled ? 'Desactivar notificaciones' : 'Activar notificaciones'}
             aria-pressed={pushEnabled}
             className="p-2 rounded-lg text-surface-500 hover:bg-surface-100 hover:text-surface-700 transition-colors relative cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed">
             <Bell className="h-5 w-5" />
             {pushEnabled && <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-brand-terracota rounded-full" />}
-          </button>
+          </button>}
 
           {/* Profile */}
           <button

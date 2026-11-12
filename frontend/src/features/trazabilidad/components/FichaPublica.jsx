@@ -1,5 +1,11 @@
 import { Coffee, MapPin, PackageCheck, UserRound } from 'lucide-react';
 
+const formatoPrecio = new Intl.NumberFormat('es-CO', {
+  style: 'currency',
+  currency: 'COP',
+  maximumFractionDigits: 0,
+});
+
 const dato = (label, value) => value == null || value === '' ? null : (
   <div className="rounded-xl bg-surface-50 p-4">
     <dt className="text-xs font-semibold uppercase tracking-wide text-surface-500">{label}</dt>
@@ -9,7 +15,7 @@ const dato = (label, value) => value == null || value === '' ? null : (
 
 export default function FichaPublica({ ficha }) {
   const precio = ficha.precio_esperado_cop == null ? null :
-    new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(Number(ficha.precio_esperado_cop));
+    formatoPrecio.format(Number(ficha.precio_esperado_cop));
   return (
     <div className="space-y-6">
       <header className="rounded-2xl bg-brand-tint p-6">

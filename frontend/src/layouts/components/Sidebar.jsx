@@ -64,7 +64,7 @@ const NAV_BY_ROLE = {
   [ROLES.EMPRESA]: [
     { label: 'Dashboard', path: '/empresa/dashboard', icon: LayoutDashboard },
     { label: 'Ofertas Libres', path: '/empresa/ofertas-libres', icon: Store },
-    { label: 'Pre-Ofertas', path: '/empresa/pre-ofertas', icon: Layers },
+    { label: 'Preofertas', path: '/empresa/pre-ofertas', icon: Layers },
     { label: 'Ofertas', path: '/empresa/ofertas', icon: Tag },
     { label: 'Brokers', path: '/empresa/brokers', icon: Handshake },
     { label: 'Caficultores', path: '/empresa/caficultores', icon: Leaf },

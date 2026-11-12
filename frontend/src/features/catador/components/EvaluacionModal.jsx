@@ -1,7 +1,8 @@
-import { useState, useMemo } from 'react';
+import { useEffect, useState } from 'react';
+import useAuthStore from '@/store/useAuthStore';
 import ModalBase from '@/components/modals/ModalBase';
 import { Button } from '@/components/ui';
-import { Award, Send, AlertTriangle, FileText } from 'lucide-react';
+import { Award, Send, AlertTriangle, FileText, Coffee, Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import IntensityBar from './IntensityBar';
 import RatingScale1to9 from './RatingScale1to9';
@@ -36,23 +37,6 @@ const DEFECTOS = [
 ];
 
 // ─── Componentes auxiliares ───────────────────────────────────────────────────
-
-/** Pill de número de fase + título de sección */
-function FaseHeader({ num, title }) {
-  return (
-    <div className="flex items-center gap-2.5 mb-4">
-      <span className="inline-flex items-center gap-1.5 bg-primary-600 text-white text-[11px] font-bold px-3 py-1 rounded-full select-none">
-        Fase {num}
-      </span>
-      <span className="text-sm font-semibold text-surface-800">{title}</span>
-    </div>
-  );
-}
-
-/** Divisor entre fases */
-function FaseDivider() {
-  return <div className="my-1 border-t border-surface-200" />;
-}
 
 /** Sub-sección dentro de una fase */
 function SubSection({ label, children }) {
@@ -113,53 +97,105 @@ function NoteField({ value, onChange, placeholder = 'Añadir nota...' }) {
 }
 
 // ─── Componente principal ──────────────────────────────────────────────────────
+const FASES = ["Evaluación descriptiva","Evaluación afectiva","Sabor y Sabor Residual (descriptiva)","Sabor y Sabor Residual (afectiva)","Acidez","Dulzor","Sensación en Boca","Impresión Global","Uniformidad y defectos","Resultado final"];
+const RESPUESTAS_INICIALES = {
+  nivelTueste: 3,
+  intensidadFragancia: 8,
+  intensidadAroma: 8,
+  descriptoresFragancia: [],
+  notaFragancia: '',
+  afectivaFragancia: 7,
+  afectivaAroma: 7,
+  notaAfectivaFragancia: '',
+  intensidadSabor: 8,
+  intensidadSaborResidual: 8,
+  descriptoresSabor: [],
+  gustos: [],
+  notaSabor: '',
+  afectivoSabor: 7,
+  afectivoSaborResidual: 7,
+  notaAfectivoSabor: '',
+  intensidadAcidez: 8,
+  notaAcidez: '',
+  afectivoAcidez: 7,
+  intensidadDulzor: 8,
+  notaDulzor: '',
+  afectivoDulzor: 7,
+  intensidadBoca: 8,
+  texturas: [],
+  notaBoca: '',
+  afectivoBoca: 7,
+  afectivoGlobal: 7,
+  notaGlobal: '',
+};
+
+function leerBorrador(clave) {
+  if (!clave) return null;
+  try {
+    const borrador = JSON.parse(sessionStorage.getItem(clave));
+    return borrador?.tazas?.length === 5 ? borrador : null;
+  } catch {
+    return null;
+  }
+}
+
 export default function EvaluacionModal({ isOpen, onClose, evaluacion, onFinalizar }) {
+  const usuarioId = useAuthStore((state) => state.user?.id);
+  const clave = usuarioId && evaluacion?.id ? `catacion:borrador:v1:${usuarioId}:${evaluacion.id}` : null;
+  const [borrador] = useState(() => leerBorrador(clave));
+  const [enviando, setEnviando] = useState(false);
+  const [fase, setFase] = useState(borrador?.fase ?? 0);
+  const [indiceTaza, setIndiceTaza] = useState(borrador?.indiceTaza ?? 0);
+  const [tazas, setTazas] = useState(() => borrador?.tazas ?? Array.from({ length: 5 }, () => ({
+    respuestas: { ...RESPUESTAS_INICIALES },
+    confirmadas: [],
+  })));
+  const taza = tazas[indiceTaza].respuestas;
+  const completas = tazas.every((item) => item.confirmadas.length === 8);
 
-  const [nivelTueste,             setNivelTueste]             = useState(3);
-  const [intensidadFragancia,     setIntensidadFragancia]     = useState(8);
-  const [intensidadAroma,         setIntensidadAroma]         = useState(8);
-  const [descriptoresFragancia,   setDescriptoresFragancia]   = useState([]);
-  const [notaFragancia,           setNotaFragancia]           = useState('');
+  const actualizar = (campo) => (valor) => {
+    setTazas((prev) => prev.map((item, indice) => indice === indiceTaza ? {
+      respuestas: {
+        ...item.respuestas,
+        [campo]: typeof valor === 'function' ? valor(item.respuestas[campo]) : valor,
+      },
+      confirmadas: item.confirmadas.filter((numero) => numero !== fase),
+    } : item));
+  };
 
-  const [afectivaFragancia,       setAfectivaFragancia]       = useState(7);
-  const [afectivaAroma,           setAfectivaAroma]           = useState(7);
-  const [notaAfectivaFragancia,   setNotaAfectivaFragancia]   = useState('');
+  const confirmarTaza = () => {
+    setTazas((prev) => prev.map((item, indice) => indice === indiceTaza ? {
+      ...item,
+      confirmadas: [...new Set([...item.confirmadas, fase])],
+    } : item));
+    const siguiente = tazas.findIndex((item, indice) =>
+      indice !== indiceTaza && !item.confirmadas.includes(fase)
+    );
+    setIndiceTaza(siguiente < 0 ? 0 : siguiente);
+    if (siguiente < 0) setFase(fase + 1);
+  };
 
-  const [intensidadSabor,         setIntensidadSabor]         = useState(8);
-  const [intensidadSaborResidual, setIntensidadSaborResidual] = useState(8);
-  const [descriptoresSabor,       setDescriptoresSabor]       = useState([]);
-  const [gustos,                  setGustos]                  = useState([]);
-  const [notaSabor,               setNotaSabor]               = useState('');
+  const [tazasNoUniformes, setTazasNoUniformes] = useState(borrador?.tazasNoUniformes ?? []);
+  const [tazasDefectuosas, setTazasDefectuosas] = useState(borrador?.tazasDefectuosas ?? []);
+  const [tipoDefecto, setTipoDefecto] = useState(borrador?.tipoDefecto ?? 'ninguno');
+  const [notaFinal, setNotaFinal] = useState(borrador?.notaFinal ?? '');
 
-  const [afectivoSabor,           setAfectivoSabor]           = useState(7);
-  const [afectivoSaborResidual,   setAfectivoSaborResidual]   = useState(7);
-  const [notaAfectivoSabor,       setNotaAfectivoSabor]       = useState('');
-
-  const [intensidadAcidez,        setIntensidadAcidez]        = useState(8);
-  const [notaAcidez,              setNotaAcidez]              = useState('');
-  const [afectivoAcidez,          setAfectivoAcidez]          = useState(7);
-
-  const [intensidadDulzor,        setIntensidadDulzor]        = useState(8);
-  const [notaDulzor,              setNotaDulzor]              = useState('');
-  const [afectivoDulzor,          setAfectivoDulzor]          = useState(7);
-
-  const [intensidadBoca,          setIntensidadBoca]          = useState(8);
-  const [texturas,                setTexturas]                = useState([]);
-  const [notaBoca,                setNotaBoca]                = useState('');
-  const [afectivoBoca,            setAfectivoBoca]            = useState(7);
-
-  const [afectivoGlobal,          setAfectivoGlobal]          = useState(7);
-  const [notaGlobal,              setNotaGlobal]              = useState('');
-
-  const [tazasNoUniformes,        setTazasNoUniformes]        = useState([]);
-  const [tazasDefectuosas,        setTazasDefectuosas]        = useState([]);
-  const [tipoDefecto,             setTipoDefecto]             = useState('ninguno');
-  const [notaFinal,               setNotaFinal]               = useState('');
+  useEffect(() => {
+    if (!isOpen || !clave) return;
+    try {
+      sessionStorage.setItem(clave, JSON.stringify({
+        fase, indiceTaza, tazas, tazasNoUniformes, tazasDefectuosas, tipoDefecto, notaFinal,
+      }));
+    } catch {
+      // El formulario sigue disponible si el navegador bloquea el almacenamiento.
+    }
+  }, [isOpen, clave, fase, indiceTaza, tazas, tazasNoUniformes, tazasDefectuosas, tipoDefecto, notaFinal]);
 
   // ── Puntuación ───────────────────────────────────────────────────────────────
-  const { puntuacionTotal, categoria } = useMemo(() => {
-    const suma = afectivaFragancia + afectivaAroma + afectivoSabor + afectivoSaborResidual +
-      afectivoAcidez + afectivoDulzor + afectivoBoca + afectivoGlobal;
+  const { puntuacionTotal, categoria } = (() => {
+    const suma = tazas.reduce((total, { respuestas: r }) => total + r.afectivaFragancia +
+      r.afectivaAroma + r.afectivoSabor + r.afectivoSaborResidual + r.afectivoAcidez +
+      r.afectivoDulzor + r.afectivoBoca + r.afectivoGlobal, 0) / tazas.length;
     const base = (suma / 72) * 100;
     const penUnif = tazasNoUniformes.length * 2;
     let fd = 2;
@@ -173,236 +209,281 @@ export default function EvaluacionModal({ isOpen, onClose, evaluacion, onFinaliz
     else if (score >= 85) cat = { label: 'Especial Excelente',   color: 'text-primary-800 bg-primary-100 border-primary-300' };
     else if (score >= 80) cat = { label: 'Especial Muy Bueno',   color: 'text-secondary-700 bg-secondary-50 border-secondary-300' };
     return { puntuacionTotal: score.toFixed(2), categoria: cat };
-  }, [afectivaFragancia, afectivaAroma, afectivoSabor, afectivoSaborResidual, afectivoAcidez, afectivoDulzor, afectivoBoca, afectivoGlobal, tazasNoUniformes, tazasDefectuosas, tipoDefecto]);
+  })();
 
   const toggleMulti = (setter) => (id) =>
     setter((prev) => prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    onFinalizar({
-      evaluacionId: evaluacion?.id,
-      evaluacionNombre: evaluacion?.nombre,
-      puntuacionTotal,
-      categoria: categoria.label,
-      nivelTueste,
-    });
+    if (fase !== 9 || !completas || enviando) return;
+    setEnviando(true);
+    try {
+      await onFinalizar({
+        evaluacionId: evaluacion?.id,
+        evaluacionNombre: evaluacion?.nombre,
+        puntuacionTotal,
+        categoria: categoria.label,
+        nivelTueste: tazas[0].respuestas.nivelTueste,
+      });
+      if (clave) {
+        try { sessionStorage.removeItem(clave); } catch { /* Almacenamiento bloqueado. */ }
+      }
+    } catch {
+      // El Provider muestra el error y el borrador queda disponible para reintentar.
+    } finally {
+      setEnviando(false);
+    }
   };
 
   return (
     <ModalBase
       isOpen={isOpen}
-      onClose={onClose}
+      onClose={() => { if (!enviando) onClose(); }}
       title={evaluacion?.nombre || 'Hoja de Evaluación Sensorial SCA'}
       size="full"
     >
       <form onSubmit={handleSubmit}>
-        <div className="max-h-[80vh] overflow-y-auto pr-1 space-y-0">
+        <div className="space-y-4">
+          <div className="rounded-lg bg-surface-50 px-3 py-2">
+            <p className="break-words font-mono text-xs font-bold text-surface-700">
+              {evaluacion?.codigo || evaluacion?.id || 'Sesión activa'}
+            </p>
+            {evaluacion?.objetivo && <p className="mt-1 text-xs text-surface-600">{evaluacion.objetivo}</p>}
+          </div>
 
-          {/* Banner de sesión */}
-          <div className="bg-surface-50 border border-surface-200 rounded-xl px-4 py-3 mb-4 flex items-center justify-between gap-3">
-            <div>
-              <span className="text-[10px] font-mono font-bold text-surface-400 uppercase tracking-widest">
-                {evaluacion?.id || 'SESION-ACTIVA'}
-              </span>
-              <p className="text-xs text-surface-600 mt-0.5 leading-snug max-w-lg">
-                {evaluacion?.objetivo}
-              </p>
-            </div>
-            <div className="shrink-0 text-right">
-              <span className="text-[10px] text-surface-400 block">Muestras</span>
-              <span className="text-lg font-bold text-surface-800">{evaluacion?.cantidadMuestras || 8}</span>
+          <div role="group" aria-label="Ir a una fase">
+            <p className="mb-2 text-xs font-semibold text-surface-700">Ir a una fase</p>
+            <div className="flex flex-wrap gap-2">
+              {FASES.map((nombre, indice) => (
+                <Button key={nombre} type="button" size="sm" variant={fase === indice ? 'primary' : 'outline'}
+                  aria-current={fase === indice ? 'step' : undefined}
+                  aria-label={indice < 8 ? `Fase ${indice + 1}: ${nombre}` : nombre}
+                  title={nombre} onClick={() => setFase(indice)}>
+                  {indice < 8 ? `Fase ${indice + 1}` : indice === 8 ? 'Defectos' : 'Resultado'}
+                </Button>
+              ))}
             </div>
           </div>
+
+          {fase < 8 && (
+            <section className="rounded-xl border border-surface-200 bg-surface-50 p-3 sm:p-4">
+              <div className="mb-3 flex flex-wrap items-center justify-between gap-1">
+                <h3 className="text-sm font-semibold text-surface-900">{FASES[fase]}</h3>
+                <p className="text-xs text-surface-600" aria-live="polite">
+                  {tazas.filter((item) => item.confirmadas.includes(fase)).length} de {tazas.length} confirmadas
+                </p>
+              </div>
+              <div role="group" aria-label="Seleccionar taza" className="grid grid-cols-5 gap-1.5 sm:gap-2">
+                {tazas.map((item, indice) => {
+                  const confirmada = item.confirmadas.includes(fase);
+                  const activa = indice === indiceTaza;
+                  return (
+                    <button key={indice} type="button" aria-pressed={activa}
+                      aria-label={`Taza ${indice + 1}${confirmada ? ', confirmada' : ''}`}
+                      title={`Taza ${indice + 1}${confirmada ? ' · Confirmada' : ''}`}
+                      onClick={() => setIndiceTaza(indice)}
+                      className={cn('relative flex min-w-0 cursor-pointer flex-col items-center gap-1 rounded-lg border px-1 py-2 text-[11px] font-semibold focus-visible:outline-2 focus-visible:outline-brand-terracota',
+                        activa ? 'border-brand-terracota bg-brand-tint text-brand-terracota'
+                          : 'border-surface-200 bg-white text-surface-700 hover:border-brand-terracota/40')}>
+                      <Coffee className="h-5 w-5" aria-hidden="true" />
+                      <span>Taza {indice + 1}</span>
+                      {confirmada && <Check className="absolute right-1 top-1 h-3 w-3 text-emerald-700" aria-hidden="true" />}
+                    </button>
+                  );
+                })}
+              </div>
+            </section>
+          )}
+        </div>
+
+        <div key={`${fase}-${indiceTaza}`} className="mt-4 max-h-[40dvh] overflow-y-auto pr-1">
 
           {/* ════════════════════════════════════════════════════
               FASE 1 — EVALUACIÓN DESCRIPTIVA
           ════════════════════════════════════════════════════ */}
-          <div className="py-4">
-            <FaseHeader num={1} title="Evaluación descriptiva" />
+          <div className="py-4" hidden={fase !== 0}>
 
             {/* Nivel de tueste */}
             <SubSection label="Nivel de tueste">
-              <RoastLevelBar value={nivelTueste} onChange={setNivelTueste} />
+              <RoastLevelBar value={taza.nivelTueste} onChange={actualizar('nivelTueste')} />
             </SubSection>
 
             {/* Fragancia */}
             <SubSection label="Fragancia">
               <p className="text-[11px] text-surface-500 -mt-1">Intensidad</p>
-              <IntensityBar value={intensidadFragancia} onChange={setIntensidadFragancia} />
+              <IntensityBar value={taza.intensidadFragancia} onChange={actualizar('intensidadFragancia')} />
             </SubSection>
 
             {/* Aroma */}
             <SubSection label="Aroma">
               <p className="text-[11px] text-surface-500 -mt-1">Intensidad</p>
-              <IntensityBar value={intensidadAroma} onChange={setIntensidadAroma} />
+              <IntensityBar value={taza.intensidadAroma} onChange={actualizar('intensidadAroma')} />
             </SubSection>
 
             {/* Descriptores de fragancia */}
             <SubSection>
               <DescriptoresSelector
                 titulo="Selecciona al menos una opción:"
-                selected={descriptoresFragancia}
-                onChange={setDescriptoresFragancia}
+                selected={taza.descriptoresFragancia}
+                onChange={actualizar('descriptoresFragancia')}
               />
             </SubSection>
 
-            <NoteField value={notaFragancia} onChange={setNotaFragancia} />
+            <NoteField value={taza.notaFragancia} onChange={actualizar('notaFragancia')} />
           </div>
 
-          <FaseDivider />
 
           {/* ════════════════════════════════════════════════════
               FASE 2 — EVALUACIÓN AFECTIVA (FRAGANCIA/AROMA)
           ════════════════════════════════════════════════════ */}
-          <div className="py-4">
-            <FaseHeader num={2} title="Evaluación afectiva" />
+          <div className="py-4" hidden={fase !== 1}>
 
             <SubSection label="Fragancia">
-              <RatingScale1to9 value={afectivaFragancia} onChange={setAfectivaFragancia} />
+              <RatingScale1to9 value={taza.afectivaFragancia} onChange={actualizar('afectivaFragancia')} />
             </SubSection>
 
             <SubSection label="Aroma">
-              <RatingScale1to9 value={afectivaAroma} onChange={setAfectivaAroma} />
+              <RatingScale1to9 value={taza.afectivaAroma} onChange={actualizar('afectivaAroma')} />
             </SubSection>
 
-            <NoteField value={notaAfectivaFragancia} onChange={setNotaAfectivaFragancia} />
+            <NoteField value={taza.notaAfectivaFragancia} onChange={actualizar('notaAfectivaFragancia')} />
           </div>
 
-          <FaseDivider />
 
           {/* ════════════════════════════════════════════════════
               FASE 3 — SABOR Y SABOR RESIDUAL (DESCRIPTIVA)
           ════════════════════════════════════════════════════ */}
-          <div className="py-4">
-            <FaseHeader num={3} title="Sabor y Sabor Residual (descriptiva)" />
+          <div className="py-4" hidden={fase !== 2}>
 
             <SubSection label="Sabor">
               <p className="text-[11px] text-surface-500 -mt-1">Intensidad</p>
-              <IntensityBar value={intensidadSabor} onChange={setIntensidadSabor} />
+              <IntensityBar value={taza.intensidadSabor} onChange={actualizar('intensidadSabor')} />
             </SubSection>
 
             <SubSection label="Sabor Residual (Aftertaste)">
               <p className="text-[11px] text-surface-500 -mt-1">Intensidad</p>
-              <IntensityBar value={intensidadSaborResidual} onChange={setIntensidadSaborResidual} />
+              <IntensityBar value={taza.intensidadSaborResidual} onChange={actualizar('intensidadSaborResidual')} />
             </SubSection>
 
             <SubSection>
               <DescriptoresSelector
                 titulo="Descriptores de sabor:"
-                selected={descriptoresSabor}
-                onChange={setDescriptoresSabor}
+                selected={taza.descriptoresSabor}
+                onChange={actualizar('descriptoresSabor')}
               />
             </SubSection>
 
             <SubSection label="Gustos Predominantes">
-              <Chips items={GUSTOS} selected={gustos} onToggle={toggleMulti(setGustos)} />
+              <Chips items={GUSTOS} selected={taza.gustos} onToggle={toggleMulti(actualizar('gustos'))} />
             </SubSection>
 
-            <NoteField value={notaSabor} onChange={setNotaSabor} />
+            <NoteField value={taza.notaSabor} onChange={actualizar('notaSabor')} />
+            <details className="mt-4 rounded-lg border border-surface-200 p-3 text-sm">
+              <summary className="cursor-pointer font-semibold">Comparar sabor entre tazas</summary>
+              <ul className="mt-2 divide-y divide-surface-100">
+                {tazas.map((item, indice) => (
+                  <li key={indice} className="py-2">
+                    <strong>Taza {indice + 1}</strong>{' · '}
+                    {item.confirmadas.includes(2)
+                      ? `Sabor ${item.respuestas.intensidadSabor} · Residual ${item.respuestas.intensidadSaborResidual}${item.respuestas.notaSabor ? ` · ${item.respuestas.notaSabor}` : ''}`
+                      : 'Pendiente de confirmar'}
+                  </li>
+                ))}
+              </ul>
+            </details>
           </div>
 
-          <FaseDivider />
 
           {/* ════════════════════════════════════════════════════
               FASE 4 — SABOR (AFECTIVA)
           ════════════════════════════════════════════════════ */}
-          <div className="py-4">
-            <FaseHeader num={4} title="Sabor y Sabor Residual (afectiva)" />
+          <div className="py-4" hidden={fase !== 3}>
 
             <SubSection label="Sabor">
-              <RatingScale1to9 value={afectivoSabor} onChange={setAfectivoSabor} />
+              <RatingScale1to9 value={taza.afectivoSabor} onChange={actualizar('afectivoSabor')} />
             </SubSection>
 
             <SubSection label="Sabor Residual">
-              <RatingScale1to9 value={afectivoSaborResidual} onChange={setAfectivoSaborResidual} />
+              <RatingScale1to9 value={taza.afectivoSaborResidual} onChange={actualizar('afectivoSaborResidual')} />
             </SubSection>
 
-            <NoteField value={notaAfectivoSabor} onChange={setNotaAfectivoSabor} />
+            <NoteField value={taza.notaAfectivoSabor} onChange={actualizar('notaAfectivoSabor')} />
           </div>
 
-          <FaseDivider />
 
           {/* ════════════════════════════════════════════════════
               FASE 5 — ACIDEZ
           ════════════════════════════════════════════════════ */}
-          <div className="py-4">
-            <FaseHeader num={5} title="Acidez" />
+          <div className="py-4" hidden={fase !== 4}>
 
             <SubSection label="Intensidad">
-              <IntensityBar value={intensidadAcidez} onChange={setIntensidadAcidez} />
+              <IntensityBar value={taza.intensidadAcidez} onChange={actualizar('intensidadAcidez')} />
             </SubSection>
 
             <SubSection label="Calidad / Agrado">
-              <RatingScale1to9 value={afectivoAcidez} onChange={setAfectivoAcidez} />
+              <RatingScale1to9 value={taza.afectivoAcidez} onChange={actualizar('afectivoAcidez')} />
             </SubSection>
 
-            <NoteField value={notaAcidez} onChange={setNotaAcidez} placeholder="Tipo: málica, cítrica, fosfórica..." />
+            <NoteField value={taza.notaAcidez} onChange={actualizar('notaAcidez')} placeholder="Tipo: málica, cítrica, fosfórica..." />
           </div>
 
-          <FaseDivider />
 
           {/* ════════════════════════════════════════════════════
               FASE 6 — DULZOR
           ════════════════════════════════════════════════════ */}
-          <div className="py-4">
-            <FaseHeader num={6} title="Dulzor" />
+          <div className="py-4" hidden={fase !== 5}>
 
             <SubSection label="Intensidad">
-              <IntensityBar value={intensidadDulzor} onChange={setIntensidadDulzor} />
+              <IntensityBar value={taza.intensidadDulzor} onChange={actualizar('intensidadDulzor')} />
             </SubSection>
 
             <SubSection label="Calidad / Agrado">
-              <RatingScale1to9 value={afectivoDulzor} onChange={setAfectivoDulzor} />
+              <RatingScale1to9 value={taza.afectivoDulzor} onChange={actualizar('afectivoDulzor')} />
             </SubSection>
 
-            <NoteField value={notaDulzor} onChange={setNotaDulzor} placeholder="Caña, panela, melaza, caramelo..." />
+            <NoteField value={taza.notaDulzor} onChange={actualizar('notaDulzor')} placeholder="Caña, panela, melaza, caramelo..." />
           </div>
 
-          <FaseDivider />
 
           {/* ════════════════════════════════════════════════════
               FASE 7 — SENSACIÓN EN BOCA
           ════════════════════════════════════════════════════ */}
-          <div className="py-4">
-            <FaseHeader num={7} title="Sensación en Boca" />
+          <div className="py-4" hidden={fase !== 6}>
 
             <SubSection label="Intensidad">
-              <IntensityBar value={intensidadBoca} onChange={setIntensidadBoca} />
+              <IntensityBar value={taza.intensidadBoca} onChange={actualizar('intensidadBoca')} />
             </SubSection>
 
             <SubSection label="Textura / Cualidad">
-              <Chips items={TEXTURAS} selected={texturas} onToggle={toggleMulti(setTexturas)} />
+              <Chips items={TEXTURAS} selected={taza.texturas} onToggle={toggleMulti(actualizar('texturas'))} />
             </SubSection>
 
             <SubSection label="Calidad / Agrado">
-              <RatingScale1to9 value={afectivoBoca} onChange={setAfectivoBoca} />
+              <RatingScale1to9 value={taza.afectivoBoca} onChange={actualizar('afectivoBoca')} />
             </SubSection>
 
-            <NoteField value={notaBoca} onChange={setNotaBoca} placeholder="Sensación táctil, peso, textura..." />
+            <NoteField value={taza.notaBoca} onChange={actualizar('notaBoca')} placeholder="Sensación táctil, peso, textura..." />
           </div>
 
-          <FaseDivider />
 
           {/* ════════════════════════════════════════════════════
               FASE 8 — IMPRESIÓN GLOBAL
           ════════════════════════════════════════════════════ */}
-          <div className="py-4">
-            <FaseHeader num={8} title="Impresión Global" />
+          <div className="py-4" hidden={fase !== 7}>
 
             <SubSection label="Calidad / Agrado Global">
-              <RatingScale1to9 value={afectivoGlobal} onChange={setAfectivoGlobal} />
+              <RatingScale1to9 value={taza.afectivoGlobal} onChange={actualizar('afectivoGlobal')} />
             </SubSection>
 
-            <NoteField value={notaGlobal} onChange={setNotaGlobal} placeholder="Balance general, armonía, estructura..." />
+            <NoteField value={taza.notaGlobal} onChange={actualizar('notaGlobal')} placeholder="Balance general, armonía, estructura..." />
           </div>
 
-          <FaseDivider />
 
           {/* ════════════════════════════════════════════════════
               UNIFORMIDAD Y DEFECTOS
           ════════════════════════════════════════════════════ */}
-          <div className="py-4">
+          <div className="py-4" hidden={fase !== 8}>
             <div className="flex items-center gap-2.5 mb-4">
               <span className="inline-flex items-center gap-1.5 bg-amber-500 text-white text-[11px] font-bold px-3 py-1 rounded-full select-none">
                 <AlertTriangle className="w-3 h-3" />
@@ -455,19 +536,19 @@ export default function EvaluacionModal({ isOpen, onClose, evaluacion, onFinaliz
             </SubSection>
           </div>
 
-          <FaseDivider />
 
           {/* ════════════════════════════════════════════════════
               RESULTADO FINAL
           ════════════════════════════════════════════════════ */}
-          <div className="py-4 space-y-4">
+          <div className="py-4 space-y-4" hidden={fase !== 9}>
+            {!completas && <p className="text-sm text-surface-600">Confirma las cinco tazas en cada fase para enviar la evaluación.</p>}
             {/* Tarjeta de score */}
             <div className="bg-surface-50 border border-surface-200 rounded-xl p-4 flex flex-col sm:flex-row sm:items-center gap-4">
               <div className="flex items-end gap-2">
                 <Award className="w-6 h-6 text-primary-600 mb-0.5 flex-shrink-0" />
                 <div>
                   <span className="text-[10px] uppercase tracking-widest text-surface-400 font-bold block">
-                    Puntuación SCA
+                    Puntuación SCA de la sesión
                   </span>
                   <div className="flex items-baseline gap-1.5">
                     <span className="text-4xl font-extrabold text-surface-900 font-mono leading-none">
@@ -509,16 +590,17 @@ export default function EvaluacionModal({ isOpen, onClose, evaluacion, onFinaliz
         </div>
 
         {/* Botones */}
-        <div className="flex items-center justify-end gap-3 pt-3 border-t border-surface-200 mt-2">
-          <Button type="button" variant="outline" onClick={onClose}>Cancelar</Button>
-          <Button
-            type="submit"
-            variant="primary"
-            className="flex items-center gap-2 px-6 font-bold shadow-sm"
-          >
-            <Send className="w-4 h-4" />
-            Enviar Evaluación
-          </Button>
+        <div className="mt-2 flex flex-wrap items-center justify-end gap-3 border-t border-surface-200 pt-3">
+          <Button type="button" variant="outline" disabled={enviando} onClick={onClose}>Cerrar hoja</Button>
+          {fase < 8 ? (
+            <Button type="button" onClick={confirmarTaza}>Confirmar taza y continuar</Button>
+          ) : fase === 8 ? (
+            <Button type="button" onClick={() => setFase(9)}>Revisar resultado</Button>
+          ) : (
+            <Button type="submit" disabled={!completas} loading={enviando}>
+              <Send className="h-4 w-4" /> Enviar evaluación
+            </Button>
+          )}
         </div>
       </form>
     </ModalBase>

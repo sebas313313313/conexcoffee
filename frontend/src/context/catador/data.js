@@ -1,6 +1,22 @@
 import { mapSesionYAnalisisSensorial } from '../mappers.js';
 
-export function selectCatadorData({ rawPreofertas, rawCaficultores, rawFincas, rawLotes, rawVariedades, rawCatadores, rawEvaluacionesFisicas, rawSesionesCatacion }) {
+const sesionesDePrueba = [
+  ['G01', 'Geisha Natural de Piendamó'],
+  ['B02', 'Borbón Rosado Lavado de Morales'],
+  ['C03', 'Castillo de El Tambo'],
+].map(([referencia, nombre]) => ({
+  id: `demo-catacion-${referencia}`,
+  codigo: `DEMO-${referencia}`,
+  nombre: `Catación de prueba · ${nombre}`,
+  objetivo: 'Practicar el diligenciamiento de la evaluación sensorial.',
+  cantidadMuestras: 1,
+  estado: referencia === 'G01' ? 'Completada' : 'Pendiente',
+  ...(referencia === 'G01' ? { puntuacionTotal: 88.75 } : {}),
+  unido: true,
+  esDePrueba: true,
+}));
+
+export function selectCatadorData({ rawPreofertas, rawCaficultores, rawFincas, rawLotes, rawVariedades, rawCatadores, rawEvaluacionesFisicas, rawSesionesCatacion }, previous) {
   const mapped = rawSesionesCatacion.map((ses) =>
     mapSesionYAnalisisSensorial(ses, {
       preofertas: rawPreofertas,
@@ -21,13 +37,15 @@ export function selectCatadorData({ rawPreofertas, rawCaficultores, rawFincas, r
     variedades: rawVariedades,
     catadores: rawCatadores,
     evaluacionesFisicas: rawEvaluacionesFisicas,
-    evaluaciones: mapped,
+    evaluaciones: import.meta.env?.DEV
+      ? [...mapped, ...(previous?.evaluaciones?.filter((item) => item.esDePrueba) ?? sesionesDePrueba)]
+      : mapped,
   };
 }
 
 export const catadorData = {
   createInitialState: () => ({
-    evaluaciones: [],
+    evaluaciones: import.meta.env?.DEV ? sesionesDePrueba : [],
     preofertas: [],
     caficultores: [],
     fincas: [],
@@ -44,7 +62,7 @@ export const catadorData = {
     rawVariedades: '/variedades-cafe',
     rawCatadores: '/catadores',
     rawEvaluacionesFisicas: '/evaluaciones-fisicas',
-    rawSesionesCatacion: '/sesiones-catacion',
+    rawSesionesCatacion: { url: '/sesiones-catacion', allPages: true, strictResponse: true },
   },
   routes: {},
   allSources: ["rawPreofertas", "rawCaficultores", "rawFincas", "rawLotes", "rawVariedades", "rawCatadores", "rawEvaluacionesFisicas", "rawSesionesCatacion"],

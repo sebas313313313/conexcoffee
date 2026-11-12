@@ -33,12 +33,18 @@ export function DestinoContenedorPage() {
   const { destinoId } = useParams();
   const [searchParams, setSearchParams] = useSearchParams();
   const loteParam = searchParams.get('lote');
-
   const destino = getDestinoById(destinoId);
   const selectedLote = destino?.lotes.find((l) => l.id === loteParam) || null;
 
+  return <DestinoContenedor key={`${destinoId}/${loteParam ?? ''}`}
+    destino={destino} selectedLote={selectedLote} setSearchParams={setSearchParams} />;
+}
+
+function DestinoContenedor({ destino, selectedLote, setSearchParams }) {
   const containerRef = useRef(null);
   const detailRef = useRef(null);
+  const addItem = useCartStore((s) => s.addItem);
+  const openCart = useCartStore((s) => s.openCart);
 
   // Estados de la vista de detalle ("Conoce más")
   const [slideIdx, setSlideIdx] = useState(0);
@@ -47,10 +53,7 @@ export function DestinoContenedorPage() {
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
-    setSlideIdx(0);
-    setCajasQty(1);
-    setMuestraQty(1);
-  }, [destinoId, loteParam]);
+  }, []);
 
   // Animación para la lista de lotes del contenedor
   useEffect(() => {
@@ -72,7 +75,7 @@ export function DestinoContenedorPage() {
       duration: 620,
       ease: 'outCubic',
     });
-  }, [destinoId, selectedLote]);
+  }, [selectedLote]);
 
   // Animación para la vista "Conoce más"
   useEffect(() => {
@@ -108,9 +111,6 @@ export function DestinoContenedorPage() {
       </div>
     );
   }
-
-  const addItem = useCartStore((s) => s.addItem);
-  const openCart = useCartStore((s) => s.openCart);
 
   const handleOpenLote = (loteId) => {
     setSearchParams({ lote: loteId });
