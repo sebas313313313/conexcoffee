@@ -7,8 +7,15 @@ export function createCatadorActions(state, setters) {
   const { setEvaluaciones } = setters;
 
   const updateEvaluacion = async (id, payload) => {
+    if (import.meta.env.DEV && state.evaluaciones.some((item) => item.id === id && item.esDePrueba)) {
+      setEvaluaciones((prev) => prev.map((item) => item.id === id ? { ...item, ...payload } : item));
+      toast.success('Evaluación de prueba actualizada');
+      return;
+    }
     try {
-      const { data } = await axiosClient.put(`/sesiones-catacion/${id}`, payload);
+      const { data } = await axiosClient.put(`/sesiones-catacion/${id}`, payload, {
+        strictResponse: payload.estado === 'Completada',
+      });
       setEvaluaciones((prev) =>
         prev.map((ev) =>
           ev.id === id

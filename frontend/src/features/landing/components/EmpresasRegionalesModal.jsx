@@ -321,7 +321,13 @@ export default function EmpresasRegionalesModal({ isOpen, onClose }) {
 
                   {/* Mapa geográfico real; los pines conservan el selector de empresas. */}
                   <div className="relative w-full aspect-4/5 bg-stone-950 rounded-lg border border-stone-800 overflow-hidden flex items-center justify-center p-2">
-                    <iframe title="Mapa de Colombia" src="https://www.openstreetmap.org/export/embed.html?bbox=-79.2%2C-4.9%2C-66.7%2C13.8&layer=mapnik" className="absolute inset-0 h-full w-full border-0 opacity-85" loading="lazy" />
+                    <iframe
+                      title="Mapa de Colombia"
+                      src="https://www.openstreetmap.org/export/embed.html?bbox=-79.2%2C-4.9%2C-66.7%2C13.8&layer=mapnik"
+                      className="absolute inset-0 h-full w-full border-0 opacity-85"
+                      loading="lazy"
+                      sandbox="allow-scripts allow-popups"
+                    />
                     {/* Silueta vectorial esquemática de Colombia */}
                     <svg
                       viewBox="0 0 300 380"
