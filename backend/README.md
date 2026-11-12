@@ -140,3 +140,10 @@ npm run dev
 # Ejecutar tests de integración automatizados
 node scripts/test-api.js
 ```
+## Ofertas de productores sin cuenta
+
+En `backend`, ejecuta `npm run db:migrate:ofertas-externas` sobre la base configurada antes de usar el formulario `/agregar-producto` y el listado `/empresa/ofertas-libres`. La migración agrega `personas.productores_externos` y `cosechas.ofertas_productores_externos`.
+
+Los enlaces de confirmación y de invitación se envían por Resend. Configura `RESEND`, `EMAIL_FROM` (remitente verificado) y `FRONTEND_URL` (origen del frontend). En producción configura `TURNSTILE_SECRET_KEY` en el backend y `VITE_TURNSTILE_SITE_KEY` en el frontend.
+
+El productor dispone de 24 horas para confirmar su publicación. Las ofertas confirmadas duran 15 días. Una empresa puede reservar al productor mediante una invitación de hasta tres días, limitada por la vigencia de la oferta. Al aceptar, se crean la cuenta y el perfil dentro de la misma transacción. Las demás ofertas de ese productor quedan registradas y salen del listado para nuevas vinculaciones. El backend revisa cada diez minutos las ofertas vencidas para avisar por correo.

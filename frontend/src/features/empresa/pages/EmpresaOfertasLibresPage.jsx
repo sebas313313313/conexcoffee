@@ -18,6 +18,7 @@ import {
   useCrearEmpresaPreoferta,
 } from '../hooks/useEmpresaData';
 import DetalleOfertaLibreModal from '../components/DetalleOfertaLibreModal';
+import OfertasProductoresExternos from '../components/OfertasProductoresExternos';
 
 export default function EmpresaOfertasLibresPage() {
   const navigate = useNavigate();
@@ -160,6 +161,8 @@ export default function EmpresaOfertasLibresPage() {
           <ArrowRight className="w-3.5 h-3.5 text-stone-400" />
         </button>
       </div>
+
+      <OfertasProductoresExternos />
 
       {/* Barra de Filtros y Búsqueda en la parte superior */}
       <div className="bg-white rounded-2xl p-4 border border-stone-200 shadow-xs flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">

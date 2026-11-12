@@ -10,6 +10,7 @@
     "db:seed": "node scripts/seed-fake-data.js",
     "db:create-superadmin": "node scripts/create-superadmin.js",
     "db:migrate:qr-asignaciones": "node scripts/migrate-qr-evaluations.js",
+    "db:migrate:ofertas-externas": "node scripts/migrate-ofertas-externas.js",
     "test": "node scripts/test-api.js",
     "test:stress": "k6 run k6/stress-test.js",
     "test:stress:quick": "k6 run --vus 20 --duration 20s k6/stress-test.js",

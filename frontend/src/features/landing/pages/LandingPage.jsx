@@ -68,7 +68,7 @@ const HERO_SLIDES = [
       to: '/destinos',
     },
     secondaryBtn: {
-      text: 'Publicar Producto',
+      text: 'Publicar café',
       to: '/agregar-producto',
     },
   },

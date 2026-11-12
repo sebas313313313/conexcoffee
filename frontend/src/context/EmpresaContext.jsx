@@ -1,4 +1,5 @@
 import { createEmpresaPrecintosActions } from './empresa/precintos';
+import { listarOfertasExternas, invitarProductorExterno } from './empresa/ofertasExternas';
 import { createContext, useMemo } from 'react';
 import { useRoleData } from './shared/useRoleData';
 import { empresaData } from './empresa/data';
@@ -14,6 +15,8 @@ export const EmpresaProvider = ({ children }) => {
   const precintosActions = useMemo(() => createEmpresaPrecintosActions(setters), [setters]);
   const value = useMemo(() => ({
     ...precintosActions,
+    listarOfertasExternas,
+    invitarProductorExterno,
     precintos: state.precintos,
     precintosMeta: state.precintosMeta,
     loading,

@@ -12,6 +12,7 @@ import { AuthLayout, DashboardLayout, PublicLayout } from '@/layouts';
 // Context Providers por Rol
 import { SuperAdminProvider } from '@/context/SuperAdminContext';
 import { EmpresaProvider } from '@/context/EmpresaContext';
+import { OfertasExternasProvider } from '@/context/OfertasExternasContext';
 import { BrokerProvider } from '@/context/BrokerContext';
 import { CaficultorProvider } from '@/context/CaficultorContext';
 import { CompradorProvider } from '@/context/CompradorContext';
@@ -30,7 +31,7 @@ import { ROLES } from '@/lib/constants';
 const lazyPage = (loader, name) =>
   lazy(() => loader().then((module) => ({ default: module[name] })));
 
-const page = (Component) => (
+const page = (Component, props) => (
   <Suspense
     fallback={
       <div className="flex items-center justify-center min-h-[50vh]">
@@ -38,7 +39,7 @@ const page = (Component) => (
       </div>
     }
   >
-    <Component />
+    <Component {...props} />
   </Suspense>
 );
 
@@ -182,7 +183,9 @@ const router = createBrowserRouter([
       { path: '/blog', element: page(BlogPage) },
       { path: '/contacto', element: page(ContactPage) },
       { path: '/contactanos', element: <Navigate to="/contacto" replace /> },
-      { path: '/agregar-producto', element: page(AddProductPage) },
+      { path: '/agregar-producto', element: <OfertasExternasProvider key="publicar">{page(AddProductPage)}</OfertasExternasProvider> },
+      { path: '/agregar-producto/confirmar', element: <OfertasExternasProvider key="confirmar">{page(AddProductPage, { mode: 'confirmar' })}</OfertasExternasProvider> },
+      { path: '/agregar-producto/invitacion', element: <OfertasExternasProvider key="invitacion">{page(AddProductPage, { mode: 'invitacion' })}</OfertasExternasProvider> },
       { path: '/trazabilidad/:token', element: <TrazabilidadProvider>{page(TrazabilidadPage)}</TrazabilidadProvider> },
       { path: '/terms', element: page(TermsPage) },
       { path: '/privacy', element: page(PrivacyPage) },

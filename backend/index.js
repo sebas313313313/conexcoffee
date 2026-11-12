@@ -29,6 +29,7 @@ import FincaRouter from './modules/fincas/router/FincaRouter.js';
 import VariedadCafeRouter from './modules/variedades_cafe/router/VariedadCafeRouter.js';
 import LoteCultivoRouter from './modules/lotes_cultivo/router/LoteCultivoRouter.js';
 import PreofertaRouter from './modules/preofertas/router/PreofertaRouter.js';
+import OfertasExternasRouter, { ofertasExternasService } from './modules/ofertas_productores_externos/OfertasExternasRouter.js';
 import InspeccionFincaRouter from './modules/inspecciones_finca/router/InspeccionFincaRouter.js';
 import EvaluacionFisicaRouter from './modules/evaluaciones_fisicas/router/EvaluacionFisicaRouter.js';
 import SesionCatacionRouter from './modules/sesiones_catacion/router/SesionCatacionRouter.js';
@@ -148,6 +149,7 @@ app.use('/api/fincas', FincaRouter);
 app.use('/api/variedades-cafe', VariedadCafeRouter);
 app.use('/api/lotes-cultivo', LoteCultivoRouter);
 app.use('/api/preofertas', PreofertaRouter);
+app.use('/api/ofertas-productores-externos', OfertasExternasRouter);
 app.use('/api/inspecciones-finca', InspeccionFincaRouter);
 app.use('/api/inspecciones-campo', InspeccionFincaRouter);
 app.use('/api/evaluaciones-fisicas', EvaluacionFisicaRouter);
@@ -188,6 +190,17 @@ app.use(errorHandler);
 const startServer = async () => {
   try {
     await connectDB();
+
+    const revisarOfertasVencidas = async () => {
+      try {
+        await ofertasExternasService.notifyExpired();
+      } catch (error) {
+        console.error('No se pudieron revisar las ofertas externas vencidas.', error.original?.code || error.name);
+      } finally {
+        setTimeout(revisarOfertasVencidas, 10 * 60 * 1000).unref();
+      }
+    };
+    void revisarOfertasVencidas();
 
     app.listen(PORT, () => {
       console.log(`====================================================`);

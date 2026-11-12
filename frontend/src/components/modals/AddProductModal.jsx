@@ -1,6 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Package, LogIn, ArrowRight } from 'lucide-react';
-import { Button } from '@/components/ui';
+import { Package } from 'lucide-react';
 import ModalBase from './ModalBase';
 import { APP_NAME } from '@/lib/constants';
 
@@ -13,7 +12,7 @@ export default function AddProductModal({ isOpen, onClose }) {
     <ModalBase
       isOpen={isOpen}
       onClose={onClose}
-      title="Publicar Lote de Café"
+      title="Publicar oferta de café"
       size="md"
     >
       <div className="text-center py-4">
@@ -24,29 +23,12 @@ export default function AddProductModal({ isOpen, onClose }) {
           Publica tu café en {APP_NAME}
         </h4>
         <p className="text-sm text-surface-600 mb-6 leading-relaxed">
-          Para agregar y ofrecer lotes de café en el catálogo general, debes contar con una cuenta
-          activa como <strong>Productor</strong> o <strong>Empresa</strong>.
+          Presenta el café que tienes disponible a las empresas exportadoras. Puedes publicar sin crear una cuenta.
         </p>
 
-        <div className="space-y-3">
-          <Link to="/login" onClick={onClose}>
-            <Button variant="primary" className="w-full justify-center gap-2">
-              <LogIn className="h-4 w-4" />
-              <span>Iniciar Sesión para Publicar</span>
-            </Button>
-          </Link>
-          <Link to="/register" onClick={onClose}>
-            <Button variant="outline" className="w-full justify-center">
-              Registrar Finca o Empresa Gratis
-            </Button>
-          </Link>
-          <Link to="/agregar-producto" onClick={onClose} className="block pt-2">
-            <span className="text-xs font-semibold text-primary-700 hover:underline inline-flex items-center gap-1">
-              <span>Más información sobre publicar productos</span>
-              <ArrowRight className="h-3 w-3" />
-            </span>
-          </Link>
-        </div>
+        <Link to="/agregar-producto" onClick={onClose} className="block rounded-lg bg-brand-terracota px-4 py-2.5 font-semibold text-white hover:bg-brand-terracota-dark">
+          Publicar sin cuenta
+        </Link>
       </div>
     </ModalBase>
   );
