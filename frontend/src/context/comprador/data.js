@@ -1,6 +1,6 @@
 import { mapContenedor, mapPedido } from '../mappers.js';
 
-export function selectCompradorData({ rawContenedores, rawPedidos, rawPreofertas, rawFincas, rawLotes, rawVariedades, rawCaficultores, rawSesionesCatacion, rawCompradores, rawBrokers }) {
+export function selectCompradorData({ rawContenedores, rawPedidos, rawPreofertas, rawFincas, rawLotes, rawVariedades, rawCaficultores, rawSesionesCatacion, rawCompradores }) {
   const mappedContenedores = rawContenedores.map((cnt) =>
     mapContenedor(cnt, {
       preofertas: rawPreofertas,
@@ -14,9 +14,7 @@ export function selectCompradorData({ rawContenedores, rawPedidos, rawPreofertas
 
   const mappedPedidos = rawPedidos.map((ped) =>
     mapPedido(ped, {
-      contenedores: mappedContenedores,
       compradores: rawCompradores,
-      brokers: rawBrokers,
     })
   );
 
@@ -24,7 +22,6 @@ export function selectCompradorData({ rawContenedores, rawPedidos, rawPreofertas
     contenedores: mappedContenedores,
     pedidos: mappedPedidos,
     compradores: rawCompradores,
-    brokers: rawBrokers,
   };
 }
 
@@ -33,7 +30,6 @@ export const compradorData = {
     contenedores: [],
     pedidos: [],
     compradores: [],
-    brokers: [],
   }),
   endpoints: {
     rawContenedores: '/contenedores-virtuales',
@@ -45,9 +41,8 @@ export const compradorData = {
     rawCaficultores: '/caficultores',
     rawSesionesCatacion: '/sesiones-catacion',
     rawCompradores: '/compradores-internacionales',
-    rawBrokers: '/brokers',
   },
   routes: {},
-  allSources: ["rawContenedores", "rawPedidos", "rawPreofertas", "rawFincas", "rawLotes", "rawVariedades", "rawCaficultores", "rawSesionesCatacion", "rawCompradores", "rawBrokers"],
+  allSources: ['rawContenedores', 'rawPedidos', 'rawPreofertas', 'rawFincas', 'rawLotes', 'rawVariedades', 'rawCaficultores', 'rawSesionesCatacion', 'rawCompradores'],
   select: selectCompradorData,
 };

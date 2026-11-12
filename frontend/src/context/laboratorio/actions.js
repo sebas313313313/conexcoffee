@@ -33,17 +33,6 @@ export function createLaboratorioActions(state, setters) {
     }
   };
 
-  const removeCatador = async (id) => {
-    try {
-      await axiosClient.delete(`/catadores/${id}`);
-      setCatadores((prev) => prev.filter((c) => c.id !== id));
-      toast.success('Catador eliminado correctamente');
-    } catch (err) {
-      toast.error(getErrorMessage(err));
-      throw err;
-    }
-  };
-
   // ── ANALISIS FISICOS / MUESTRAS / RESULTADOS ───────────────────────────────
   const createAnalisisFisico = async (payload) => {
     try {
@@ -147,5 +136,5 @@ export function createLaboratorioActions(state, setters) {
   const createHojaCatacion = async (payload) => createAnalisisSensorial(payload);
   const updateHojaCatacion = async (id, payload) => updateAnalisisSensorial(id, payload);
 
-  return { createCatador, updateCatador, removeCatador, createAnalisisFisico, updateAnalisisFisico, createMuestra, updateMuestra, updateResultado, createAnalisisSensorial, updateAnalisisSensorial, createHojaCatacion, updateHojaCatacion };
+  return { createCatador, updateCatador, createAnalisisFisico, updateAnalisisFisico, createMuestra, updateMuestra, updateResultado, createAnalisisSensorial, updateAnalisisSensorial, createHojaCatacion, updateHojaCatacion };
 }

@@ -15,7 +15,7 @@ const ESTADOS_CON_PAGO = new Set([
   'PAGADO_TOTAL_AUTORIZADO',
 ]);
 
-export function selectBrokerData({ rawContenedores, rawPedidos, rawPreofertas, rawFincas, rawLotes, rawVariedades, rawCaficultores, rawSesionesCatacion, rawCompradores, rawBrokers, rawCarteraCompradores = [], rawCarteraPedidos = [] }, previous) {
+export function selectBrokerData({ rawContenedores, rawPedidos, rawPreofertas, rawFincas, rawLotes, rawVariedades, rawCaficultores, rawSesionesCatacion, rawCompradores, rawCarteraCompradores = [], rawCarteraPedidos = [] }, previous) {
   const preofertas = rawPreofertas.map((preoferta) => mapPreoferta(preoferta, {
     caficultores: rawCaficultores,
     fincas: rawFincas,
@@ -36,9 +36,7 @@ export function selectBrokerData({ rawContenedores, rawPedidos, rawPreofertas, r
 
   const mappedPedidos = rawPedidos.map((ped) =>
     mapPedido(ped, {
-      contenedores: mappedContenedores,
       compradores: rawCompradores,
-      brokers: rawBrokers,
     })
   );
 
@@ -82,7 +80,6 @@ export const brokerData = {
     rawCaficultores: '/caficultores',
     rawSesionesCatacion: '/sesiones-catacion',
     rawCompradores: '/compradores-internacionales',
-    rawBrokers: '/brokers',
     rawCarteraCompradores: { url: '/compradores-internacionales', allPages: true, strictResponse: true },
     rawCarteraPedidos: { url: '/pedidos-internacionales', allPages: true, strictResponse: true },
   },
@@ -94,7 +91,7 @@ export const brokerData = {
     '/broker/eventos': [],
     '/broker/contenedores': ['rawContenedores', 'rawPreofertas', 'rawFincas', 'rawLotes', 'rawVariedades', 'rawCaficultores', 'rawSesionesCatacion'],
   },
-  allSources: ["rawContenedores", "rawPedidos", "rawPreofertas", "rawFincas", "rawLotes", "rawVariedades", "rawCaficultores", "rawSesionesCatacion", "rawCompradores", "rawBrokers"],
+  allSources: ['rawContenedores', 'rawPedidos', 'rawPreofertas', 'rawFincas', 'rawLotes', 'rawVariedades', 'rawCaficultores', 'rawSesionesCatacion', 'rawCompradores'],
   select: selectBrokerData,
   onLoaded(raw, mapped) {
     if (raw.rawContenedores.length > 0 && mapped.contenedores) {

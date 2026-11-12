@@ -147,3 +147,12 @@ En `backend`, ejecuta `npm run db:migrate:ofertas-externas` sobre la base config
 Los enlaces de confirmación y de invitación se envían por Resend. Configura `RESEND`, `EMAIL_FROM` (remitente verificado) y `FRONTEND_URL` (origen del frontend). En producción configura `TURNSTILE_SECRET_KEY` en el backend y `VITE_TURNSTILE_SITE_KEY` en el frontend.
 
 El productor dispone de 24 horas para confirmar su publicación. Las ofertas confirmadas duran 15 días. Una empresa puede reservar al productor mediante una invitación de hasta tres días, limitada por la vigencia de la oferta. Al aceptar, se crean la cuenta y el perfil dentro de la misma transacción. Las demás ofertas de ese productor quedan registradas y salen del listado para nuevas vinculaciones. El backend revisa cada diez minutos las ofertas vencidas para avisar por correo.
+
+## Demostración con Dev Tunnels
+
+1. Inicia el backend con `npm run dev` desde `backend` y el frontend con `npm run dev` desde `frontend`.
+2. Reenvía el puerto de Vite (normalmente `5173`) en Dev Tunnels. En `frontend/.env`, configura `DEV_TUNNEL_HOST` con el hostname exacto de ese túnel, sin `https://`, y `VITE_API_BASE_URL=/api`.
+3. En `backend/.env`, añade la URL HTTPS completa del túnel a `EXTRA_ALLOWED_ORIGINS`, separada por comas si ya hay otros orígenes. Para enviar enlaces que funcionen fuera de tu máquina, configura `FRONTEND_URL` con esa misma URL pública.
+4. Reinicia ambos procesos. Abre `/api/health` desde el dominio del frontend para comprobar que Vite reenvía las peticiones al backend.
+
+El proxy usa `http://127.0.0.1:3001` por defecto. Si el backend escucha en otro puerto, ajusta `API_PROXY_TARGET` en `frontend/.env`. Comparte el túnel de Vite y mantén PostgreSQL (`5432`) en local. Para un despliegue que sirva archivos estáticos, configura `VITE_API_BASE_URL` con la URL de su API o configura el proxy `/api` en el servidor de ese despliegue.

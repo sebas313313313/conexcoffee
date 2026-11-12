@@ -27,7 +27,6 @@ export const LaboratorioProvider = ({ children }) => {
     resultados: state.resultados,
     createCatador: actions.createCatador,
     updateCatador: actions.updateCatador,
-    removeCatador: actions.removeCatador,
     createAnalisisFisico: actions.createAnalisisFisico,
     updateAnalisisFisico: actions.updateAnalisisFisico,
     createAnalisisSensorial: actions.createAnalisisSensorial,

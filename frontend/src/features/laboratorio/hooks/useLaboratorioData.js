@@ -3,7 +3,6 @@ import {
   toQueryResult,
   toCreateMutation,
   toUpdateMutation,
-  toRemoveMutation,
 } from '@/hooks/contextAdapter';
 
 export const useMuestrasResumen = () => {
@@ -23,11 +22,6 @@ export const useActualizarCatador = () => {
   const { updateCatador } = useLaboratorio();
   return toUpdateMutation(updateCatador);
 };
-export const useEliminarCatador = () => {
-  const { removeCatador } = useLaboratorio();
-  return toRemoveMutation(removeCatador);
-};
-
 export const useAnalisisFisicos = () => {
   const { analisisFisicos, loading, error, refetch } = useLaboratorio();
   return toQueryResult(analisisFisicos, loading, error, refetch);

@@ -26,6 +26,7 @@ export function mapCaficultor(raw = {}, { empresas = [], fincas = [], lotes = []
   const email =
     raw.correo ||
     raw.email ||
+    raw.correo_electronico ||
     userMatch?.correo_electronico ||
     '';
   const municipio = raw.municipio || '';
@@ -330,7 +331,7 @@ export function mapCatador(raw = {}, { laboratorios = [], usuarios = [], hojas =
   const misHojas = hojas.filter((h) => h.catador_id === raw.id);
   const doc = raw.numero_documento || raw.identificacion || raw.numero_identificacion || '';
   const tel = raw.telefono_movil || raw.telefono || '+573147894561';
-  const email = raw.email || raw.correo || user?.correo_electronico || 'catador@qgrader.com';
+  const email = raw.email || raw.correo || raw.correo_electronico || user?.correo_electronico || '';
   const cert = raw.codigo_certificado_q_grader || raw.certificadoQ || raw.certificacion || 'Q-GRADER-COL-2025';
 
   return {
@@ -391,7 +392,7 @@ export function mapTecnico(raw = {}, { inspecciones = [], usuarios = [] } = {}) 
   const misInspecciones = inspecciones.filter((i) => i.asistente_tecnico_id === raw.id);
   const doc = raw.numero_documento || raw.numeroIdentificacion || raw.numero_identificacion || '';
   const tel = raw.telefono_movil || raw.telefono || '+573159876543';
-  const email = raw.correo || user?.correo_electronico || 'tecnico@conexcoffee.com';
+  const email = raw.correo || raw.email || raw.correo_electronico || user?.correo_electronico || '';
 
   return {
     ...raw,
@@ -445,7 +446,7 @@ export function mapLaboratorio(raw = {}, { evalFisicas = [], catadores = [], usu
     nombre_laboratorio: nombre,
     telefono: raw.telefono_contacto || raw.telefono || '+573123456789',
     telefono_contacto: raw.telefono_contacto || raw.telefono || '+573123456789',
-    correo: raw.correo || user?.correo_electronico || 'calidad@laboratorio.com',
+    correo: raw.correo || raw.email || raw.correo_electronico || user?.correo_electronico || '',
     direccion: raw.direccion || 'Parque Tecnológico del Café',
     municipio: raw.municipio || 'Cajibío',
     departamento: raw.departamento || 'Cauca',
@@ -462,7 +463,7 @@ export function mapBroker(raw = {}, { contenedores = [], usuarios = [] } = {}) {
   const n = splitFullName(raw.nombre_empresa || `${raw.primerNombre || raw.primer_nombre || 'John'} ${raw.segundoNombre || ''}`);
   const doc = raw.identificacion_fiscal_pais || raw.numeroIdentificacion || raw.numero_identificacion || 'EIN-88-9923145';
   const tel = raw.telefono_contacto || raw.telefono || '+13055550199';
-  const email = raw.correo || user?.correo_electronico || 'broker@greenhorizoncoffee.com';
+  const email = raw.correo || raw.email || raw.correo_electronico || user?.correo_electronico || '';
   const misContenedores = contenedores.filter((c) => c.broker_destino_id === raw.id);
 
   return {

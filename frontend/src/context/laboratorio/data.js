@@ -1,12 +1,8 @@
 import { mapCatador, mapMuestraYAnalisisFisico, mapSesionYAnalisisSensorial } from '../mappers.js';
 
-export function selectLaboratorioData({ rawUsuarios, rawCatadores, rawLaboratorios, rawCaficultores, rawFincas, rawLotes, rawVariedades, rawPreofertas, rawEvaluacionesFisicas, rawSesionesCatacion }) {
+export function selectLaboratorioData({ rawCatadores, rawLaboratorios, rawCaficultores, rawFincas, rawLotes, rawVariedades, rawPreofertas, rawEvaluacionesFisicas, rawSesionesCatacion }) {
   const mappedCatadores = rawCatadores.map((c) =>
-    mapCatador(c, {
-      laboratorios: rawLaboratorios,
-      sesionesCatacion: rawSesionesCatacion,
-      usuarios: rawUsuarios,
-    })
+    mapCatador(c, { laboratorios: rawLaboratorios })
   );
 
   const mappedFisicos = rawEvaluacionesFisicas.map((ev) =>
@@ -75,7 +71,6 @@ export const laboratorioData = {
     variedades: [],
   }),
   endpoints: {
-    rawUsuarios: '/usuarios-sistema',
     rawCatadores: '/catadores',
     rawLaboratorios: '/laboratorios',
     rawCaficultores: '/caficultores',
@@ -87,7 +82,7 @@ export const laboratorioData = {
     rawSesionesCatacion: '/sesiones-catacion',
   },
   routes: {
-    '/laboratorio/catadores': ['rawCatadores', 'rawLaboratorios', 'rawSesionesCatacion', 'rawUsuarios'],
+    '/laboratorio/catadores': ['rawCatadores', 'rawLaboratorios'],
     '/laboratorio/dashboard': ['rawCaficultores', 'rawEvaluacionesFisicas', 'rawFincas', 'rawLaboratorios', 'rawLotes', 'rawPreofertas', 'rawSesionesCatacion', 'rawVariedades'],
     '/laboratorio/analisis-fisico': ['rawCaficultores', 'rawEvaluacionesFisicas', 'rawFincas', 'rawLaboratorios', 'rawLotes', 'rawPreofertas', 'rawSesionesCatacion', 'rawVariedades'],
     '/laboratorio/muestras': ['rawCaficultores', 'rawEvaluacionesFisicas', 'rawFincas', 'rawLaboratorios', 'rawLotes', 'rawPreofertas', 'rawSesionesCatacion', 'rawVariedades'],
@@ -95,6 +90,6 @@ export const laboratorioData = {
     '/laboratorio/analisis-sensorial': ['rawCaficultores', 'rawCatadores', 'rawEvaluacionesFisicas', 'rawFincas', 'rawLaboratorios', 'rawLotes', 'rawPreofertas', 'rawSesionesCatacion', 'rawVariedades'],
     '/laboratorio/hojas-catacion': ['rawCaficultores', 'rawCatadores', 'rawEvaluacionesFisicas', 'rawFincas', 'rawLaboratorios', 'rawLotes', 'rawPreofertas', 'rawSesionesCatacion', 'rawVariedades'],
   },
-  allSources: ["rawUsuarios", "rawCatadores", "rawLaboratorios", "rawCaficultores", "rawFincas", "rawLotes", "rawVariedades", "rawPreofertas", "rawEvaluacionesFisicas", "rawSesionesCatacion"],
+  allSources: ['rawCatadores', 'rawLaboratorios', 'rawCaficultores', 'rawFincas', 'rawLotes', 'rawVariedades', 'rawPreofertas', 'rawEvaluacionesFisicas', 'rawSesionesCatacion'],
   select: selectLaboratorioData,
 };

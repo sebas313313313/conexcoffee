@@ -61,16 +61,33 @@ test('cada pantalla carga únicamente sus endpoints declarados y permite calcula
   }
 });
 
-test('brokers carga tres recursos en vez de quince y blog/configuración no consultan colecciones', async () => {
+test('la pantalla de brokers de Empresa carga su directorio y blog/configuración no consultan colecciones', async () => {
   const requested = [];
   const request = async (url) => { requested.push(url); return []; };
   const empresa = createRoleDataController(empresaData, request);
   await empresa.load('brokers', empresaData.routes['/empresa/brokers']);
-  assert.deepEqual(requested.sort(), ['/brokers', '/pedidos-internacionales', '/usuarios-sistema']);
+  assert.deepEqual(requested, ['/brokers']);
   const admin = createRoleDataController(superAdminData, request);
   await admin.load('blog', superAdminData.routes['/superadmin/blog']);
   await admin.load('settings', superAdminData.routes['/superadmin/settings']);
-  assert.equal(requested.length, 3);
+  assert.equal(requested.length, 1);
+});
+
+test('los paneles consultan los directorios de usuarios y brokers según el rol autorizado', async () => {
+  for (const [config] of roles) {
+    const allowsUsers = config === superAdminData;
+    const allowsBrokers = allowsUsers || config === empresaData;
+    const controller = createRoleDataController(config, async (source) => {
+      const url = typeof source === 'string' ? source : source.url;
+      assert.ok(allowsUsers || url !== '/usuarios-sistema', 'Directorio exclusivo de Administración');
+      assert.ok(allowsBrokers || url !== '/brokers', 'Directorio exclusivo de Empresa y Administración');
+      return [];
+    });
+    for (const [route, sources] of Object.entries({ ...config.routes, dashboard: config.allSources })) {
+      await controller.load(route, sources);
+      assert.equal(controller.getSnapshot().error, null, route);
+    }
+  }
 });
 
 test('dos recargas simultáneas de la misma pantalla comparten la petición', async () => {
