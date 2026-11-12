@@ -74,7 +74,7 @@ export function createEmpresaActions(state, setters) {
 
   const updateContenedor = async (id, payload) => {
     try {
-      const { data } = await axiosClient.put(`/contenedores-virtuales/${id}`, payload);
+      const { data } = await axiosClient.put(`/contenedores-virtuales/${id}`, payload, { strictResponse: true });
       setContenedores((prev) =>
         prev.map((c) =>
           c.id === id

@@ -789,7 +789,7 @@ export function mapContenedor(
   });
 
   const ofertasAsignadas =
-    Array.isArray(raw.ofertas_asignadas) && raw.ofertas_asignadas.length > 0
+    Array.isArray(raw.ofertas_asignadas)
       ? raw.ofertas_asignadas
       : variedadesCatalogo.map((v) => ({
           codigo: v.codigo,

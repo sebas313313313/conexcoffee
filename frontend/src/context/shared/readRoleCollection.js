@@ -10,7 +10,9 @@ export async function readRoleCollection(client, source, signal) {
       const response = await client.get(options.url, {
         signal,
         ...(options.strictResponse ? { strictResponse: true } : {}),
-        ...(options.allPages ? { params: { page, limit: 100 } } : {}),
+        ...(options.params || options.allPages ? {
+          params: { ...options.params, ...(options.allPages ? { page, limit: 100 } : {}) },
+        } : {}),
       });
       signal.throwIfAborted();
       records.push(...(Array.isArray(response.data) ? response.data : []));

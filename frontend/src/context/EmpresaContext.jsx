@@ -5,6 +5,7 @@ import { useRoleData } from './shared/useRoleData';
 import { empresaData } from './empresa/data';
 import { createEmpresaActions } from './empresa/actions';
 import { selectEmpresaSummary } from './empresa/summary';
+import { cargarVentasEmpresa } from './empresa/ventas';
 
 export const EmpresaContext = createContext(null);
 
@@ -14,6 +15,7 @@ export const EmpresaProvider = ({ children }) => {
   const summary = useMemo(() => selectEmpresaSummary(state), [state]);
   const precintosActions = useMemo(() => createEmpresaPrecintosActions(setters), [setters]);
   const value = useMemo(() => ({
+    cargarVentasEmpresa,
     ...precintosActions,
     listarOfertasExternas,
     invitarProductorExterno,

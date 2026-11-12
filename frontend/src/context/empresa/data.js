@@ -56,7 +56,7 @@ export function selectEmpresaData({ rawUsuarios, rawCaficultores, rawEmpresas, r
     })
   );
   const mappedContenedores = rawContenedores.map((cnt) =>
-    mapContenedor(cnt, {
+    mapContenedor({ ...cnt, ofertas_asignadas: cnt.ofertas_asignadas ?? [] }, {
       preofertas: rawPreofertas,
       fincas: rawFincas,
       lotes: rawLotes,
@@ -117,6 +117,7 @@ export const empresaData = {
     rawInspecciones: '/inspecciones-campo',
   },
   routes: {
+    '/empresa/ventas': [],
     '/empresa/precintos': ['rawTecnicos', 'rawUsuarios', 'rawInspecciones'],
     '/empresa/brokers': ['rawBrokers', 'rawPedidos', 'rawUsuarios'],
     '/empresa/caficultores': ['rawCaficultores', 'rawEmpresas', 'rawFincas', 'rawLotes', 'rawUsuarios'],

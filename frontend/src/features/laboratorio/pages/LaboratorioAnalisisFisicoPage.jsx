@@ -63,9 +63,7 @@ export default function LaboratorioAnalisisFisicoPage() {
     finally { setGuardandoQr(false); }
   };
 
-  const handleUpdate = (actualizado) => {
-    actualizar.mutate(actualizado);
-  };
+  const handleUpdate = (actualizado) => actualizar.mutateAsync(actualizado);
 
   const handleAsignar = (item, catadorNombre) => {
     actualizar.mutate({
@@ -147,8 +145,8 @@ export default function LaboratorioAnalisisFisicoPage() {
                       <button
                         type="button"
                         onClick={() => setAnalisisEditar(item)}
-                        title="Realizar análisis físico"
-                        aria-label="Realizar análisis físico"
+                        title={item.estado === 'Completado' ? 'Editar análisis físico' : 'Realizar análisis físico'}
+                        aria-label={item.estado === 'Completado' ? 'Editar análisis físico' : 'Realizar análisis físico'}
                         className="inline-flex items-center justify-center w-9 h-9 rounded-lg border border-surface-200 bg-white text-surface-600 hover:text-primary-600 hover:border-primary-400 hover:bg-primary-50/50 transition-colors shadow-2xs cursor-pointer"
                       >
                         <FlaskConical className="w-5 h-5 text-primary-600" />
@@ -189,6 +187,7 @@ export default function LaboratorioAnalisisFisicoPage() {
         isOpen={!!analisisEditar}
         onClose={() => setAnalisisEditar(null)}
         analisis={analisisEditar}
+        nuevo={analisisEditar?.estado !== 'Completado'}
         onSave={handleUpdate}
       />
 

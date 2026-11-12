@@ -65,7 +65,7 @@ export function createLaboratorioActions(state, setters) {
 
   const updateAnalisisFisico = async (id, payload) => {
     try {
-      const { data } = await axiosClient.put(`/evaluaciones-fisicas/${id}`, payload);
+      const { data } = await axiosClient.put(`/evaluaciones-fisicas/${id}`, payload, { strictResponse: true });
       setAnalisisFisicos((prev) =>
         prev.map((a) =>
           a.id === id

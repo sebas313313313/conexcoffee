@@ -21,6 +21,7 @@ import {
   useEmpresaKpis,
   useEmpresaActividad,
 } from '../hooks/useEmpresaData';
+import VentasMensuales from '../components/VentasMensuales';
 
 function AnimatedCounter({ value, locationKey }) {
   const spanRef = useRef(null);
@@ -327,6 +328,8 @@ export default function EmpresaDashboardPage() {
       </div>
 
       {/* Sección Inferior: Indicadores de Exportación & Actividad Reciente */}
+      <VentasMensuales />
+
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Indicadores Logísticos */}
         <div className="lg:col-span-1 bg-white rounded-2xl p-5 border border-stone-200 shadow-sm space-y-4">

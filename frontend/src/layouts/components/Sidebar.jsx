@@ -69,6 +69,7 @@ const NAV_BY_ROLE = {
     { label: 'Brokers', path: '/empresa/brokers', icon: Handshake },
     { label: 'Caficultores', path: '/empresa/caficultores', icon: Leaf },
     { label: 'Contenedores', path: '/empresa/contenedores', icon: Package },
+    { label: 'Ventas', path: '/empresa/ventas', icon: ShoppingCart },
     { label: 'Laboratorios', path: '/empresa/laboratorios', icon: FlaskConical },
     { label: 'Muestras', path: '/empresa/muestras', icon: Archive },
     { label: 'Técnicos', path: '/empresa/tecnicos', icon: UserCheck },

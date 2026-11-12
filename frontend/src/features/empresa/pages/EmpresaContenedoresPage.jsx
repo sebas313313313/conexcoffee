@@ -58,7 +58,16 @@ export default function EmpresaContenedoresPage() {
   });
 
   // Formulario para asignar oferta
-  const [ofertaParaAsignarId, setOfertaParaAsignarId] = useState('');
+  const [ofertasSeleccionadasIds, setOfertasSeleccionadasIds] = useState([]);
+  const [asignandoOfertas, setAsignandoOfertas] = useState(false);
+  const ofertasPrevias = contenedorSeleccionado?.ofertas_asignadas ?? [];
+  const asignables = ofertasDisponibles.filter((oferta) =>
+    Number(oferta.cantidad_kg) > 0 && !ofertasPrevias.some((previa) => previa.codigo === oferta.codigo)
+  );
+  const seleccionadas = asignables.filter((oferta) => ofertasSeleccionadasIds.includes(oferta.id));
+  const pesoSeleccionado = seleccionadas.reduce((peso, oferta) => peso + Number(oferta.cantidad_kg), 0);
+  const pesoNuevo = Number(contenedorSeleccionado?.cantidad_cafe_kg ?? 0) + pesoSeleccionado;
+  const excedeCapacidad = pesoNuevo > Number(contenedorSeleccionado?.capacidad_total_kg ?? 0);
 
   const contenedoresFiltrados = contenedores.filter((c) => {
     const term = searchTerm.toLowerCase();
@@ -125,44 +134,30 @@ export default function EmpresaContenedoresPage() {
     actualizarMutation.mutate({ ...contenedor, estado: nuevoEstado });
   };
 
-  const handleAsignarOferta = (e) => {
+  const handleAsignarOferta = async (e) => {
     e.preventDefault();
-    if (!contenedorSeleccionado || !ofertaParaAsignarId) {
-      toast.error('Seleccione una oferta para asignar');
-      return;
-    }
-
-    const oferta = ofertasDisponibles.find((o) => String(o.id) === String(ofertaParaAsignarId));
-    if (!oferta) return;
-
-    const ofertasPrevias = contenedorSeleccionado.ofertas_asignadas || [];
-    const pesoNuevo = (contenedorSeleccionado.cantidad_cafe_kg || 0) + oferta.cantidad_kg;
-
-    if (pesoNuevo > contenedorSeleccionado.capacidad_total_kg) {
-      toast.error('La carga excede la capacidad máxima del contenedor');
-      return;
-    }
-
-    const nuevaOfertaObj = {
+    if (!contenedorSeleccionado || !seleccionadas.length || excedeCapacidad || asignandoOfertas) return;
+    const nuevasOfertas = seleccionadas.map((oferta) => ({
+      id: oferta.id,
       codigo: oferta.codigo,
       variedad: oferta.variedad,
       sacos: oferta.sacos,
-      peso_kg: oferta.cantidad_kg,
-    };
-
-    actualizarMutation.mutate(
-      {
+      peso_kg: Number(oferta.cantidad_kg),
+    }));
+    setAsignandoOfertas(true);
+    try {
+      await actualizarMutation.mutateAsync({
         ...contenedorSeleccionado,
+        kilos_reservados: pesoNuevo,
         cantidad_cafe_kg: pesoNuevo,
-        ofertas_asignadas: [...ofertasPrevias, nuevaOfertaObj],
-      },
-      {
-        onSuccess: () => {
-          setModalAsignar(false);
-          setOfertaParaAsignarId('');
-        },
-      }
-    );
+        ofertas_asignadas: [...ofertasPrevias, ...nuevasOfertas],
+      });
+      setModalAsignar(false);
+    } catch {
+      // El provider informa el error. Se conserva la selección para reintentar.
+    } finally {
+      setAsignandoOfertas(false);
+    }
   };
 
   const abrirEdicion = (c) => {
@@ -318,10 +313,11 @@ export default function EmpresaContenedoresPage() {
                             type="button"
                             onClick={() => {
                               setContenedorSeleccionado(c);
+                              setOfertasSeleccionadasIds([]);
                               setModalAsignar(true);
                             }}
                             className="p-1.5 text-stone-500 hover:text-amber-800 hover:bg-amber-100 rounded-lg"
-                            title="Asignar Oferta"
+                            title="Asignar ofertas"
                           >
                             <ShoppingBag className="w-4 h-4" />
                           </button>
@@ -671,7 +667,7 @@ export default function EmpresaContenedoresPage() {
               <div>
                 <h3 className="font-bold text-stone-900 text-base flex items-center gap-2">
                   <ShoppingBag className="w-5 h-5 text-amber-700" />
-                  Asignar Oferta al Contenedor
+                  Asignar ofertas al contenedor
                 </h3>
                 <p className="text-xs text-stone-500 font-mono">
                   {contenedorSeleccionado.codigo} • {contenedorSeleccionado.pais_destino}
@@ -679,6 +675,7 @@ export default function EmpresaContenedoresPage() {
               </div>
               <button
                 type="button"
+                disabled={asignandoOfertas}
                 onClick={() => setModalAsignar(false)}
                 className="text-stone-400 hover:text-stone-600 p-1"
               >
@@ -718,28 +715,33 @@ export default function EmpresaContenedoresPage() {
                 </div>
               </div>
 
-              <div>
-                <label className="block font-semibold text-stone-700 mb-1.5">
-                  Seleccionar Oferta Disponible *
-                </label>
-                <select
-                  required
-                  value={ofertaParaAsignarId}
-                  onChange={(e) => setOfertaParaAsignarId(e.target.value)}
-                  className="w-full px-3 py-2.5 border border-stone-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-700/20 bg-white font-medium text-stone-800"
-                >
-                  <option value="">-- Seleccione una oferta --</option>
-                  {ofertasDisponibles.map((o) => (
-                    <option key={o.id} value={o.id}>
-                      {o.codigo} — Cantidad: {o.cantidad_kg.toLocaleString()} Kg • Variedad: {o.variedad}
-                    </option>
+              <fieldset disabled={asignandoOfertas}>
+                <legend className="mb-2 font-semibold text-stone-700">Selecciona una o varias ofertas</legend>
+                <div className="max-h-[32dvh] divide-y divide-stone-100 overflow-y-auto rounded-xl border border-stone-200">
+                  {asignables.map((oferta) => (
+                    <label key={oferta.id} className="flex cursor-pointer items-center gap-3 p-3 hover:bg-stone-50">
+                      <input type="checkbox" className="accent-brand-terracota"
+                        checked={ofertasSeleccionadasIds.includes(oferta.id)}
+                        onChange={(event) => {
+                          const { checked } = event.target;
+                          setOfertasSeleccionadasIds((ids) => checked ? [...ids, oferta.id] : ids.filter((id) => id !== oferta.id));
+                        }} />
+                      <span className="flex-1"><strong>{oferta.codigo}</strong> · {oferta.variedad}</span>
+                      <span className="whitespace-nowrap">{Number(oferta.cantidad_kg).toLocaleString('es-CO')} kg</span>
+                    </label>
                   ))}
-                </select>
-              </div>
+                  {!asignables.length && <p className="p-3 text-stone-600">No hay ofertas disponibles para asignar.</p>}
+                </div>
+                <p className="mt-2 font-medium text-stone-700" aria-live="polite">
+                  {seleccionadas.length} seleccionadas · {pesoSeleccionado.toLocaleString('es-CO')} kg
+                </p>
+                {excedeCapacidad && <p role="alert" className="mt-1 text-danger-700">La selección supera la capacidad disponible.</p>}
+              </fieldset>
 
               <div className="flex items-center justify-end gap-3 pt-3 border-t border-stone-100">
                 <button
                   type="button"
+                  disabled={asignandoOfertas}
                   onClick={() => setModalAsignar(false)}
                   className="px-4 py-2 border border-stone-200 text-stone-600 rounded-xl hover:bg-stone-50 font-medium"
                 >
@@ -747,9 +749,10 @@ export default function EmpresaContenedoresPage() {
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-amber-800 text-white font-semibold rounded-xl hover:bg-amber-900 shadow-sm"
+                  disabled={asignandoOfertas || !seleccionadas.length || excedeCapacidad}
+                  className="px-4 py-2 bg-amber-800 text-white font-semibold rounded-xl hover:bg-amber-900 shadow-sm disabled:opacity-50"
                 >
-                  Asignar
+                  {asignandoOfertas ? 'Asignando…' : 'Asignar selección'}
                 </button>
               </div>
             </form>

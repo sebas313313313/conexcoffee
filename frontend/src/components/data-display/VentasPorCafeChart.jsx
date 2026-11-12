@@ -1,9 +1,9 @@
-const COLORS = ['#AD2E01', '#F25433', '#D97706', '#0F766E', '#7C3AED'];
+const COLORS = ['var(--color-brand-terracota)', 'var(--color-brand-orange)', 'var(--color-brand-amber)', 'var(--color-brand-teal)', 'var(--color-surface-500)'];
 
 export default function VentasPorCafeChart({ items = [] }) {
   const total = items.reduce((sum, item) => sum + item.valor, 0);
   let offset = 0;
-  const circumference = 251.2;
+  const circumference = 2 * Math.PI * 40;
   const slices = items.map((item, index) => {
     const size = total ? (item.valor / total) * circumference : 0;
     const slice = { ...item, color: COLORS[index % COLORS.length], size, offset };
@@ -18,7 +18,7 @@ export default function VentasPorCafeChart({ items = [] }) {
         <div className="absolute inset-0 flex flex-col items-center justify-center text-center pointer-events-none"><strong className="max-w-24 text-sm leading-tight text-surface-900">{top?.nombre || '—'}</strong><span className="mt-1 text-[10px] text-surface-500">más vendido</span></div>
       </div>
       <div className="w-full space-y-2">
-        {slices.map((slice) => <div key={slice.nombre} className="flex items-center justify-between gap-3 text-xs"><span className="flex items-center gap-2 min-w-0"><i className="h-2.5 w-2.5 rounded-full shrink-0" style={{ backgroundColor: slice.color }} /><span className="truncate text-surface-700">{slice.nombre}</span></span><b className="text-surface-900">{total ? Math.round((slice.valor / total) * 100) : 0}%</b></div>)}
+          {slices.map((slice) => <div key={slice.nombre} className="flex items-center justify-between gap-3 text-xs"><span className="flex items-center gap-2 min-w-0"><i className="h-2.5 w-2.5 rounded-full shrink-0" style={{ backgroundColor: slice.color }} /><span className="truncate text-surface-700">{slice.nombre}</span></span><b className="text-surface-900">{total ? Math.round((slice.valor / total) * 100) : 0}%</b></div>)}
       </div>
     </div>
   );

@@ -1,5 +1,24 @@
 import api from '@/lib/axios';
 import { readRoleCollection } from '../shared/readRoleCollection';
+import { cargarVentasEmpresa } from './ventas';
+
+const porcentajeVenta = new Intl.NumberFormat('es-CO', { maximumFractionDigits: 2 });
+
+export async function cargarNotificacionesVentas(empresaId, signal) {
+  const contenedores = await cargarVentasEmpresa(empresaId, signal);
+  return contenedores.flatMap((contenedor) => contenedor.ventas.flatMap((venta) => {
+    const ruta = `/empresa/ventas?${new URLSearchParams({ contenedor: contenedor.id, pedido: venta.id })}`;
+    const notificacion = (id, porcentaje, fecha) => ({
+      id: `venta-${id}`, categoria: 'ventas', codigo: venta.codigo,
+      titulo: `Se confirmó un pago del ${porcentajeVenta.format(porcentaje)} %`,
+      detalle: contenedor.esDePrueba ? 'Datos de prueba' : undefined,
+      autor: venta.comprador, fecha, ruta,
+    });
+    return venta.transacciones.length
+      ? venta.transacciones.map((pago) => notificacion(pago.id, 100 * pago.monto_usd / venta.total, pago.fecha_transaccion))
+      : [notificacion(venta.id, venta.porcentaje, venta.fecha)];
+  }));
+}
 
 export async function cargarNotificacionesEmpresa(empresaId, signal) {
   if (!empresaId) return [];
