@@ -72,6 +72,8 @@ api.interceptors.response.use(
     return response;
   },
   (error) => {
+    if (axios.isCancel(error)) return Promise.reject(error);
+
     const status = error.response?.status;
     const config = error.config || {};
     const url = config.url || '';
